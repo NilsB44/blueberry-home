@@ -18,7 +18,9 @@ services:
       - api
 
   api:
-    build: ./api
+    build:
+      context: .
+      dockerfile: api/Dockerfile
     restart: unless-stopped
     environment:
       HUB_DATABASE_URL: sqlite:////srv/data/hub.db

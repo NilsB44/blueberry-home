@@ -65,4 +65,5 @@ def test_modules_requires_login(client):
 def test_modules_lists_tiles(admin_client):
     ids = [m["id"] for m in admin_client.get("/api/modules").json()]
     assert ids[:2] == ["french", "assistant"]
+    assert "poker" in ids
     assert {"french", "poker", "tetris", "mandarin"} <= set(ids)

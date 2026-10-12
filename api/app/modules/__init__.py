@@ -46,7 +46,7 @@ MODULES: list[ModuleInfo] = [
         description="Pre-flop equity, hand calculator and home-game settle-up.",
         icon="♠️",
         path="/poker",
-        status="planned",
+        status="ready",
         phase=2,
     ),
     ModuleInfo(
