@@ -27,8 +27,9 @@ class SrsCard(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id", index=True)
     course: str
-    front: str  # target language (French)
+    front: str  # the language being learned
     back: str  # English, alternatives separated by " / "
+    reading: str | None = None  # pinyin for Chinese
     lesson_id: str
     due: datetime = Field(index=True)
     reps: int = 0

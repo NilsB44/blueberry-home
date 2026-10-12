@@ -32,6 +32,15 @@ MODULES: list[ModuleInfo] = [
         phase=1,
     ),
     ModuleInfo(
+        id="mandarin",
+        name="Mandarin",
+        description="Pinyin, tones and characters, with Singapore everyday phrases.",
+        icon="🇸🇬",
+        path="/learn/mandarin",
+        status="ready",
+        phase=1,
+    ),
+    ModuleInfo(
         id="assistant",
         name="Assistant",
         description="Chat with a small language model running on the Pi.",
@@ -75,15 +84,6 @@ MODULES: list[ModuleInfo] = [
         path="/tetris",
         status="planned",
         phase=4,
-    ),
-    ModuleInfo(
-        id="mandarin",
-        name="Mandarin",
-        description="Pinyin, tones, characters and HSK vocabulary.",
-        icon="🇸🇬",
-        path="/learn/mandarin",
-        status="planned",
-        phase=5,
     ),
     ModuleInfo(
         id="finance",

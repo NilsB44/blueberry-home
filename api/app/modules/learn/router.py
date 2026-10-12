@@ -1,4 +1,4 @@
-"""Language courses (French now, Mandarin later): lessons, answer checking, XP and reviews."""
+"""Language courses (French, Mandarin): lessons, answer checking, XP and reviews."""
 
 import random
 from datetime import UTC, date, datetime, timedelta
@@ -6,6 +6,7 @@ from typing import Annotated, Literal
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sqlmodel import col, func, select
 
@@ -13,15 +14,18 @@ from app.auth.deps import CurrentUser, DbSession
 from app.config import get_settings
 from app.modules.learn.content import (
     Course,
+    CourseMeta,
     Exercise,
     Gap,
     Match,
-    Translate,
+    Write,
     accepted_answers,
+    accepted_readings,
+    answer_lang,
     get_course,
     public_exercise,
 )
-from app.modules.learn.grading import Result, Verdict, grade, normalize
+from app.modules.learn.grading import Result, Verdict, grade, grade_chinese, normalize
 from app.modules.learn.models import LessonProgress, SrsCard, XpEvent
 from app.modules.learn.srs import RATING_FOR, new_card, review
 
@@ -70,6 +74,7 @@ class UnitOut(BaseModel):
 
 class CourseOut(BaseModel):
     id: str
+    meta: CourseMeta
     units: list[UnitOut]
     next_lesson: str | None
 
@@ -104,13 +109,14 @@ class CompleteOut(BaseModel):
     stats: Stats
 
 
-ReviewMode = Literal["fr_en", "en_fr", "listen"]
+ReviewMode = Literal["to_en", "from_en", "listen"]
 
 
 class ReviewItem(BaseModel):
     id: int
     mode: ReviewMode
     prompt: str
+    reading: str | None = None
 
 
 class ReviewIn(BaseModel):
@@ -160,19 +166,27 @@ def _stats(db: DbSession, user_id: int, course: Course) -> Stats:
     )
 
 
-def _check(ex: Exercise, answer: str) -> Result:
-    if isinstance(ex, Match):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Match exercises are checked locally")
+def grade_target(course: Course, answer: str, accepted: list[str], readings: list[str]) -> Result:
+    """Grade an answer written in the language being learned."""
+    if course.meta.is_chinese:
+        return grade_chinese(answer, accepted, readings)
+    return grade(answer, accepted, "fr")
+
+
+def _check(course: Course, ex: Exercise, answer: str) -> Result:
+    if isinstance(ex, Match | Write):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, f"{ex.type} exercises are checked locally")
     accepted = accepted_answers(ex)
     if isinstance(ex, Gap) and ex.options:
         # Tapped from a fixed list: no partial credit.
         ok = normalize(answer) == normalize(accepted[0])
         return Result("correct" if ok else "wrong", accepted[0])
-    lang = "en" if isinstance(ex, Translate) and ex.source == "fr" else "fr"
     if ex.type == "choice":
         ok = answer == accepted[0]
         return Result("correct" if ok else "wrong", accepted[0])
-    return grade(answer, accepted, lang)
+    if answer_lang(ex) == "en":
+        return grade(answer, accepted, "en")
+    return grade_target(course, answer, accepted, accepted_readings(ex))
 
 
 # ---------- routes ----------
@@ -212,7 +226,7 @@ def course_overview(course: CourseDep, user: CurrentUser, db: DbSession) -> Cour
     next_lesson = next(
         (lesson.id for lesson in course.lessons() if lesson.id not in progress), None
     )
-    return CourseOut(id=course.id, units=units, next_lesson=next_lesson)
+    return CourseOut(id=course.id, meta=course.meta, units=units, next_lesson=next_lesson)
 
 
 @router.get("/stats")
@@ -235,12 +249,25 @@ def get_lesson(lesson_id: str, course: CourseDep, _: CurrentUser) -> dict:
     }
 
 
+@router.get("/strokes/{char}")
+def strokes(char: str, course: CourseDep, _: CurrentUser) -> FileResponse:
+    """Stroke-order data for the character-writing exercise (vendored, works offline)."""
+    if len(char) != 1 or not "\u4e00" <= char <= "\u9fff":
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No stroke data")
+    path = get_settings().content_dir / course.id / "strokes" / f"{char}.json"
+    if not path.is_file():
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No stroke data")
+    return FileResponse(
+        path, media_type="application/json", headers={"Cache-Control": "max-age=86400"}
+    )
+
+
 @router.post("/lessons/{lesson_id}/check")
 def check(lesson_id: str, body: CheckIn, course: CourseDep, _: CurrentUser) -> CheckOut:
     lesson = course.lesson(lesson_id)
     if lesson is None or body.index >= len(lesson.exercises):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "No such exercise")
-    result = _check(lesson.exercises[body.index], body.answer)
+    result = _check(course, lesson.exercises[body.index], body.answer)
     return CheckOut(verdict=result.verdict, correct=result.correct, expected=result.expected)
 
 
@@ -281,13 +308,13 @@ def complete(
             select(SrsCard.front).where(
                 SrsCard.user_id == user.id,
                 SrsCard.course == course.id,
-                col(SrsCard.front).in_([v.fr for v in lesson.vocab]),
+                col(SrsCard.front).in_([v.word for v in lesson.vocab]),
             )
         )
     )
     new_words = 0
     for v in lesson.vocab:
-        if v.fr in existing:
+        if v.word in existing:
             continue
         # Meeting a word in a lesson counts as a first successful review.
         card = review(new_card().to_json(), RATING_FOR["correct"])
@@ -295,7 +322,8 @@ def complete(
             SrsCard(
                 user_id=user.id,
                 course=course.id,
-                front=v.fr,
+                front=v.word,
+                reading=v.reading,
                 back=v.en,
                 lesson_id=lesson.id,
                 due=card.due,
@@ -310,7 +338,7 @@ def complete(
 
 def _mode_for(card: SrsCard) -> ReviewMode:
     # Recognition first, then production, then listening, then repeat.
-    return ("fr_en", "en_fr", "listen")[(card.reps - 1) % 3]
+    return ("to_en", "from_en", "listen")[(card.reps - 1) % 3]
 
 
 @router.get("/review")
@@ -333,8 +361,9 @@ def review_queue(
     items = []
     for c in cards:
         mode = _mode_for(c)
-        prompt = c.back if mode == "en_fr" else c.front
-        items.append(ReviewItem(id=c.id, mode=mode, prompt=prompt))
+        prompt = c.back if mode == "from_en" else c.front
+        reading = c.reading if mode == "to_en" else None
+        items.append(ReviewItem(id=c.id, mode=mode, prompt=prompt, reading=reading))
     return items
 
 
@@ -345,10 +374,11 @@ def answer_review(
     card = db.get(SrsCard, card_id)
     if card is None or card.user_id != user.id or card.course != course.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "No such card")
-    if body.mode == "fr_en":
+    if body.mode == "to_en":
         result = grade(body.answer, alternatives(card.back), "en")
     else:
-        result = grade(body.answer, alternatives(card.front), "fr")
+        readings = alternatives(card.reading or "")
+        result = grade_target(course, body.answer, alternatives(card.front), readings)
 
     updated = review(card.fsrs, RATING_FOR[result.verdict])
     card.fsrs = updated.to_json()
