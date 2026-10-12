@@ -1,0 +1,65 @@
+id: au-quotidien
+order: 2
+title: Au quotidien
+description: Everyday life, starting with work.
+cefr: A1
+lessons:
+  - id: au-travail
+    title: Au travail
+    intro: >-
+      « J'ai » means I have: j'ai une réunion. « Dans » means in (inside):
+      je travaille dans une banque.
+    vocab:
+      - { fr: le travail, en: work / the job }
+      - { fr: le bureau, en: the office / the desk }
+      - { fr: une réunion, en: a meeting }
+      - { fr: la banque, en: the bank }
+      - { fr: l'argent, en: money / the money }
+      - { fr: un collègue, en: a colleague / a coworker }
+      - { fr: je travaille, en: I work / I am working }
+      - { fr: j'ai, en: I have }
+      - { fr: dans, en: in / inside }
+      - { fr: aujourd'hui, en: today }
+      - { fr: demain, en: tomorrow }
+    exercises:
+      - type: match
+        pairs:
+          - [le bureau, the office]
+          - [une réunion, a meeting]
+          - [la banque, the bank]
+          - [aujourd'hui, today]
+          - [demain, tomorrow]
+      - type: word_bank
+        prompt: I work in a bank.
+        answer: Je travaille dans une banque.
+        distractors: ["un", "la"]
+      - type: translate
+        source: fr
+        prompt: J'ai une réunion demain.
+        answers: ["I have a meeting tomorrow.", "I've got a meeting tomorrow."]
+      - type: gap
+        prompt: Je travaille ___ un bureau.
+        hint: I work in an office.
+        answers: ["dans"]
+        options: ["dans", "avec", "de"]
+      - type: listen
+        text: Mon collègue est au bureau.
+      - type: choice
+        prompt: « L'argent » means…
+        speak: l'argent
+        options: ["money", "the bill", "work", "the bank"]
+        answer: money
+      - type: translate
+        source: en
+        prompt: Today I am working.
+        answers: ["Aujourd'hui je travaille.", "Aujourd'hui, je travaille.", "Je travaille aujourd'hui."]
+      - type: choice
+        prompt: How do you say "a meeting"?
+        options: ["une réunion", "une banque", "un bureau", "un collègue"]
+        answer: une réunion
+      - type: translate
+        source: en
+        prompt: My colleague is Swedish.
+        answers: ["Mon collègue est suédois.", "Ma collègue est suédoise."]
+      - type: listen
+        text: Aujourd'hui, j'ai une réunion à la banque.

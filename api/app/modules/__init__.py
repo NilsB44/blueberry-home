@@ -23,6 +23,15 @@ class ModuleInfo(BaseModel):
 
 MODULES: list[ModuleInfo] = [
     ModuleInfo(
+        id="french",
+        name="French",
+        description="Lessons, spaced-repetition review and listening practice.",
+        icon="🇫🇷",
+        path="/learn/french",
+        status="ready",
+        phase=1,
+    ),
+    ModuleInfo(
         id="assistant",
         name="Assistant",
         description="Chat with a small language model running on the Pi.",
@@ -30,15 +39,6 @@ MODULES: list[ModuleInfo] = [
         path="/assistant",
         status="ready",
         phase=0,
-    ),
-    ModuleInfo(
-        id="french",
-        name="French",
-        description="Lessons, spaced-repetition review and listening practice.",
-        icon="🇫🇷",
-        path="/learn/french",
-        status="planned",
-        phase=1,
     ),
     ModuleInfo(
         id="poker",
