@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     # The Rust equity engine. In Docker it's on PATH; in development, build it with
     # `cargo build --release` in engines/poker and it's found there.
     poker_engine: str = "poker-engine"
+    # Shared files (shared/ and home/<user id>/). Put this on the SSD on the Pi.
+    files_dir: Path = Path("./data/files")
+    max_upload_mb: int = 8192
 
 
 @lru_cache

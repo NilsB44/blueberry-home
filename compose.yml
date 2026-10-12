@@ -28,8 +28,12 @@ services:
       HUB_COOKIE_SECURE: ${HUB_COOKIE_SECURE:-true}
       HUB_OLLAMA_URL: ${HUB_OLLAMA_URL:-http://ollama:11434}
       HUB_ASSISTANT_MODEL: ${HUB_ASSISTANT_MODEL:-qwen3:4b}
+      HUB_FILES_DIR: /srv/files
+      HUB_MAX_UPLOAD_MB: ${HUB_MAX_UPLOAD_MB:-8192}
     volumes:
       - ./data/api:/srv/data
+      # Shared files. On the Pi, point this at the SSD, e.g. /mnt/ssd/files:/srv/files.
+      - ${HUB_FILES_PATH:-./data/files}:/srv/files
     # Not published: only reachable through Caddy.
     expose:
       - "8000"

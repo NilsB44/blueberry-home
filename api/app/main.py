@@ -8,6 +8,7 @@ from app.auth.router import users_router
 from app.db import init_db
 from app.modules import MODULES, ModuleInfo
 from app.modules.assistant.router import router as assistant_router
+from app.modules.files.router import router as files_router
 from app.modules.learn.router import router as learn_router
 from app.modules.poker.router import router as poker_router
 
@@ -29,6 +30,7 @@ app = FastAPI(
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(assistant_router)
+app.include_router(files_router)
 app.include_router(learn_router)
 app.include_router(poker_router)
 

@@ -17,6 +17,11 @@ cd blueberry-home
 cp .env.example .env
 ```
 
+> **Before the open pull requests are merged**, the newest features live on their branches.
+> Each branch builds on the one before (French → poker → Mandarin → files), so checking out
+> the last one gets you everything: `git checkout file-sharing`. Once they're merged into
+> `main`, skip this step.
+
 Edit `.env` and switch to plain HTTP (no certificates to install while testing):
 
 ```
@@ -44,11 +49,30 @@ The first build takes a few minutes. Open <http://localhost> and create your acc
    (macOS asks the first time; on Windows allow "Docker Desktop Backend" on private networks).
 5. In the phone browser's menu, choose **Add to Home Screen** to get an app icon.
 
-Audio in the French lessons uses the phone's built-in French voice, so turn the ringer on.
-On iPhone you can pick a nicer voice under Settings → Accessibility → Spoken Content → Voices
-→ French.
+Audio in the lessons uses the phone's built-in voices, so turn the ringer on. On iPhone you
+can pick nicer voices under Settings → Accessibility → Spoken Content → Voices → French and
+→ Chinese.
 
-## 4. Updating and stopping
+## 4. Take a tour
+
+Everything below works from the phone; the laptop is just the server.
+
+- **Poker → Pre-flop chart:** tap any hand (AKs, 72o, ...) to see its equity against 1–9
+  opponents. **Calculator:** pick your two cards, optionally a board and other players' hands,
+  and get win/tie odds. **Home games:** start a game, add players and rebuys, enter final
+  stacks, and press Settle to get who-pays-whom. Try it at the next poker night with everyone
+  on their own phone.
+- **French** and **Mandarin:** do the first lesson of each. In Mandarin you can type `ni3 hao3`
+  or `nǐ hǎo` (or the characters), and you'll draw 你 and 好 with your finger. Finished
+  lessons feed the Review queue, which comes back over the following days.
+- **Files:** upload a photo from the phone under Shared, then open it on the laptop. My files
+  is private to your account.
+- **Accounts:** the first account is the admin. Add a second person under **People** (top bar) and
+  log in on another phone to see that progress and private files are per person.
+- **Assistant** needs the local model: `docker compose --profile llm up -d` then
+  `docker compose exec ollama ollama pull qwen3:4b` (a few GB; slower on a laptop without a GPU).
+
+## 5. Updating and stopping
 
 ```bash
 git pull && docker compose up -d --build   # get the latest version

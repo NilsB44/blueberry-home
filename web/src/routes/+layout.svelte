@@ -31,6 +31,7 @@
 	{#if session.user}
 		<header>
 			<a href="/" class="brand">Blueberry Home</a>
+			{#if session.user.is_admin}<a href="/people" class="muted">People</a>{/if}
 			<span class="muted">{session.user.display_name}</span>
 			<button class="ghost" onclick={signOut}>Sign out</button>
 		</header>
