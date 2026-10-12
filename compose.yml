@@ -1,0 +1,48 @@
+# Blueberry Home. Start with:  docker compose up -d
+# Include the local language model with:  docker compose --profile llm up -d
+name: hub
+
+services:
+  web:
+    build: ./web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      HUB_HOSTNAME: ${HUB_HOSTNAME:-hub.home}
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+
+  api:
+    build: ./api
+    restart: unless-stopped
+    environment:
+      HUB_DATABASE_URL: sqlite:////srv/data/hub.db
+      HUB_OLLAMA_URL: ${HUB_OLLAMA_URL:-http://ollama:11434}
+      HUB_ASSISTANT_MODEL: ${HUB_ASSISTANT_MODEL:-qwen3:4b}
+    volumes:
+      - ./data/api:/srv/data
+    # Not published: only reachable through Caddy.
+    expose:
+      - "8000"
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["llm"]
+    restart: unless-stopped
+    environment:
+      # Keep one model loaded and unload it after 10 idle minutes to free RAM for everything else.
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_KEEP_ALIVE: 10m
+    volumes:
+      - ./data/ollama:/root/.ollama
+    expose:
+      - "11434"
+
+volumes:
+  caddy_data:
+  caddy_config:

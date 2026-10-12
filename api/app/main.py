@@ -1,0 +1,39 @@
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
+from app.auth.deps import CurrentUser
+from app.auth.router import router as auth_router
+from app.auth.router import users_router
+from app.db import init_db
+from app.modules import MODULES, ModuleInfo
+from app.modules.assistant.router import router as assistant_router
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    init_db()
+    yield
+
+
+app = FastAPI(
+    title="Blueberry Home",
+    version="0.1.0",
+    lifespan=lifespan,
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json",
+)
+
+app.include_router(auth_router)
+app.include_router(users_router)
+app.include_router(assistant_router)
+
+
+@app.get("/api/health", tags=["meta"])
+def health() -> dict[str, str]:
+    return {"status": "ok"}
+
+
+@app.get("/api/modules", tags=["meta"])
+def modules(_: CurrentUser) -> list[ModuleInfo]:
+    return MODULES

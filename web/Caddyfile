@@ -1,0 +1,30 @@
+{
+	# Local network only: Caddy runs its own certificate authority.
+	# Install its root certificate on your devices once (see docs/pi-setup.md).
+	local_certs
+}
+
+{$HUB_HOSTNAME:hub.home} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy same-origin
+		-Server
+	}
+
+	handle /api/* {
+		reverse_proxy api:8000 {
+			# Stream assistant replies token by token instead of buffering.
+			flush_interval -1
+		}
+	}
+
+	handle {
+		root * /srv/web
+		try_files {path} /index.html
+		file_server
+	}
+}
