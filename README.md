@@ -55,6 +55,18 @@ npm install
 npm run dev
 ```
 
+On Windows (PowerShell) the API commands are:
+
+```powershell
+cd api
+python -m venv .venv
+.venv\Scripts\pip install -e ".[dev]"
+$env:HUB_COOKIE_SECURE="false"; .venv\Scripts\uvicorn app.main:app --reload
+```
+
+Running everything with Docker (see [docs/try-it-now.md](docs/try-it-now.md)) avoids
+installing Python, Node and Rust at all.
+
 The assistant needs Ollama. Install it on your laptop (`ollama pull qwen3:4b`) and start the
 API with `HUB_OLLAMA_URL=http://localhost:11434`.
 

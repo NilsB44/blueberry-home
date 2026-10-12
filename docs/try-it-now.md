@@ -14,7 +14,7 @@ connects to it over Wi-Fi. When the Pi arrives, you run the same commands there.
 ```bash
 git clone https://github.com/NilsB44/blueberry-home.git
 cd blueberry-home
-cp .env.example .env
+cp .env.example .env          # Windows PowerShell: copy .env.example .env
 ```
 
 > **Before the open pull requests are merged**, the newest features live on their branches.
@@ -22,7 +22,8 @@ cp .env.example .env
 > the last one gets you everything: `git checkout file-sharing`. Once they're merged into
 > `main`, skip this step.
 
-Edit `.env` and switch to plain HTTP (no certificates to install while testing):
+Edit `.env` (on Windows: `notepad .env`) and switch to plain HTTP (no certificates to
+install while testing). Change the `HUB_HOSTNAME` line and add the cookie line:
 
 ```
 HUB_HOSTNAME=:80
