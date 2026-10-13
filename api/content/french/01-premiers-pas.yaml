@@ -10,18 +10,18 @@ lessons:
       Use « bonjour » during the day and « bonsoir » in the evening. « Salut » is casual,
       for friends. « S'il vous plaît » is the polite please; « s'il te plaît » is for friends.
     vocab:
-      - { fr: bonjour, en: hello / good morning / good day }
-      - { fr: bonsoir, en: good evening }
-      - { fr: salut, en: hi / bye }
-      - { fr: au revoir, en: goodbye / bye }
-      - { fr: merci, en: thank you / thanks }
-      - { fr: s'il vous plaît, en: please }
-      - { fr: oui, en: "yes" }
-      - { fr: non, en: "no" }
-      - { fr: comment ça va, en: how are you / how is it going }
-      - { fr: ça va bien, en: I am fine / I am doing well / it is going well }
-      - { fr: et toi, en: and you }
-      - { fr: bonne journée, en: have a good day / have a nice day }
+      - { word: bonjour, en: hello / good morning / good day }
+      - { word: bonsoir, en: good evening }
+      - { word: salut, en: hi / bye }
+      - { word: au revoir, en: goodbye / bye }
+      - { word: merci, en: thank you / thanks }
+      - { word: s'il vous plaît, en: please }
+      - { word: oui, en: "yes" }
+      - { word: non, en: "no" }
+      - { word: comment ça va, en: how are you / how is it going }
+      - { word: ça va bien, en: I am fine / I am doing well / it is going well }
+      - { word: et toi, en: and you }
+      - { word: bonne journée, en: have a good day / have a nice day }
     exercises:
       - type: choice
         prompt: How do you say "hello"?
@@ -46,7 +46,7 @@ lessons:
         prompt: Thank you
         answers: ["Merci"]
       - type: translate
-        source: fr
+        source: target
         prompt: Au revoir !
         answers: ["Goodbye", "Bye", "Goodbye!"]
       - type: word_bank
@@ -70,7 +70,7 @@ lessons:
       - type: listen
         text: Comment ça va ?
       - type: translate
-        source: fr
+        source: target
         prompt: Bonne journée !
         answers: ["Have a good day", "Have a nice day", "Good day"]
 
@@ -80,18 +80,18 @@ lessons:
       « Je voudrais » (I would like) is the polite way to order. French uses « du », « de la »
       and « de l' » for "some": du lait, du sucre, de l'eau.
     vocab:
-      - { fr: un café, en: a coffee / one coffee }
-      - { fr: un thé, en: a tea / one tea }
-      - { fr: de l'eau, en: water / some water }
-      - { fr: un croissant, en: a croissant }
-      - { fr: je voudrais, en: I would like }
-      - { fr: l'addition, en: the bill / the check }
-      - { fr: c'est combien, en: how much is it }
-      - { fr: avec, en: with }
-      - { fr: sans, en: without }
-      - { fr: du lait, en: milk / some milk }
-      - { fr: du sucre, en: sugar / some sugar }
-      - { fr: voilà, en: here you go / there you go / here it is }
+      - { word: un café, en: a coffee / one coffee }
+      - { word: un thé, en: a tea / one tea }
+      - { word: de l'eau, en: water / some water }
+      - { word: un croissant, en: a croissant }
+      - { word: je voudrais, en: I would like }
+      - { word: l'addition, en: the bill / the check }
+      - { word: c'est combien, en: how much is it }
+      - { word: avec, en: with }
+      - { word: sans, en: without }
+      - { word: du lait, en: milk / some milk }
+      - { word: du sucre, en: sugar / some sugar }
+      - { word: voilà, en: here you go / there you go / here it is }
     exercises:
       - type: choice
         prompt: How do you say "I would like"?
@@ -109,7 +109,7 @@ lessons:
         answer: Je voudrais un café, s'il vous plaît.
         distractors: ["thé", "une"]
       - type: translate
-        source: fr
+        source: target
         prompt: Un thé sans sucre.
         answers: ["A tea without sugar", "One tea without sugar", "A tea with no sugar"]
       - type: gap
@@ -147,27 +147,27 @@ lessons:
       17, 18 and 19 are built from ten: dix-sept (10 + 7), dix-huit, dix-neuf.
       « Un » becomes « une » before a feminine noun: une banque.
     vocab:
-      - { fr: zéro, en: zero / 0 }
-      - { fr: un, en: one / 1 }
-      - { fr: deux, en: two / 2 }
-      - { fr: trois, en: three / 3 }
-      - { fr: quatre, en: four / 4 }
-      - { fr: cinq, en: five / 5 }
-      - { fr: six, en: six / 6 }
-      - { fr: sept, en: seven / 7 }
-      - { fr: huit, en: eight / 8 }
-      - { fr: neuf, en: nine / 9 }
-      - { fr: dix, en: ten / 10 }
-      - { fr: onze, en: eleven / 11 }
-      - { fr: douze, en: twelve / 12 }
-      - { fr: treize, en: thirteen / 13 }
-      - { fr: quatorze, en: fourteen / 14 }
-      - { fr: quinze, en: fifteen / 15 }
-      - { fr: seize, en: sixteen / 16 }
-      - { fr: dix-sept, en: seventeen / 17 }
-      - { fr: dix-huit, en: eighteen / 18 }
-      - { fr: dix-neuf, en: nineteen / 19 }
-      - { fr: vingt, en: twenty / 20 }
+      - { word: zéro, en: zero / 0 }
+      - { word: un, en: one / 1 }
+      - { word: deux, en: two / 2 }
+      - { word: trois, en: three / 3 }
+      - { word: quatre, en: four / 4 }
+      - { word: cinq, en: five / 5 }
+      - { word: six, en: six / 6 }
+      - { word: sept, en: seven / 7 }
+      - { word: huit, en: eight / 8 }
+      - { word: neuf, en: nine / 9 }
+      - { word: dix, en: ten / 10 }
+      - { word: onze, en: eleven / 11 }
+      - { word: douze, en: twelve / 12 }
+      - { word: treize, en: thirteen / 13 }
+      - { word: quatorze, en: fourteen / 14 }
+      - { word: quinze, en: fifteen / 15 }
+      - { word: seize, en: sixteen / 16 }
+      - { word: dix-sept, en: seventeen / 17 }
+      - { word: dix-huit, en: eighteen / 18 }
+      - { word: dix-neuf, en: nineteen / 19 }
+      - { word: vingt, en: twenty / 20 }
     exercises:
       - type: match
         pairs:
@@ -201,7 +201,7 @@ lessons:
       - type: listen
         text: dix-sept
       - type: translate
-        source: fr
+        source: target
         prompt: vingt
         answers: [twenty, "20"]
       - type: gap
@@ -225,18 +225,18 @@ lessons:
       No article before a job: « je suis ingénieur », not « je suis un ingénieur ».
       Many adjectives add -e for women: suédois → suédoise, enchanté → enchantée.
     vocab:
-      - { fr: je m'appelle, en: my name is / I am called }
-      - { fr: je suis, en: I am }
-      - { fr: tu es, en: you are }
-      - { fr: il est, en: he is / it is }
-      - { fr: elle est, en: she is / it is }
-      - { fr: j'habite à, en: I live in }
-      - { fr: je viens de, en: I come from / I am from }
-      - { fr: suédois, en: Swedish }
-      - { fr: ingénieur, en: engineer / an engineer }
-      - { fr: enchanté, en: nice to meet you / pleased to meet you }
-      - { fr: comment tu t'appelles, en: what is your name }
-      - { fr: j'aime, en: I like / I love }
+      - { word: je m'appelle, en: my name is / I am called }
+      - { word: je suis, en: I am }
+      - { word: tu es, en: you are }
+      - { word: il est, en: he is / it is }
+      - { word: elle est, en: she is / it is }
+      - { word: j'habite à, en: I live in }
+      - { word: je viens de, en: I come from / I am from }
+      - { word: suédois, en: Swedish }
+      - { word: ingénieur, en: engineer / an engineer }
+      - { word: enchanté, en: nice to meet you / pleased to meet you }
+      - { word: comment tu t'appelles, en: what is your name }
+      - { word: j'aime, en: I like / I love }
     exercises:
       - type: choice
         prompt: How do you say "my name is"?
@@ -258,7 +258,7 @@ lessons:
         text: Enchanté !
         also: ["Enchantée !"]
       - type: translate
-        source: fr
+        source: target
         prompt: Je viens de Suède.
         answers: ["I come from Sweden.", "I am from Sweden."]
       - type: match

@@ -84,16 +84,16 @@ def test_review_flow(admin_client):
     queue = admin_client.get(f"{BASE}/review?limit=50").json()
     assert len(queue) == 12
     merci = next(i for i in queue if i["prompt"] == "merci")
-    assert merci["mode"] == "fr_en"
+    assert merci["mode"] == "to_en"
 
     ok = admin_client.post(
-        f"{BASE}/review/{merci['id']}", json={"mode": "fr_en", "answer": "thanks"}
+        f"{BASE}/review/{merci['id']}", json={"mode": "to_en", "answer": "thanks"}
     )
     assert ok.json()["correct"] is True
     assert datetime.fromisoformat(ok.json()["next_due"]) > datetime.now(UTC) + timedelta(hours=12)
 
     oui = next(i for i in queue if i["prompt"] == "oui")
-    bad = admin_client.post(f"{BASE}/review/{oui['id']}", json={"mode": "fr_en", "answer": "no"})
+    bad = admin_client.post(f"{BASE}/review/{oui['id']}", json={"mode": "to_en", "answer": "no"})
     assert bad.json()["correct"] is False
     assert bad.json()["expected"] == "yes"
     # Forgotten cards come back within the same session.
@@ -112,5 +112,41 @@ def test_cannot_review_someone_elses_card(admin_client):
     admin_client.post("/api/users", json=guest)
     admin_client.post("/api/auth/logout")
     admin_client.post("/api/auth/login", json={"username": "sam", "password": guest["password"]})
-    resp = admin_client.post(f"{BASE}/review/{card_id}", json={"mode": "fr_en", "answer": "x"})
+    resp = admin_client.post(f"{BASE}/review/{card_id}", json={"mode": "to_en", "answer": "x"})
     assert resp.status_code == 404
+
+
+ZH = "/api/learn/mandarin"
+
+
+def test_mandarin_course_meta_and_pinyin_answers(admin_client):
+    meta = admin_client.get(f"{ZH}/course").json()["meta"]
+    assert meta["lang"] == "zh-CN"
+    admin_client.post(f"{ZH}/lessons/ni-hao/complete", json={"mistakes": 0})
+    _make_all_due()
+    queue = admin_client.get(f"{ZH}/review?limit=50").json()
+    nihao = next(i for i in queue if i["prompt"] == "你好")
+    assert nihao["reading"] == "nǐ hǎo"
+
+    toned = admin_client.post(
+        f"{ZH}/review/{nihao['id']}", json={"mode": "listen", "answer": "ni3 hao3"}
+    )
+    assert toned.json()["verdict"] == "correct"
+    assert toned.json()["expected"] == "你好 · nǐ hǎo"
+
+
+def test_mandarin_review_without_tones_is_near_miss(admin_client):
+    admin_client.post(f"{ZH}/lessons/ni-hao/complete", json={"mistakes": 0})
+    _make_all_due()
+    queue = admin_client.get(f"{ZH}/review?limit=50").json()
+    nihao = next(i for i in queue if i["prompt"] == "你好")
+    resp = admin_client.post(
+        f"{ZH}/review/{nihao['id']}", json={"mode": "from_en", "answer": "ni hao"}
+    )
+    assert resp.json()["verdict"] == "accent"
+
+
+def test_stroke_data(admin_client):
+    assert admin_client.get(f"{ZH}/strokes/你").json()["strokes"]
+    assert admin_client.get(f"{ZH}/strokes/x").status_code == 404
+    assert admin_client.get(f"{ZH}/strokes/..").status_code == 404

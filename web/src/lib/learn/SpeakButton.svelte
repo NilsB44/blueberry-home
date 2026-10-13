@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { speak } from './speech.ts';
 
-	let { text, lang = 'fr-FR', big = false }: { text: string; lang?: string; big?: boolean } = $props();
+	let { text, lang, big = false }: { text: string; lang?: string; big?: boolean } = $props();
 </script>
 
 <span class="speak" class:big>

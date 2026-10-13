@@ -21,5 +21,8 @@
   },
   "imports": {
     "#lib/*": "./src/lib/*"
+  },
+  "dependencies": {
+    "hanzi-writer": "3.7.3"
   }
 }

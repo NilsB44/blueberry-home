@@ -10,17 +10,17 @@ lessons:
       « J'ai » means I have: j'ai une réunion. « Dans » means in (inside):
       je travaille dans une banque.
     vocab:
-      - { fr: le travail, en: work / the job }
-      - { fr: le bureau, en: the office / the desk }
-      - { fr: une réunion, en: a meeting }
-      - { fr: la banque, en: the bank }
-      - { fr: l'argent, en: money / the money }
-      - { fr: un collègue, en: a colleague / a coworker }
-      - { fr: je travaille, en: I work / I am working }
-      - { fr: j'ai, en: I have }
-      - { fr: dans, en: in / inside }
-      - { fr: aujourd'hui, en: today }
-      - { fr: demain, en: tomorrow }
+      - { word: le travail, en: work / the job }
+      - { word: le bureau, en: the office / the desk }
+      - { word: une réunion, en: a meeting }
+      - { word: la banque, en: the bank }
+      - { word: l'argent, en: money / the money }
+      - { word: un collègue, en: a colleague / a coworker }
+      - { word: je travaille, en: I work / I am working }
+      - { word: j'ai, en: I have }
+      - { word: dans, en: in / inside }
+      - { word: aujourd'hui, en: today }
+      - { word: demain, en: tomorrow }
     exercises:
       - type: match
         pairs:
@@ -34,7 +34,7 @@ lessons:
         answer: Je travaille dans une banque.
         distractors: ["un", "la"]
       - type: translate
-        source: fr
+        source: target
         prompt: J'ai une réunion demain.
         answers: ["I have a meeting tomorrow.", "I've got a meeting tomorrow."]
       - type: gap

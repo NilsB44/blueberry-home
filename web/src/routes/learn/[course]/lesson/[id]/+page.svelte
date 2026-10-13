@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { api } from '#lib/api.ts';
 	import ExerciseView from '#lib/learn/ExerciseView.svelte';
+	import { loadCourse } from '#lib/learn/course.svelte.ts';
 	import Feedback from '#lib/learn/Feedback.svelte';
 	import SpeakButton from '#lib/learn/SpeakButton.svelte';
 	import type { CheckResult, Lesson, Stats } from '#lib/learn/types.ts';
@@ -21,8 +22,8 @@
 	let error = $state('');
 
 	$effect(() => {
-		api<Lesson>(`/learn/${courseId}/lessons/${lessonId}`)
-			.then((l) => {
+		Promise.all([api<Lesson>(`/learn/${courseId}/lessons/${lessonId}`), loadCourse(courseId)])
+			.then(([l]) => {
 				lesson = l;
 				queue = l.exercises.map((_, i) => i);
 				if (!l.intro && l.vocab.length === 0) started = true;
@@ -44,7 +45,7 @@
 		}
 	}
 
-	function matchDone(m: number) {
+	function localDone(m: number) {
 		mistakes += m;
 		result = { verdict: 'correct', correct: true, expected: '' };
 	}
@@ -79,7 +80,7 @@
 
 	{#if finished}
 		<div class="done">
-			<h1>Leçon terminée ! 🎉</h1>
+			<h1>Lesson complete! 🎉</h1>
 			<p class="big">+{finished.xp} XP</p>
 			<p>{mistakes === 0 ? 'Perfect lesson, no mistakes.' : `${mistakes} mistake${mistakes === 1 ? '' : 's'}.`}</p>
 			{#if finished.new_words}<p class="muted">{finished.new_words} new words added to your reviews.</p>{/if}
@@ -93,14 +94,19 @@
 			<h2>New words</h2>
 			<ul class="vocab">
 				{#each lesson.vocab as v}
-					<li><SpeakButton text={v.fr} /> <strong>{v.fr}</strong> <span class="muted">{v.en}</span></li>
+					<li>
+						<SpeakButton text={v.word} /> <strong>{v.word}</strong>
+						{#if v.reading}<span class="reading">{v.reading}</span>{/if}
+						<span class="muted">{v.en}</span>
+						{#if v.note}<div class="muted note">{v.note}</div>{/if}
+					</li>
 				{/each}
 			</ul>
 		{/if}
 		<button class="wide" onclick={() => (started = true)}>Start lesson</button>
 	{:else if lesson && current !== undefined}
 		{#key step}
-			<ExerciseView ex={lesson.exercises[current]} locked={result !== null} onSubmit={submit} onMatchDone={matchDone} />
+			<ExerciseView ex={lesson.exercises[current]} locked={result !== null} onSubmit={submit} onLocalDone={localDone} />
 		{/key}
 		{#if result}
 			<Feedback {result} onContinue={next} />
@@ -136,6 +142,13 @@
 		padding: 0;
 		display: grid;
 		gap: 0.35rem;
+	}
+	.reading {
+		color: var(--accent);
+	}
+	.note {
+		font-size: 0.85rem;
+		margin-left: 2.6rem;
 	}
 	.wide,
 	.button {
