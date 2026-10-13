@@ -61,10 +61,10 @@ MODULES: list[ModuleInfo] = [
     ModuleInfo(
         id="files",
         name="Files",
-        description="Shared folders and a phone-to-laptop drop zone.",
+        description="Shared and private folders: send from the phone, grab it on the laptop.",
         icon="📁",
         path="/files",
-        status="planned",
+        status="ready",
         phase=3,
     ),
     ModuleInfo(

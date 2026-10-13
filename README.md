@@ -4,7 +4,8 @@ A self-hosted, ad-free app suite for the home network, built to run on a Raspber
 One login, one dashboard, many modules: language learning, poker tools, file sharing, multiplayer
 Tetris, a local AI assistant and more. See [docs/plan.md](docs/plan.md) for the full roadmap.
 
-**No Pi yet?** Run it on your laptop and use it from your phone: [docs/try-it-now.md](docs/try-it-now.md).
+**No Pi yet?** Your laptop can stand in for it: it runs the same containers and your phone
+connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.md](docs/try-it-now.md).
 
 ## What works today
 
@@ -20,6 +21,12 @@ Tetris, a local AI assistant and more. See [docs/plan.md](docs/plan.md) for the 
   equity calculator for any hands and board (exact when possible, Monte Carlo otherwise, from a
   small Rust engine in `engines/poker`), and a home-game tracker: buy-ins, rebuys, final stacks,
   the fewest transfers to settle up, and lifetime results per player.
+- **Mandarin:** an HSK 1 unit with a Singapore flavour (greetings, numbers, introductions,
+  ordering at a hawker centre). Type answers as characters or pinyin (tone marks or numbers;
+  missing tones get a gentle nudge) and draw characters stroke by stroke.
+- **Files:** a Shared space and a private My files space. Upload from the phone, download on
+  the laptop, preview photos and videos, folders, rename, move and delete. See
+  [docs/files.md](docs/files.md).
 - **Assistant:** chat with a small local language model through Ollama, streamed token by token.
 - Caddy serves everything over HTTPS on the LAN at `https://hub.home` with its own local CA.
 - Installable on phones as a web app (PWA manifest), dark mode follows the system.
@@ -47,6 +54,18 @@ cd web
 npm install
 npm run dev
 ```
+
+On Windows (PowerShell) the API commands are:
+
+```powershell
+cd api
+python -m venv .venv
+.venv\Scripts\pip install -e ".[dev]"
+$env:HUB_COOKIE_SECURE="false"; .venv\Scripts\uvicorn app.main:app --reload
+```
+
+Running everything with Docker (see [docs/try-it-now.md](docs/try-it-now.md)) avoids
+installing Python, Node and Rust at all.
 
 The assistant needs Ollama. Install it on your laptop (`ollama pull qwen3:4b`) and start the
 API with `HUB_OLLAMA_URL=http://localhost:11434`.

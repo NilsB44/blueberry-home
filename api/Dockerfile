@@ -16,8 +16,10 @@ COPY api/content ./content
 RUN pip install --no-cache-dir .
 COPY --from=engine /src/target/release/poker-engine /usr/local/bin/poker-engine
 
-RUN useradd --system --uid 1000 hub && mkdir -p /srv/data && chown hub /srv/data
-USER hub
+COPY api/docker-entrypoint.py /usr/local/bin/docker-entrypoint.py
+# Starts as root only to fix ownership of the mounted data folders, then runs as "hub".
+RUN useradd --system --uid 1000 hub && mkdir -p /srv/data /srv/files && chown hub /srv/data /srv/files
 
 EXPOSE 8000
+ENTRYPOINT ["python", "/usr/local/bin/docker-entrypoint.py"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
