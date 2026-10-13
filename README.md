@@ -16,6 +16,10 @@ Tetris, a local AI assistant and more. See [docs/plan.md](docs/plan.md) for the 
   translation, word-bank, matching, listening and fill-the-gap exercises. Answers are checked
   forgivingly (missing accents and one-letter typos count, with a correction). Every word you
   meet goes into spaced-repetition reviews (FSRS). XP, daily goal and streaks, no ads.
+- **Poker:** a 13×13 pre-flop chart (equity of all 169 hands against 1–9 opponents), an
+  equity calculator for any hands and board (exact when possible, Monte Carlo otherwise, from a
+  small Rust engine in `engines/poker`), and a home-game tracker: buy-ins, rebuys, final stacks,
+  the fewest transfers to settle up, and lifetime results per player.
 - **Assistant:** chat with a small local language model through Ollama, streamed token by token.
 - Caddy serves everything over HTTPS on the LAN at `https://hub.home` with its own local CA.
 - Installable on phones as a web app (PWA manifest), dark mode follows the system.
@@ -24,6 +28,7 @@ Tetris, a local AI assistant and more. See [docs/plan.md](docs/plan.md) for the 
 
 ```
 api/        FastAPI + SQLModel + SQLite. Each feature lives in app/modules/<name>/.
+engines/    Rust: the poker hand evaluator and equity engine (no dependencies).
 web/        SvelteKit (static SPA) + the Caddy config that serves it.
 compose.yml Caddy (web), API, and Ollama (opt-in "llm" profile).
 docs/       Plan, architecture, Pi setup, local LLM notes.
@@ -46,9 +51,13 @@ npm run dev
 The assistant needs Ollama. Install it on your laptop (`ollama pull qwen3:4b`) and start the
 API with `HUB_OLLAMA_URL=http://localhost:11434`.
 
+The poker calculator needs the Rust engine: `cargo build --release` in `engines/poker`
+(install Rust from https://rustup.rs). The API finds it there automatically.
+
 Tests and checks:
 
 ```bash
+cd engines/poker && cargo test --release
 cd api && .venv/bin/pytest && .venv/bin/ruff check .
 cd web && npm run check
 ```

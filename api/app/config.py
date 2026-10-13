@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     # Streaks and "today" are counted in this timezone.
     timezone: str = "Europe/Stockholm"
     daily_xp_goal: int = 30
+    # The Rust equity engine. In Docker it's on PATH; in development, build it with
+    # `cargo build --release` in engines/poker and it's found there.
+    poker_engine: str = "poker-engine"
 
 
 @lru_cache
