@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -13,6 +14,10 @@ class Settings(BaseSettings):
     session_days: int = 30
     ollama_url: str = "http://ollama:11434"
     assistant_model: str = "qwen3:4b"
+    content_dir: Path = Path(__file__).resolve().parent.parent / "content"
+    # Streaks and "today" are counted in this timezone.
+    timezone: str = "Europe/Stockholm"
+    daily_xp_goal: int = 30
 
 
 @lru_cache

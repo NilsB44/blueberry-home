@@ -33,6 +33,7 @@ def _sqlite_pragmas(dbapi_conn, _record) -> None:
 def init_db() -> None:
     # Import models so they register on SQLModel.metadata before create_all.
     from app.auth import models  # noqa: F401
+    from app.modules.learn import models as learn_models  # noqa: F401
 
     SQLModel.metadata.create_all(get_engine())
 

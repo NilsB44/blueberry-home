@@ -22,6 +22,8 @@ services:
     restart: unless-stopped
     environment:
       HUB_DATABASE_URL: sqlite:////srv/data/hub.db
+      HUB_CONTENT_DIR: /srv/content
+      HUB_COOKIE_SECURE: ${HUB_COOKIE_SECURE:-true}
       HUB_OLLAMA_URL: ${HUB_OLLAMA_URL:-http://ollama:11434}
       HUB_ASSISTANT_MODEL: ${HUB_ASSISTANT_MODEL:-qwen3:4b}
     volumes:

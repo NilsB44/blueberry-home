@@ -4,12 +4,18 @@ A self-hosted, ad-free app suite for the home network, built to run on a Raspber
 One login, one dashboard, many modules: language learning, poker tools, file sharing, multiplayer
 Tetris, a local AI assistant and more. See [docs/plan.md](docs/plan.md) for the full roadmap.
 
-## What works today (Phase 0)
+**No Pi yet?** Run it on your laptop and use it from your phone: [docs/try-it-now.md](docs/try-it-now.md).
+
+## What works today
 
 - First-run setup creates the admin account; admins can add guest accounts.
 - Session cookies (HttpOnly, SameSite=Lax, Secure over HTTPS), Argon2 password hashing,
   session tokens stored hashed.
 - Dashboard with a tile per module; planned modules show which phase they land in.
+- **French:** A1 lessons (greetings, café, numbers, introductions, work) with multiple choice,
+  translation, word-bank, matching, listening and fill-the-gap exercises. Answers are checked
+  forgivingly (missing accents and one-letter typos count, with a correction). Every word you
+  meet goes into spaced-repetition reviews (FSRS). XP, daily goal and streaks, no ads.
 - **Assistant:** chat with a small local language model through Ollama, streamed token by token.
 - Caddy serves everything over HTTPS on the LAN at `https://hub.home` with its own local CA.
 - Installable on phones as a web app (PWA manifest), dark mode follows the system.
@@ -58,6 +64,12 @@ docker compose up -d                      # hub only
 docker compose --profile llm up -d        # hub + local language model
 docker compose exec ollama ollama pull qwen3:4b
 ```
+
+## Writing lessons
+
+Lessons live in `api/content/<course>/*.yaml`, one file per unit. Copy an existing lesson,
+change it, and run `pytest`: the content tests check that every exercise loads and accepts its
+own answer. Quote any list item that contains a comma or a question mark.
 
 ## Adding a module
 

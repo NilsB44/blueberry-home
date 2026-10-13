@@ -5,6 +5,7 @@ WORKDIR /srv
 
 COPY pyproject.toml ./
 COPY app ./app
+COPY content ./content
 RUN pip install --no-cache-dir .
 
 RUN useradd --system --uid 1000 hub && mkdir -p /srv/data && chown hub /srv/data

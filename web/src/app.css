@@ -109,3 +109,42 @@ button.ghost {
 	gap: 0.25rem;
 	font-size: 0.9rem;
 }
+
+:root {
+	--good: #2e7d32;
+	--good-bg: #e8f5e9;
+	--near: #a15c00;
+	--near-bg: #fff4e0;
+	--bad-bg: #fdecea;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--good: #81c784;
+		--good-bg: #1b2e1d;
+		--near: #ffb74d;
+		--near-bg: #33270f;
+		--bad-bg: #3a1c1c;
+	}
+}
+
+.option {
+	width: 100%;
+	text-align: left;
+	background: var(--surface);
+	color: var(--text);
+	border: 2px solid var(--border);
+	font-weight: 500;
+}
+
+.option.selected {
+	border-color: var(--accent);
+}
+
+.word-tile {
+	background: var(--surface);
+	color: var(--text);
+	border: 1px solid var(--border);
+	border-bottom-width: 3px;
+	font-weight: 500;
+}
