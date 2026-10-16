@@ -67,4 +67,5 @@ export type ModuleInfo = {
 	path: string;
 	status: 'ready' | 'planned';
 	phase: number;
+	admin_only: boolean;
 };

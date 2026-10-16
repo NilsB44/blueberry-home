@@ -8,6 +8,7 @@ from sqlmodel import col, func, select
 from app.auth.deps import COOKIE_NAME, CurrentUser, DbSession, user_for_token
 from app.auth.models import User
 from app.auth.network import is_trusted
+from app.modules.security import tracker
 from app.modules.tetris.models import TetrisScore
 from app.modules.tetris.rooms import MAX_PLAYERS, Player, rooms
 
@@ -98,8 +99,11 @@ def _same_origin(ws: WebSocket) -> bool:
 
 @router.websocket("/rooms/{code}/ws")
 async def play(ws: WebSocket, code: str, db: DbSession) -> None:
-    # The LocalNetworkOnly middleware only sees HTTP requests, so check here too.
-    if not is_trusted(ws.client.host if ws.client else None) or not _same_origin(ws):
+    # The LocalNetworkOnly middleware only sees HTTP requests, so check here too. Games are
+    # for the home Wi-Fi only, so away access doesn't reach them.
+    host = ws.client.host if ws.client else None
+    if not is_trusted(host) or not _same_origin(ws):
+        tracker.record("blocked", host, ws.url.path)
         await ws.close(code=status.WS_1008_POLICY_VIOLATION)
         return
     user = user_for_token(db, ws.cookies.get(COOKIE_NAME))

@@ -19,6 +19,8 @@ class ModuleInfo(BaseModel):
     path: str
     status: Status
     phase: int
+    # Only shown to admins.
+    admin_only: bool = False
 
 
 MODULES: list[ModuleInfo] = [
@@ -66,6 +68,16 @@ MODULES: list[ModuleInfo] = [
         path="/files",
         status="ready",
         phase=3,
+    ),
+    ModuleInfo(
+        id="security",
+        name="Security",
+        description="Away access switch and the weekly check of the hub and the Pi.",
+        icon="🔒",
+        path="/security",
+        status="ready",
+        phase=3,
+        admin_only=True,
     ),
     ModuleInfo(
         id="network",

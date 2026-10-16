@@ -8,8 +8,10 @@ from sqlmodel import func, select
 from app.auth.deps import COOKIE_NAME, AdminUser, CurrentUser, DbSession
 from app.auth.device import device_from_user_agent, new_username, router_name
 from app.auth.models import AuthSession, User
+from app.auth.network import require_home
 from app.auth.security import hash_password, hash_token, new_token, verify_password
 from app.config import get_settings
+from app.modules.security import tracker
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 users_router = APIRouter(prefix="/api/users", tags=["users"])
@@ -88,8 +90,9 @@ def setup_status(db: DbSession) -> SetupStatus:
 
 
 @router.post("/setup", status_code=status.HTTP_201_CREATED)
-def setup(body: NewUser, db: DbSession, response: Response) -> UserOut:
+def setup(body: NewUser, request: Request, db: DbSession, response: Response) -> UserOut:
     """Create the first account. Only works while the hub has no users; that account is admin."""
+    require_home(request)
     if _user_count(db) > 0:
         raise HTTPException(status.HTTP_409_CONFLICT, "Already set up")
     user = User(
@@ -115,7 +118,8 @@ def join_from_device(
     """Make a person for this device and remember the device with a long-lived cookie.
 
     No password: the LocalNetworkOnly middleware already limits the hub to the home network.
-    The first device to join becomes the admin."""
+    The first device to join becomes the admin. Away (VPN) devices can't join: see require_home."""
+    require_home(request)
     device = device_from_user_agent(user_agent)
     name = None
     if get_settings().device_names_from_dns and request.client:
@@ -134,9 +138,11 @@ def join_from_device(
 
 
 @router.post("/login")
-def login(body: Credentials, db: DbSession, response: Response) -> UserOut:
+def login(body: Credentials, request: Request, db: DbSession, response: Response) -> UserOut:
+    require_home(request)
     user = db.exec(select(User).where(User.username == body.username.lower())).first()
     if not verify_password(user.password_hash if user else None, body.password):
+        tracker.record("login", request.client.host if request.client else None, body.username)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Wrong username or password")
     # Logging in is how a device takes over an older password account, so remember it as long.
     _start_session(db, response, user, days=get_settings().device_days)
