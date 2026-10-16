@@ -80,6 +80,16 @@ MODULES: list[ModuleInfo] = [
         owner_only=True,
     ),
     ModuleInfo(
+        id="claude",
+        name="Claude",
+        description="Tokens used per day, averages, models and what it would cost on the API.",
+        icon="✳️",
+        path="/claude",
+        status="ready",
+        phase=3,
+        owner_only=True,
+    ),
+    ModuleInfo(
         id="network",
         name="Network",
         description="Devices on the Wi-Fi, ad blocking stats and VPN status.",

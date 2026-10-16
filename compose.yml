@@ -35,10 +35,15 @@ services:
       HUB_MAX_UPLOAD_MB: ${HUB_MAX_UPLOAD_MB:-8192}
       # Written weekly by scripts/pi-security-check.py into ./data/api on the Pi.
       HUB_HOST_REPORT_PATH: /srv/data/host-security.json
+      # The Claude page: Claude Code's logs (mounted below) and, optionally, API key spend.
+      HUB_CLAUDE_LOGS_DIR: /srv/claude
+      HUB_ANTHROPIC_ADMIN_KEY: ${HUB_ANTHROPIC_ADMIN_KEY:-}
     volumes:
       - ./data/api:/srv/data
       # Shared files. On the Pi, point this at the SSD, e.g. /mnt/ssd/files:/srv/files.
       - ${HUB_FILES_PATH:-./data/files}:/srv/files
+      # Claude Code's session logs, read-only. Set HUB_CLAUDE_LOGS=/home/<you>/.claude/projects.
+      - ${HUB_CLAUDE_LOGS:-./data/claude-logs}:/srv/claude:ro
     # Not published: only reachable through Caddy.
     expose:
       - "8000"

@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     host_report_path: Path = Path("./data/host-security.json")
     # Known vulnerabilities in the API's Python packages are looked up here (outbound only).
     osv_url: str = "https://api.osv.dev/v1/querybatch"
+    # Claude Code's session logs (~/.claude/projects), mounted read-only, for the Claude page.
+    claude_logs_dir: Path = Path("./data/claude-logs")
+    # Optional Admin API key (sk-ant-admin...) to also show spend on Anthropic API keys.
+    # Only ever sent to api.anthropic.com; never shown in the hub.
+    anthropic_admin_key: str = ""
 
 
 @lru_cache
