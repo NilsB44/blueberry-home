@@ -1,0 +1,13 @@
+[package]
+name = "poker-engine"
+version = "0.1.0"
+edition = "2021"
+description = "Texas hold'em hand evaluator and equity calculator for Blueberry Home"
+
+# No dependencies on purpose: builds offline and quickly on a Raspberry Pi.
+[dependencies]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

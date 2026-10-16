@@ -14,7 +14,7 @@ from typing import Literal
 
 Verdict = Literal["correct", "accent", "typo", "wrong"]
 
-_PUNCT = re.compile(r"[.,!?;:«»\"“”()…¿¡]")
+_PUNCT = re.compile(r"[.,!?;:«»\"“”()…¿¡，。？！、：；（）《》]")
 _SPACE = re.compile(r"\s+")
 
 _EN_CONTRACTIONS = {
@@ -121,3 +121,77 @@ def grade(answer: str, accepted: list[str], lang: str = "fr") -> Result:
         if _one_typo(strip_accents(given), strip_accents(n)):
             return Result("typo", original)
     return Result("wrong", best)
+
+
+# ---------- Chinese ----------
+
+_TONED = {}
+for base, marks in {
+    "a": "āáǎà",
+    "e": "ēéěè",
+    "i": "īíǐì",
+    "o": "ōóǒò",
+    "u": "ūúǔù",
+    "v": "ǖǘǚǜ",
+}.items():
+    for tone, ch in enumerate(marks, start=1):
+        _TONED[ch] = (base, tone)
+_TONED["ü"] = ("v", 0)
+
+
+def pinyin_key(text: str) -> tuple[str, tuple[int, ...]] | None:
+    """Split pinyin into (letters, tones) so "nǐ hǎo", "ni3 hao3" and "ni3hao3" compare equal.
+
+    Tones may be marks or digits (5 or 0 for neutral, or nothing). Returns None if the text
+    contains characters that aren't pinyin, e.g. hanzi.
+    """
+    s = normalize(text.lower().replace("u:", "v"))
+    letters, tones = [], []
+    for ch in s:
+        if ch in _TONED:
+            base, tone = _TONED[ch]
+            letters.append(base)
+            if tone:
+                tones.append(tone)
+        elif ch in "1234":
+            tones.append(int(ch))
+        elif ch in "05 '":
+            continue
+        elif "a" <= ch <= "z":
+            letters.append(ch)
+        else:
+            return None
+    return "".join(letters), tuple(tones)
+
+
+def _hanzi(text: str) -> str:
+    return normalize(text).replace(" ", "")
+
+
+def grade_chinese(answer: str, hanzi: list[str], readings: list[str]) -> Result:
+    """Accept characters, or pinyin with tones. Pinyin with wrong or missing tones counts as
+    the "accent" verdict: right word, check your tones."""
+
+    # Readings can outnumber the characters (tone-change variants like yí gè / yī gè);
+    # extra readings belong to the last spelling.
+    def show(i: int) -> str:
+        h = hanzi[min(i, len(hanzi) - 1)]
+        return f"{h} · {readings[i]}" if i < len(readings) else h
+
+    if not normalize(answer):
+        return Result("wrong", show(0))
+    given = _hanzi(answer)
+    for i, h in enumerate(hanzi):
+        if given == _hanzi(h):
+            return Result("correct", show(i))
+    key = pinyin_key(answer)
+    if key is None:
+        return Result("wrong", show(0))
+    keys = [pinyin_key(r) for r in readings]
+    for i, k in enumerate(keys):
+        if k == key:
+            return Result("correct", show(i))
+    for i, k in enumerate(keys):
+        if k and k[0] == key[0]:
+            return Result("accent", show(i))
+    return Result("wrong", show(0))

@@ -1,7 +1,7 @@
 from collections.abc import Iterator
 from pathlib import Path
 
-from sqlalchemy import event
+from sqlalchemy import event, inspect, text
 from sqlmodel import Session, SQLModel, create_engine
 
 from app.config import get_settings
@@ -34,8 +34,27 @@ def init_db() -> None:
     # Import models so they register on SQLModel.metadata before create_all.
     from app.auth import models  # noqa: F401
     from app.modules.learn import models as learn_models  # noqa: F401
+    from app.modules.poker import models as poker_models  # noqa: F401
 
-    SQLModel.metadata.create_all(get_engine())
+    engine = get_engine()
+    SQLModel.metadata.create_all(engine)
+    _add_new_columns(engine)
+
+
+def _add_new_columns(engine) -> None:
+    """create_all() makes missing tables but never alters existing ones. Until the schema
+    needs real migrations, add new nullable columns in place so an existing hub.db keeps
+    working after an upgrade."""
+    existing = inspect(engine)
+    with engine.begin() as conn:
+        for table in SQLModel.metadata.sorted_tables:
+            if not existing.has_table(table.name):
+                continue
+            have = {c["name"] for c in existing.get_columns(table.name)}
+            for col in table.columns:
+                if col.name not in have and col.nullable:
+                    ddl = col.type.compile(dialect=engine.dialect)
+                    conn.execute(text(f'ALTER TABLE "{table.name}" ADD COLUMN "{col.name}" {ddl}'))
 
 
 def get_session() -> Iterator[Session]:

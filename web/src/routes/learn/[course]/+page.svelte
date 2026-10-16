@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { api } from '#lib/api.ts';
-	import { COURSE_NAMES, type CourseOverview, type Stats } from '#lib/learn/types.ts';
+	import { setCourse } from '#lib/learn/course.svelte.ts';
+	import type { CourseOverview, Stats } from '#lib/learn/types.ts';
 
 	const courseId = $derived(page.params.course ?? '');
-	const meta = $derived(COURSE_NAMES[courseId] ?? { name: courseId, flag: '', lang: '' });
-
 	let overview = $state<CourseOverview | null>(null);
+	const meta = $derived(overview?.meta ?? { name: '', flag: '' });
 	let stats = $state<Stats | null>(null);
 	let error = $state('');
 
@@ -16,6 +16,7 @@
 			api<Stats>(`/learn/${courseId}/stats`)
 		])
 			.then(([o, s]) => {
+				setCourse(courseId, o.meta);
 				overview = o;
 				stats = s;
 			})

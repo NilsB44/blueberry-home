@@ -1,0 +1,322 @@
+id: ru-men
+order: 1
+title: 入门 Getting started
+description: Greetings, numbers, introducing yourself and ordering at a hawker centre.
+cefr: HSK 1
+lessons:
+  - id: ni-hao
+    title: 你好！Hello!
+    intro: >-
+      Mandarin has four tones plus a light neutral tone, and the tone changes the word:
+      mā (mother) and mǎ (horse) are different words. Type pinyin with tone numbers, like
+      ni3 hao3, or with marks: nǐ hǎo. Missing tones count, but you'll get a reminder.
+    vocab:
+      - { word: 你好, reading: nǐ hǎo, en: hello }
+      - { word: 您好, reading: nín hǎo, en: hello (polite) }
+      - { word: 谢谢, reading: xièxie, en: thank you / thanks }
+      - { word: 不客气, reading: bú kèqi, en: you are welcome }
+      - { word: 再见, reading: zàijiàn, en: goodbye / bye / see you }
+      - { word: 对不起, reading: duìbuqǐ, en: sorry / I am sorry }
+      - { word: 没关系, reading: méi guānxi, en: never mind / it does not matter / no problem }
+      - { word: 我, reading: wǒ, en: I / me }
+      - { word: 你, reading: nǐ, en: you }
+      - { word: 好, reading: hǎo, en: good / well / fine }
+      - { word: 很, reading: hěn, en: very }
+      - { word: 不, reading: bù, en: not / no }
+    exercises:
+      - type: choice
+        prompt: How do you say "hello"?
+        options: ["你好 (nǐ hǎo)", "谢谢 (xièxie)", "再见 (zàijiàn)", "对不起 (duìbuqǐ)"]
+        answer: "你好 (nǐ hǎo)"
+      - type: choice
+        prompt: What does 谢谢 (xièxie) mean?
+        speak: 谢谢
+        options: ["thank you", "hello", "goodbye", "sorry"]
+        answer: "thank you"
+      - type: match
+        pairs:
+          - [你好, hello]
+          - [谢谢, thank you]
+          - [再见, goodbye]
+          - [对不起, sorry]
+          - [我, I]
+      - type: listen
+        text: 你好
+        readings: ["nǐ hǎo"]
+      - type: translate
+        source: en
+        prompt: Thank you
+        answers: ["谢谢"]
+        readings: ["xièxie"]
+      - type: translate
+        source: target
+        prompt: 再见！
+        prompt_reading: zàijiàn
+        answers: ["Goodbye", "Bye", "See you"]
+      - type: word_bank
+        prompt: I am very well.
+        answer: 我 很 好
+        readings: ["wǒ hěn hǎo"]
+        distractors: [你, 不]
+      - type: gap
+        prompt: 对不起！— 没___。
+        hint: "Sorry! — Never mind."
+        answers: ["关系"]
+        options: ["关系", "客气", "好"]
+        readings: ["guānxi"]
+      - type: translate
+        source: en
+        prompt: You're welcome.
+        answers: ["不客气"]
+        readings: ["bú kèqi", "bù kèqi"]
+      - type: listen
+        text: 谢谢
+        readings: ["xièxie"]
+      - type: choice
+        prompt: Your new manager walks in. Which greeting is more polite?
+        options: ["您好 (nín hǎo)", "你好 (nǐ hǎo)"]
+        answer: "您好 (nín hǎo)"
+      - type: write
+        char: 你
+        reading: nǐ
+        en: you
+      - type: write
+        char: 好
+        reading: hǎo
+        en: good
+
+  - id: shu-zi
+    title: 数字 Numbers
+    intro: >-
+      Bigger numbers are built like arithmetic: 十一 shíyī is 10 + 1 = 11, 二十 èrshí is
+      2 × 10 = 20, 二十五 is 25. Use 两 liǎng for "two of something". In Singapore 8 is lucky
+      (八 bā sounds like 发 fā, to prosper) and 4 is avoided (四 sì sounds like 死 sǐ, death).
+    vocab:
+      - { word: 零, reading: líng, en: zero / 0 }
+      - { word: 一, reading: yī, en: one / 1 }
+      - { word: 二, reading: èr, en: two / 2 }
+      - { word: 三, reading: sān, en: three / 3 }
+      - { word: 四, reading: sì, en: four / 4 }
+      - { word: 五, reading: wǔ, en: five / 5 }
+      - { word: 六, reading: liù, en: six / 6 }
+      - { word: 七, reading: qī, en: seven / 7 }
+      - { word: 八, reading: bā, en: eight / 8 }
+      - { word: 九, reading: jiǔ, en: nine / 9 }
+      - { word: 十, reading: shí, en: ten / 10 }
+      - { word: 两, reading: liǎng, en: two (of something) / two }
+    exercises:
+      - type: match
+        pairs:
+          - [一, one]
+          - [二, two]
+          - [三, three]
+          - [四, four]
+          - [五, five]
+      - type: match
+        pairs:
+          - [六, six]
+          - [七, seven]
+          - [八, eight]
+          - [九, nine]
+          - [十, ten]
+      - type: choice
+        prompt: Which number is 八 (bā)?
+        speak: 八
+        options: ["8", "6", "9", "4"]
+        answer: "8"
+      - type: listen
+        text: 三
+        readings: ["sān"]
+      - type: translate
+        source: en
+        prompt: seven
+        answers: ["七"]
+        readings: ["qī"]
+      - type: choice
+        prompt: 十二 is…
+        speak: 十二
+        options: ["12", "20", "2", "10"]
+        answer: "12"
+      - type: translate
+        source: target
+        prompt: 二十
+        prompt_reading: èrshí
+        answers: ["twenty", "20"]
+      - type: gap
+        prompt: 五 + 四 = ___
+        answers: ["九"]
+        options: ["九", "八", "十"]
+        readings: ["jiǔ"]
+      - type: listen
+        text: 十八
+        readings: ["shíbā"]
+      - type: translate
+        source: en
+        prompt: eleven
+        answers: ["十一"]
+        readings: ["shíyī"]
+      - type: choice
+        prompt: Which number is lucky in Singapore because it sounds like 发 (to prosper)?
+        options: ["八 (bā)", "四 (sì)", "七 (qī)"]
+        answer: "八 (bā)"
+      - type: write
+        char: 八
+        reading: bā
+        en: eight
+      - type: write
+        char: 十
+        reading: shí
+        en: ten
+
+  - id: wo-jiao
+    title: 我叫… Introducing yourself
+    intro: >-
+      Add 吗 ma to the end of a statement to make a yes/no question: 你是瑞典人吗？
+      (Are you Swedish?). A nationality is country + 人 rén (person): 瑞典人 a Swede,
+      新加坡人 a Singaporean. No article before a job: 我是工程师, I am an engineer.
+    vocab:
+      - { word: 叫, reading: jiào, en: to be called }
+      - { word: 什么, reading: shénme, en: what }
+      - { word: 名字, reading: míngzi, en: name }
+      - { word: 是, reading: shì, en: to be / am / is / are / yes }
+      - { word: 人, reading: rén, en: person / people }
+      - { word: 瑞典, reading: Ruìdiǎn, en: Sweden }
+      - { word: 中国, reading: Zhōngguó, en: China }
+      - { word: 新加坡, reading: Xīnjiāpō, en: Singapore }
+      - { word: 住, reading: zhù, en: to live / live }
+      - { word: 在, reading: zài, en: in / at }
+      - { word: 工程师, reading: gōngchéngshī, en: engineer }
+      - { word: 吗, reading: ma, en: (question word) / question particle, note: Turns a sentence into a yes/no question. }
+    exercises:
+      - type: choice
+        prompt: How do you say "my name is…"?
+        options: ["我叫… (wǒ jiào)", "我是… (wǒ shì)", "我住… (wǒ zhù)", "我在… (wǒ zài)"]
+        answer: "我叫… (wǒ jiào)"
+      - type: word_bank
+        prompt: My name is Nils.
+        answer: 我 叫 Nils
+        readings: ["wǒ jiào Nils"]
+        distractors: [你, 是]
+      - type: translate
+        source: target
+        prompt: 你叫什么名字？
+        prompt_reading: Nǐ jiào shénme míngzi?
+        answers: ["What is your name?", "What's your name?"]
+      - type: translate
+        source: en
+        prompt: I am Swedish.
+        answers: ["我是瑞典人。"]
+        readings: ["wǒ shì Ruìdiǎn rén"]
+      - type: listen
+        text: 新加坡
+        readings: ["Xīnjiāpō"]
+      - type: match
+        pairs:
+          - [瑞典, Sweden]
+          - [中国, China]
+          - [新加坡, Singapore]
+          - [名字, name]
+          - [什么, what]
+      - type: gap
+        prompt: 我___在新加坡。
+        hint: I live in Singapore.
+        answers: ["住"]
+        options: ["住", "叫", "是"]
+        readings: ["zhù"]
+      - type: translate
+        source: target
+        prompt: 你是工程师吗？
+        prompt_reading: Nǐ shì gōngchéngshī ma?
+        answers: ["Are you an engineer?"]
+      - type: word_bank
+        prompt: I am an engineer.
+        answer: 我 是 工程师
+        readings: ["wǒ shì gōngchéngshī"]
+        distractors: [很, 人]
+      - type: listen
+        text: 我住在新加坡。
+        readings: ["wǒ zhù zài Xīnjiāpō"]
+      - type: write
+        char: 我
+        reading: wǒ
+        en: I / me
+      - type: write
+        char: 人
+        reading: rén
+        en: person
+
+  - id: xiao-fan-zhong-xin
+    title: 小贩中心 At the hawker centre
+    intro: >-
+      At a Singapore kopitiam you'll hear Singlish orders like "kopi" (coffee) and "teh" (tea);
+      咖啡 kāfēi and 茶 chá are the Mandarin words. 块 kuài is the everyday word for a dollar.
+      一 changes to yí before a fourth tone: 一个 yí gè.
+    vocab:
+      - { word: 我要, reading: wǒ yào, en: I want / I would like }
+      - { word: 一个, reading: yí gè, en: one / a / an }
+      - { word: 咖啡, reading: kāfēi, en: coffee }
+      - { word: 茶, reading: chá, en: tea }
+      - { word: 水, reading: shuǐ, en: water }
+      - { word: 鸡饭, reading: jīfàn, en: chicken rice }
+      - { word: 多少钱, reading: duōshao qián, en: how much / how much is it / how much money }
+      - { word: 块, reading: kuài, en: dollar / dollars }
+      - { word: 好吃, reading: hǎochī, en: delicious / tasty }
+      - { word: 打包, reading: dǎbāo, en: takeaway / take away / to go }
+      - { word: 这个, reading: zhège, en: this / this one }
+    exercises:
+      - type: match
+        pairs:
+          - [咖啡, coffee]
+          - [茶, tea]
+          - [水, water]
+          - [鸡饭, chicken rice]
+          - [好吃, delicious]
+      - type: choice
+        prompt: How do you say "I want"?
+        options: ["我要 (wǒ yào)", "我叫 (wǒ jiào)", "我是 (wǒ shì)", "我住 (wǒ zhù)"]
+        answer: "我要 (wǒ yào)"
+      - type: word_bank
+        prompt: I want a chicken rice.
+        answer: 我 要 一个 鸡饭
+        readings: ["wǒ yào yí gè jīfàn", "wǒ yào yī gè jīfàn"]
+        distractors: [茶, 很]
+      - type: translate
+        source: en
+        prompt: How much is it?
+        answers: ["多少钱？", "这个多少钱？"]
+        readings: ["duōshao qián", "zhège duōshao qián"]
+      - type: listen
+        text: 打包
+        readings: ["dǎbāo"]
+      - type: translate
+        source: target
+        prompt: 很好吃！
+        prompt_reading: Hěn hǎochī!
+        answers: ["Very tasty", "Very delicious", "It is very tasty", "It is very delicious", "Delicious", "So good"]
+      - type: gap
+        prompt: 我要一个___，打包。
+        hint: I want a coffee, to take away.
+        answers: ["咖啡"]
+        options: ["咖啡", "名字", "人"]
+        readings: ["kāfēi"]
+      - type: choice
+        prompt: The stall owner says 五块 (wǔ kuài). How much do you pay?
+        speak: 五块
+        options: ["$5", "$50", "$0.50", "$15"]
+        answer: "$5"
+      - type: translate
+        source: en
+        prompt: water
+        answers: ["水"]
+        readings: ["shuǐ"]
+      - type: listen
+        text: 这个多少钱？
+        readings: ["zhège duōshao qián"]
+      - type: write
+        char: 水
+        reading: shuǐ
+        en: water
+      - type: write
+        char: 茶
+        reading: chá
+        en: tea

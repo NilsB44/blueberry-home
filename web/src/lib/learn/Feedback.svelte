@@ -1,14 +1,15 @@
 <script lang="ts">
+	import { course } from './course.svelte.ts';
 	import type { CheckResult } from './types.ts';
 
 	let { result, onContinue }: { result: CheckResult; onContinue: () => void } = $props();
 
-	const TITLES = {
+	const TITLES = $derived({
 		correct: 'Correct!',
-		accent: 'Almost: mind the accents',
+		accent: course.chinese ? 'Almost: check the tones' : 'Almost: mind the accents',
 		typo: 'Correct, with a typo',
 		wrong: 'Correct answer:'
-	};
+	});
 </script>
 
 <div class="feedback {result.correct ? (result.verdict === 'correct' ? 'good' : 'near') : 'bad'}">

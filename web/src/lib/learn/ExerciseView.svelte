@@ -1,20 +1,26 @@
 <script lang="ts">
 	import AccentKeys from './AccentKeys.svelte';
+	import { course } from './course.svelte.ts';
 	import SpeakButton from './SpeakButton.svelte';
 	import { speak } from './speech.ts';
 	import type { Exercise } from './types.ts';
+	import WriteChar from './WriteChar.svelte';
 
 	let {
 		ex,
 		locked,
 		onSubmit,
-		onMatchDone
+		onLocalDone
 	}: {
 		ex: Exercise;
 		locked: boolean;
 		onSubmit: (answer: string) => void;
-		onMatchDone: (mistakes: number) => void;
+		/** Match and write exercises are checked in the browser. */
+		onLocalDone: (mistakes: number) => void;
 	} = $props();
+
+	const language = $derived(course.meta?.name ?? 'French');
+	const lang = $derived(course.meta?.lang ?? 'fr-FR');
 
 	let text = $state('');
 	let choice = $state<string | null>(null);
@@ -57,7 +63,8 @@
 		}
 	});
 
-	const needsAccents = $derived(
+	// Free-text answers in the language being learned get accent keys (French) or a pinyin hint.
+	const typesTarget = $derived(
 		(ex.type === 'translate' && ex.source === 'en') || ex.type === 'listen' || (ex.type === 'gap' && !ex.options.length)
 	);
 
@@ -73,7 +80,7 @@
 			done = [...done, left];
 			speak(left);
 			left = null;
-			if (done.length === ex.pairs.length) onMatchDone(matchMistakes);
+			if (done.length === ex.pairs.length) onLocalDone(matchMistakes);
 		} else {
 			matchMistakes++;
 			wrongFlash = r;
@@ -95,9 +102,10 @@
 			{/each}
 		</div>
 	{:else if ex.type === 'translate'}
-		<h2 class="muted small">Write this in {ex.source === 'fr' ? 'English' : 'French'}</h2>
-		<p class="prompt">{ex.prompt} {#if ex.source === 'fr'}<SpeakButton text={ex.prompt} />{/if}</p>
-		<input bind:this={input} bind:value={text} disabled={locked} autocomplete="off" autocapitalize="off" spellcheck="false" lang={ex.source === 'fr' ? 'en' : 'fr'} />
+		<h2 class="muted small">Write this in {ex.source === 'target' ? 'English' : language}</h2>
+		<p class="prompt">{ex.prompt} {#if ex.source === 'target'}<SpeakButton text={ex.prompt} />{/if}</p>
+		{#if ex.prompt_reading}<p class="reading">{ex.prompt_reading}</p>{/if}
+		<input bind:this={input} bind:value={text} disabled={locked} autocomplete="off" autocapitalize="off" spellcheck="false" lang={ex.source === 'target' ? 'en' : lang} />
 	{:else if ex.type === 'word_bank'}
 		<h2 class="muted small">Translate this sentence</h2>
 		<p class="prompt">{ex.prompt}</p>
@@ -114,7 +122,7 @@
 	{:else if ex.type === 'listen'}
 		<h2 class="muted small">Type what you hear</h2>
 		<p class="center"><SpeakButton text={ex.text} big /></p>
-		<input bind:this={input} bind:value={text} disabled={locked} autocomplete="off" autocapitalize="off" spellcheck="false" lang="fr" />
+		<input bind:this={input} bind:value={text} disabled={locked} autocomplete="off" autocapitalize="off" spellcheck="false" {lang} />
 	{:else if ex.type === 'gap'}
 		<h2 class="muted small">Fill in the blank</h2>
 		<p class="prompt">
@@ -130,7 +138,7 @@
 				{/each}
 			</div>
 		{:else}
-			<input bind:this={input} bind:value={text} disabled={locked} autocomplete="off" autocapitalize="off" spellcheck="false" lang="fr" />
+			<input bind:this={input} bind:value={text} disabled={locked} autocomplete="off" autocapitalize="off" spellcheck="false" {lang} />
 		{/if}
 	{:else if ex.type === 'match'}
 		<h2 class="muted small">Tap the matching pairs</h2>
@@ -146,13 +154,19 @@
 				{/each}
 			</div>
 		</div>
+	{:else if ex.type === 'write'}
+		<WriteChar courseId={course.id} char={ex.char} reading={ex.reading} en={ex.en} onDone={onLocalDone} />
 	{/if}
 
-	{#if needsAccents && !locked}
-		<AccentKeys target={input} onInsert={(v) => (text = v)} />
+	{#if typesTarget && !locked}
+		{#if course.chinese}
+			{#if course.meta?.answer_hint}<p class="muted hint">{course.meta.answer_hint}</p>{/if}
+		{:else}
+			<AccentKeys target={input} onInsert={(v) => (text = v)} />
+		{/if}
 	{/if}
 
-	{#if ex.type !== 'match' && !locked}
+	{#if ex.type !== 'match' && ex.type !== 'write' && !locked}
 		<button class="check" disabled={!answer.trim()}>Check</button>
 	{/if}
 </form>
@@ -176,6 +190,15 @@
 	}
 	.center {
 		text-align: center;
+	}
+	.reading {
+		margin: -0.6rem 0 0;
+		color: var(--muted);
+		font-size: 1.05rem;
+	}
+	.hint {
+		font-size: 0.85rem;
+		margin: 0;
 	}
 	.options {
 		display: grid;

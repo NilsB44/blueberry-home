@@ -1,6 +1,6 @@
 import pytest
 
-from app.modules.learn.grading import grade, normalize
+from app.modules.learn.grading import grade, grade_chinese, normalize, pinyin_key
 
 
 @pytest.mark.parametrize(
@@ -60,3 +60,38 @@ def test_grade_returns_matching_expected():
 
 def test_normalize_apostrophes_and_hyphens():
     assert normalize("Qu’est-ce que c’est ?") == "qu'est ce que c'est"
+
+
+@pytest.mark.parametrize(
+    ("a", "b"),
+    [
+        ("nǐ hǎo", "ni3 hao3"),
+        ("nǐ hǎo", "ni3hao3"),
+        ("nǐhǎo", "NI3 HAO3"),
+        ("lǜ chá", "lv4 cha2"),
+        ("lǜ chá", "lu:4 cha2"),
+        ("xièxie", "xie4 xie5"),
+    ],
+)
+def test_pinyin_spellings_are_equal(a, b):
+    assert pinyin_key(a) == pinyin_key(b)
+
+
+@pytest.mark.parametrize(
+    ("answer", "verdict"),
+    [
+        ("你好", "correct"),
+        ("你 好！", "correct"),
+        ("nǐ hǎo", "correct"),
+        ("ni3 hao3", "correct"),
+        ("ni hao", "accent"),
+        ("ni2 hao3", "accent"),
+        ("zai jian", "wrong"),
+        ("再见", "wrong"),
+        ("", "wrong"),
+    ],
+)
+def test_grade_chinese(answer, verdict):
+    result = grade_chinese(answer, ["你好"], ["nǐ hǎo"])
+    assert result.verdict == verdict
+    assert result.expected == "你好 · nǐ hǎo"
