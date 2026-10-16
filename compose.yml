@@ -35,6 +35,8 @@ services:
       HUB_MAX_UPLOAD_MB: ${HUB_MAX_UPLOAD_MB:-8192}
       # Written weekly by scripts/pi-security-check.py into ./data/api on the Pi.
       HUB_HOST_REPORT_PATH: /srv/data/host-security.json
+      # Written every 5 minutes by scripts/pi-network-scan.py into ./data/api on the Pi.
+      HUB_NETWORK_SCAN_PATH: /srv/data/network-scan.json
     volumes:
       - ./data/api:/srv/data
       # Shared files. On the Pi, point this at the SSD, e.g. /mnt/ssd/files:/srv/files.

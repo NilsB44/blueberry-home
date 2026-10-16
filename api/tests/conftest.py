@@ -7,6 +7,7 @@ from app import db as db_module
 from app.config import get_settings
 from app.db import get_session
 from app.main import app
+from app.modules.network import monitor as network_monitor
 from app.modules.security import tracker
 
 
@@ -14,8 +15,10 @@ from app.modules.security import tracker
 def _no_background_checks(monkeypatch):
     # The weekly check would otherwise start with every TestClient and look things up online.
     monkeypatch.setenv("HUB_SECURITY_SCHEDULE", "false")
+    monkeypatch.setenv("HUB_NETWORK_MONITOR", "false")
     get_settings.cache_clear()
     tracker.clear()
+    network_monitor.state.reset()
     yield
     get_settings.cache_clear()
     tracker.clear()
@@ -26,6 +29,7 @@ def client(monkeypatch, tmp_path):
     monkeypatch.setenv("HUB_COOKIE_SECURE", "false")
     monkeypatch.setenv("HUB_DEVICE_NAMES_FROM_DNS", "false")
     monkeypatch.setenv("HUB_HOST_REPORT_PATH", str(tmp_path / "host-security.json"))
+    monkeypatch.setenv("HUB_NETWORK_SCAN_PATH", str(tmp_path / "network-scan.json"))
     get_settings.cache_clear()
     engine = create_engine(
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool

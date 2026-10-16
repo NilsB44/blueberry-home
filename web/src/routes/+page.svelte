@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { api, type ModuleInfo } from '#lib/api.ts';
+	import type { Overview } from '#lib/network.ts';
 	import { STATUS_LABEL, type Schedule } from '#lib/security.ts';
 	import { session } from '#lib/session.svelte.ts';
 
 	let modules = $state<ModuleInfo[]>([]);
 	let error = $state('');
 	let security = $state<Schedule | null>(null);
+	let newDevices = $state(0);
 
 	$effect(() => {
 		if (session.user) {
@@ -16,6 +18,9 @@
 		if (session.user?.is_admin) {
 			api<Schedule>('/security/schedule')
 				.then((s) => (security = s))
+				.catch(() => {});
+			api<Overview>('/network/overview')
+				.then((o) => (newDevices = o.scan.new_devices ?? 0))
 				.catch(() => {});
 		}
 	});
@@ -35,6 +40,12 @@
 		<a class="card alert {alert.status}" href="/security">
 			🔒 {STATUS_LABEL[alert.status]}: the security check flagged {alert.n}
 			{alert.n === 1 ? 'thing' : 'things'}.
+		</a>
+	{/if}
+	{#if newDevices}
+		<a class="card alert warn" href="/network">
+			📶 {newDevices} new device{newDevices === 1 ? '' : 's'} joined the Wi-Fi. Check you recognise
+			{newDevices === 1 ? 'it' : 'them'}.
 		</a>
 	{/if}
 	<div class="grid">

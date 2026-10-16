@@ -44,6 +44,10 @@ connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.
   two or more lines sends garbage to an opponent, last one standing wins. Some pieces carry a ✦
   star: clear its row to collect a power-up (bomb, slow-mo, long bar; in multiplayer also shield
   and rush). Keyboard on computers, buttons and swipes on phones.
+- **Network:** whether the internet is up (checked every minute, with uptime and outages), a
+  speed test every few hours, how the Pi is doing (temperature, power, memory, disks), and the
+  devices on the Wi-Fi with an alert when a new one joins (admins only). The device list needs
+  a small scan installed on the Pi: see [docs/network.md](docs/network.md).
 - **Assistant:** chat with a small local language model through Ollama, streamed token by token.
 - Caddy serves everything over HTTPS on the LAN at `https://hub.home` with its own local CA.
 - Installable on phones as a web app (PWA manifest), dark mode follows the system.
