@@ -21,5 +21,7 @@ COPY api/docker-entrypoint.py /usr/local/bin/docker-entrypoint.py
 RUN useradd --system --uid 1000 hub && mkdir -p /srv/data /srv/files && chown hub /srv/data /srv/files
 
 EXPOSE 8000
+# Only Caddy can reach the API (compose.yml doesn't publish it), so trust the client address
+# Caddy forwards: the API lets in devices on the home network without a login.
 ENTRYPOINT ["python", "/usr/local/bin/docker-entrypoint.py"]
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]

@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.auth.deps import CurrentUser
+from app.auth.network import LocalNetworkOnly
 from app.auth.router import router as auth_router
 from app.auth.router import users_router
 from app.db import init_db
@@ -26,6 +27,8 @@ app = FastAPI(
     docs_url="/api/docs",
     openapi_url="/api/openapi.json",
 )
+
+app.add_middleware(LocalNetworkOnly)
 
 app.include_router(auth_router)
 app.include_router(users_router)

@@ -15,8 +15,9 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(password_hash: str | None, password: str) -> bool:
+    # People who joined from a device have no password (""), so they can never log in with one.
     try:
-        return _hasher.verify(password_hash or _DUMMY_HASH, password) and password_hash is not None
+        return _hasher.verify(password_hash or _DUMMY_HASH, password) and bool(password_hash)
     except VerificationError:
         return False
 

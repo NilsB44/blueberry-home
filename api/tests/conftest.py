@@ -12,6 +12,7 @@ from app.main import app
 @pytest.fixture
 def client(monkeypatch):
     monkeypatch.setenv("HUB_COOKIE_SECURE", "false")
+    monkeypatch.setenv("HUB_DEVICE_NAMES_FROM_DNS", "false")
     get_settings.cache_clear()
     engine = create_engine(
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
@@ -24,11 +25,18 @@ def client(monkeypatch):
             yield s
 
     app.dependency_overrides[get_session] = session_override
-    with TestClient(app) as c:
+    # A phone on the home Wi-Fi.
+    with TestClient(app, client=(PHONE_IP, 50000)) as c:
         yield c
     app.dependency_overrides.clear()
     get_settings.cache_clear()
 
+
+PHONE_IP = "192.168.1.23"
+IPHONE_UA = (
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 "
+    "(KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1"
+)
 
 ADMIN = {"username": "nils", "display_name": "Nils", "password": "correct horse battery"}
 

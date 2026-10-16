@@ -24,13 +24,17 @@
 </script>
 
 <div class="auth">
-	<h1>Sign in</h1>
+	<h1>Use an existing account</h1>
+	<p class="muted">
+		Only for accounts made with a password. This device will remember it, so you won't be asked again.
+	</p>
 	<form onsubmit={submit}>
 		<label>Username <input bind:value={username} autocomplete="username" required /></label>
 		<label>
 			Password <input type="password" bind:value={password} autocomplete="current-password" required />
 		</label>
 		{#if error}<p class="error">{error}</p>{/if}
-		<button disabled={busy}>Sign in</button>
+		<button disabled={busy}>Use on this device</button>
+		<a href="/me" class="muted">Back</a>
 	</form>
 </div>
