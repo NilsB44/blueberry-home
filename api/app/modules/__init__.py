@@ -91,10 +91,10 @@ MODULES: list[ModuleInfo] = [
     ModuleInfo(
         id="tetris",
         name="Tetris",
-        description="Multiplayer Tetris over the local network.",
+        description="Solo or against everyone on the Wi-Fi, with a few power-ups.",
         icon="🧱",
         path="/tetris",
-        status="planned",
+        status="ready",
         phase=4,
     ),
     ModuleInfo(

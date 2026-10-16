@@ -16,6 +16,7 @@ from app.modules.learn.router import router as learn_router
 from app.modules.poker.router import router as poker_router
 from app.modules.security import scheduler
 from app.modules.security.router import router as security_router
+from app.modules.tetris.router import router as tetris_router
 
 
 @asynccontextmanager
@@ -46,6 +47,7 @@ app.include_router(files_router)
 app.include_router(learn_router)
 app.include_router(poker_router)
 app.include_router(security_router)
+app.include_router(tetris_router)
 
 
 @app.get("/api/health", tags=["meta"])
