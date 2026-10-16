@@ -44,7 +44,7 @@
 				if (!drag && !editing) layout = l;
 			})
 			.catch((e) => (error = e.message));
-		if (user.is_admin) {
+		if (user.is_owner) {
 			api<Schedule>('/security/schedule')
 				.then((s) => (security = s))
 				.catch(() => {});

@@ -14,13 +14,15 @@ from app.config import get_settings
 from app.db import get_engine
 from app.modules.security import tracker
 from app.modules.security.checks import run_report
-from app.modules.security.models import AccessAttempt, SecurityReport
+from app.modules.security.models import AccessAttempt, SecurityEvent, SecurityReport
+from app.modules.security.remote import expire_away
 
 log = logging.getLogger(__name__)
 
 FLUSH_SECONDS = 60
 KEEP_ATTEMPTS = timedelta(days=90)
 KEEP_REPORTS = 52
+KEEP_EVENTS = timedelta(days=365)
 
 # One check at a time, whether scheduled or started from the Security page.
 running = threading.Lock()
@@ -65,6 +67,8 @@ def prune(session: Session, now: datetime) -> None:
     )
     for report in old:
         session.delete(report)
+    for event in session.exec(select(SecurityEvent).where(SecurityEvent.at < now - KEEP_EVENTS)):
+        session.delete(event)
     session.commit()
 
 
@@ -72,6 +76,7 @@ def tick() -> None:
     now = datetime.now(UTC)
     with Session(get_engine()) as session:
         tracker.flush(session)
+        expire_away(session, now)
         if due(session, now) and running.acquire(blocking=False):
             try:
                 report = run_report(session, "scheduled")

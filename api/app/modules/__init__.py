@@ -22,8 +22,8 @@ class ModuleInfo(BaseModel):
     status: Status
     phase: int
     folder: Folder
-    # Only shown to admins.
-    admin_only: bool = False
+    # Only shown to the hub's owner.
+    owner_only: bool = False
 
 
 MODULES: list[ModuleInfo] = [
@@ -80,13 +80,13 @@ MODULES: list[ModuleInfo] = [
     ModuleInfo(
         id="security",
         name="Security",
-        description="Away access switch and the weekly check of the hub and the Pi.",
+        description="Away access, signed-in devices and the weekly check of the hub and Pi.",
         icon="🔒",
         path="/security",
         status="ready",
         phase=3,
         folder="nerd",
-        admin_only=True,
+        owner_only=True,
     ),
     ModuleInfo(
         id="network",

@@ -16,6 +16,10 @@ class User(SQLModel, table=True):
     # What the device was when this person joined, e.g. "iPhone" or "Pixel 7".
     device: str | None = Field(default=None, max_length=64)
     is_admin: bool = False
+    # The one person who controls security (away access, signing devices out): the hub's first
+    # device. Moved only from the Pi itself: docker compose exec api python -m app.owner.
+    # Nullable so an existing hub.db gains the column on upgrade.
+    is_owner: bool | None = Field(default=None)
     created_at: datetime = Field(default_factory=utcnow)
 
 
@@ -25,3 +29,6 @@ class AuthSession(SQLModel, table=True):
     user_id: int = Field(foreign_key="user.id", index=True)
     created_at: datetime = Field(default_factory=utcnow)
     expires_at: datetime
+    # Updated at most every few minutes, for the device list on the Security page.
+    last_seen_at: datetime | None = None
+    last_ip: str | None = Field(default=None, max_length=64)

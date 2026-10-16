@@ -55,6 +55,7 @@ export type User = {
 	username: string;
 	display_name: string;
 	is_admin: boolean;
+	is_owner: boolean;
 	device: string | null;
 	has_password: boolean;
 };
@@ -68,5 +69,5 @@ export type ModuleInfo = {
 	status: 'ready' | 'planned';
 	phase: number;
 	folder: 'games' | 'learning' | 'nerd' | 'life';
-	admin_only: boolean;
+	owner_only: boolean;
 };
