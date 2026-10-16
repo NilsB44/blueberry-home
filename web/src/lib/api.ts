@@ -55,6 +55,7 @@ export type User = {
 	username: string;
 	display_name: string;
 	is_admin: boolean;
+	is_owner: boolean;
 	device: string | null;
 	has_password: boolean;
 };
@@ -67,5 +68,5 @@ export type ModuleInfo = {
 	path: string;
 	status: 'ready' | 'planned';
 	phase: number;
-	admin_only: boolean;
+	owner_only: boolean;
 };

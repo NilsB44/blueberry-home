@@ -12,11 +12,12 @@ connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.
 - No logins: anyone on the home network can use the hub, and the router is the gate. Each
   device becomes a person the first time it opens the hub, named after what the router calls
   it (e.g. "Nils-iPhone") or the device type ("iPhone", "Pixel 7"), and anyone can change their
-  name under **You**. The first device is the admin. Requests from outside the private address
+  name under **You**. The first device is the admin and the hub's owner. Requests from outside the private address
   ranges are refused (`HUB_TRUSTED_NETWORKS`).
-- **Security:** an admin-only page with an away-access switch (off by default: your own
-  devices on Tailscale can reach the hub, but only ones that joined at home, and no ports are
-  opened on the router) and a weekly check of the hub and the Pi: refused visitors, wrong
+- **Security:** a page only the hub's owner (its first device) can see, with an away-access
+  switch (off by default, on for a set time: your own devices on Tailscale can reach the hub,
+  but only ones that joined at home, and no ports are opened on the router), signed-in
+  devices you can sign out, a security log, login lockout, and a weekly check of the hub and the Pi: refused visitors, wrong
   passwords, new devices, vulnerable packages, open ports, SSH, firewall and updates. See
   [docs/security.md](docs/security.md).
 - Devices are remembered by a long-lived cookie (HttpOnly, SameSite=Lax, Secure over HTTPS),

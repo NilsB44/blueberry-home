@@ -4,6 +4,7 @@ from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
 
 from app import db as db_module
+from app.auth import lockout
 from app.config import get_settings
 from app.db import get_session
 from app.main import app
@@ -19,9 +20,11 @@ def _no_background_checks(monkeypatch):
     get_settings.cache_clear()
     tracker.clear()
     network_monitor.state.reset()
+    lockout.clear()
     yield
     get_settings.cache_clear()
     tracker.clear()
+    lockout.clear()
 
 
 @pytest.fixture

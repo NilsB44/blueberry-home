@@ -17,7 +17,7 @@ from app.auth.network import is_public
 from app.config import get_settings
 from app.modules.security import tracker
 from app.modules.security.models import AccessAttempt, SecurityReport
-from app.modules.security.remote import away_setting
+from app.modules.security.remote import away_setting, is_on
 
 Status = Literal["ok", "warn", "fail", "unknown"]
 # Worst first: a report's status is its worst check's.
@@ -107,22 +107,24 @@ def check_network_ranges() -> Check:
 def check_away_access(session: Session) -> Check:
     setting = away_setting(session)
     visits = _by_ip(_attempts(session, "away"))
-    if setting is None or setting.value != "on":
+    if not is_on(setting):
         return Check(
             id="away-access",
             title="Away access",
             status="ok",
-            summary="Off: only devices on your home Wi-Fi can reach the hub.",
+            summary="Off: only devices on your home Wi-Fi can reach the hub. "
+            f"{sum(visits.values())} requests came in from away this week.",
+            details=[f"{ip}: {n} requests" for ip, n in list(visits.items())[:10]],
         )
     who = session.get(User, setting.changed_by) if setting.changed_by else None
-    since = _day(setting.changed_at)
+    until = f", until {_day(setting.expires_at)}" if setting.expires_at else ""
     return Check(
         id="away-access",
         title="Away access",
         status="ok",
-        summary=f"On since {since}{f' (turned on by {who.display_name})' if who else ''}: "
-        f"your devices on the VPN can reach the hub. {sum(visits.values())} requests came in "
-        "that way this week.",
+        summary=f"On since {_day(setting.changed_at)}{until}"
+        f"{f' (turned on by {who.display_name})' if who else ''}: your devices on the VPN can "
+        f"reach the hub. {sum(visits.values())} requests came in that way this week.",
         details=[f"{ip}: {n} requests" for ip, n in list(visits.items())[:10]],
     )
 
@@ -184,7 +186,17 @@ def check_people(session: Session) -> Check:
     week_ago = datetime.now(UTC) - WEEK
     new = list(session.exec(select(User).where(User.created_at >= week_ago).order_by(User.id)))
     admins = session.exec(select(func.count()).select_from(User).where(User.is_admin)).one()
-    summary = f"{admins} admin{'s' if admins != 1 else ''}. "
+    owners = list(session.exec(select(User).where(User.is_owner == True)))  # noqa: E712
+    if len(owners) != 1:
+        return Check(
+            id="people",
+            title="People and devices",
+            status="fail",
+            summary=f"The hub has {len(owners)} owners instead of one. Fix it on the Pi: "
+            "docker compose exec api python -m app.owner <your username>.",
+            details=[f"@{u.username}" for u in owners],
+        )
+    summary = f"Owned by {owners[0].display_name}. {admins} admin{'s' if admins != 1 else ''}. "
     summary += (
         f"{len(new)} new device{'s' if len(new) != 1 else ''} joined this week: check you "
         "recognise them."
