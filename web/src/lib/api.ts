@@ -68,5 +68,6 @@ export type ModuleInfo = {
 	path: string;
 	status: 'ready' | 'planned';
 	phase: number;
+	folder: 'games' | 'learning' | 'nerd' | 'life';
 	owner_only: boolean;
 };
