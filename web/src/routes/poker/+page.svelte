@@ -337,8 +337,15 @@
 		--play-text: #ffffff;
 		--line: #15181d;
 	}
+	:global(:root[data-theme='dark']) section {
+		--cold: #23262d;
+		--hot: #8c2a4a;
+		--play: #4caf50;
+		--play-text: #0d1a0e;
+		--line: #e9ecf1;
+	}
 	@media (prefers-color-scheme: dark) {
-		section {
+		:global(:root:not([data-theme='light'])) section {
 			--cold: #23262d;
 			--hot: #8c2a4a;
 			--play: #4caf50;

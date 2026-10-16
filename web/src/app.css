@@ -1,26 +1,64 @@
 :root {
-	--bg: #f6f7f9;
+	--bg: #f4f5f8;
 	--surface: #ffffff;
-	--border: #e3e6eb;
-	--text: #15181d;
-	--muted: #5c6470;
-	--accent: #c2185b;
+	--surface-2: #eceef4;
+	--border: #e1e4eb;
+	--text: #14161c;
+	--muted: #5d6574;
+	--accent: #4c5bd4;
 	--accent-text: #ffffff;
+	--accent-soft: #e6e9ff;
 	--danger: #c62828;
-	--radius: 12px;
+	--good: #2e7d32;
+	--good-bg: #e8f5e9;
+	--near: #a15c00;
+	--near-bg: #fff4e0;
+	--bad-bg: #fdecea;
+	--shadow: 0 1px 2px rgb(20 22 28 / 0.06), 0 4px 16px rgb(20 22 28 / 0.06);
+	--radius: 14px;
 	color-scheme: light;
 }
 
+/* Dark either because this device asked for it (the header toggle) or because the device is dark
+   and nobody picked light. The two blocks hold the same values. */
+:root[data-theme='dark'] {
+	--bg: #0f1116;
+	--surface: #181b22;
+	--surface-2: #222630;
+	--border: #2a2f3a;
+	--text: #e8ebf2;
+	--muted: #98a1b2;
+	--accent: #8b96ff;
+	--accent-text: #0f1116;
+	--accent-soft: #252a4d;
+	--danger: #ef5350;
+	--good: #81c784;
+	--good-bg: #1b2e1d;
+	--near: #ffb74d;
+	--near-bg: #33270f;
+	--bad-bg: #3a1c1c;
+	--shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px rgb(0 0 0 / 0.25);
+	color-scheme: dark;
+}
+
 @media (prefers-color-scheme: dark) {
-	:root {
-		--bg: #14161a;
-		--surface: #1d2026;
-		--border: #2c313a;
-		--text: #e9ecf1;
-		--muted: #9aa3b0;
-		--accent: #f06292;
-		--accent-text: #14161a;
+	:root:not([data-theme='light']) {
+		--bg: #0f1116;
+		--surface: #181b22;
+		--surface-2: #222630;
+		--border: #2a2f3a;
+		--text: #e8ebf2;
+		--muted: #98a1b2;
+		--accent: #8b96ff;
+		--accent-text: #0f1116;
+		--accent-soft: #252a4d;
 		--danger: #ef5350;
+		--good: #81c784;
+		--good-bg: #1b2e1d;
+		--near: #ffb74d;
+		--near-bg: #33270f;
+		--bad-bg: #3a1c1c;
+		--shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px rgb(0 0 0 / 0.25);
 		color-scheme: dark;
 	}
 }
@@ -31,10 +69,18 @@
 
 body {
 	margin: 0;
+	min-height: 100dvh;
 	background: var(--bg);
 	color: var(--text);
 	font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+	-webkit-tap-highlight-color: transparent;
+	transition: background-color 0.2s;
+}
+
+h1 {
+	letter-spacing: -0.02em;
 }
 
 a {
@@ -83,6 +129,7 @@ button.ghost {
 	border: 1px solid var(--border);
 	border-radius: var(--radius);
 	padding: 1.25rem;
+	box-shadow: var(--shadow);
 }
 
 .error {
@@ -108,24 +155,6 @@ button.ghost {
 	display: grid;
 	gap: 0.25rem;
 	font-size: 0.9rem;
-}
-
-:root {
-	--good: #2e7d32;
-	--good-bg: #e8f5e9;
-	--near: #a15c00;
-	--near-bg: #fff4e0;
-	--bad-bg: #fdecea;
-}
-
-@media (prefers-color-scheme: dark) {
-	:root {
-		--good: #81c784;
-		--good-bg: #1b2e1d;
-		--near: #ffb74d;
-		--near-bg: #33270f;
-		--bad-bg: #3a1c1c;
-	}
 }
 
 .option {
