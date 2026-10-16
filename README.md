@@ -14,6 +14,11 @@ connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.
   it (e.g. "Nils-iPhone") or the device type ("iPhone", "Pixel 7"), and anyone can change their
   name under **You**. The first device is the admin. Requests from outside the private address
   ranges are refused (`HUB_TRUSTED_NETWORKS`).
+- **Security:** an admin-only page with an away-access switch (off by default: your own
+  devices on Tailscale can reach the hub, but only ones that joined at home, and no ports are
+  opened on the router) and a weekly check of the hub and the Pi: refused visitors, wrong
+  passwords, new devices, vulnerable packages, open ports, SSH, firewall and updates. See
+  [docs/security.md](docs/security.md).
 - Devices are remembered by a long-lived cookie (HttpOnly, SameSite=Lax, Secure over HTTPS),
   stored hashed. A browser can't see its MAC address, and phones randomise theirs per network,
   so the cookie is the device's identity: clearing the browser's data makes a new person.
@@ -98,6 +103,8 @@ cp .env.example .env
 docker compose up -d                      # hub only
 docker compose --profile llm up -d        # hub + local language model
 docker compose exec ollama ollama pull qwen3:4b
+sudo scripts/install-security-check.sh     # the Pi's weekly security check
+scripts/update-hub.sh                     # later: pull the latest version and rebuild
 ```
 
 ## Writing lessons
