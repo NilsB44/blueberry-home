@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { api, type ModuleInfo } from '#lib/api.ts';
+	import { STATUS_LABEL, type Schedule } from '#lib/security.ts';
 	import { session } from '#lib/session.svelte.ts';
 
 	let modules = $state<ModuleInfo[]>([]);
 	let error = $state('');
+	let security = $state<Schedule | null>(null);
 
 	$effect(() => {
 		if (session.user) {
@@ -11,12 +13,30 @@
 				.then((m) => (modules = m))
 				.catch((e) => (error = e.message));
 		}
+		if (session.user?.is_admin) {
+			api<Schedule>('/security/schedule')
+				.then((s) => (security = s))
+				.catch(() => {});
+		}
+	});
+
+	const alert = $derived.by(() => {
+		const latest = security?.latest;
+		if (!latest || (latest.status !== 'fail' && latest.status !== 'warn')) return null;
+		const n = latest.checks.filter((c) => c.status !== 'ok').length;
+		return { status: latest.status, n };
 	});
 </script>
 
 <section>
 	<h1>Hi {session.user?.display_name ?? ''}</h1>
 	{#if error}<p class="error">{error}</p>{/if}
+	{#if alert}
+		<a class="card alert {alert.status}" href="/security">
+			🔒 {STATUS_LABEL[alert.status]}: the security check flagged {alert.n}
+			{alert.n === 1 ? 'thing' : 'things'}.
+		</a>
+	{/if}
 	<div class="grid">
 		{#each modules as m (m.id)}
 			{#if m.status === 'ready'}
@@ -40,6 +60,22 @@
 <style>
 	section {
 		padding: 1.5rem 16px;
+	}
+	.alert {
+		display: block;
+		margin-bottom: 1rem;
+		text-decoration: none;
+		padding: 0.75rem 1rem;
+	}
+	.alert.warn {
+		background: var(--near-bg);
+		color: var(--near);
+		border-color: transparent;
+	}
+	.alert.fail {
+		background: var(--bad-bg);
+		color: var(--danger);
+		border-color: transparent;
 	}
 	.grid {
 		display: grid;

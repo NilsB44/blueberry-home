@@ -1,0 +1,56 @@
+name: Security
+
+# Weekly scan of everything the hub is built from for published vulnerabilities. GitHub emails
+# you when a scheduled run fails. Also runs when dependencies change, so a pull request can't
+# bring in a known-vulnerable package.
+on:
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/security.yml"
+      - "api/pyproject.toml"
+      - "web/package.json"
+      - "web/package-lock.json"
+      - "engines/poker/Cargo.toml"
+      - "engines/poker/Cargo.lock"
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install the API as the image does, then audit it
+        run: |
+          python -m venv /tmp/hub
+          /tmp/hub/bin/pip install --quiet ./api pip-audit
+          /tmp/hub/bin/pip-audit --skip-editable
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm audit --audit-level=high
+
+  engine:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: engines/poker
+    steps:
+      - uses: actions/checkout@v4
+      - run: cargo install --locked cargo-audit
+      - run: cargo audit

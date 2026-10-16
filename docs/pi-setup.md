@@ -63,7 +63,18 @@ Install `hub-root.crt` as a trusted root on each device (macOS Keychain → "Alw
 iOS: AirDrop it, install the profile, then enable it under Settings → General → About →
 Certificate Trust Settings; Android: Settings → Security → Install certificate → CA).
 
-## 7. Local model (optional)
+## 7. Weekly security check and away access
+
+```bash
+sudo scripts/install-security-check.sh
+```
+
+Never forward ports on the router. To reach the hub while you're out, set up Tailscale and
+use the away access switch on the Security page: see [security.md](security.md).
+
+To update later: `scripts/update-hub.sh`.
+
+## 8. Local model (optional)
 
 ```bash
 docker compose --profile llm up -d
