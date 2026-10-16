@@ -1,28 +1,13 @@
 <script lang="ts">
 	import '../app.css';
-	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
-	import { loadSession, logout, session } from '#lib/session.svelte.ts';
+	import { loadSession, session } from '#lib/session.svelte.ts';
 
 	let { children } = $props();
 	let loadError = $state('');
 
-	const PUBLIC = ['/login', '/setup'];
-
 	$effect(() => {
-		if (!session.loaded) {
-			loadSession().catch((e) => (loadError = `Can't reach the hub API: ${e.message}`));
-			return;
-		}
-		const path = page.url.pathname;
-		if (session.needsSetup && path !== '/setup') goto('/setup');
-		else if (!session.needsSetup && !session.user && !PUBLIC.includes(path)) goto('/login');
+		if (!session.loaded) loadSession().catch((e) => (loadError = `Can't reach the hub: ${e.message}`));
 	});
-
-	async function signOut() {
-		await logout();
-		goto('/login');
-	}
 </script>
 
 {#if loadError}
@@ -31,9 +16,8 @@
 	{#if session.user}
 		<header>
 			<a href="/" class="brand">Blueberry Home</a>
-			{#if session.user.is_admin}<a href="/people" class="muted">People</a>{/if}
-			<span class="muted">{session.user.display_name}</span>
-			<button class="ghost" onclick={signOut}>Sign out</button>
+			<a href="/people" class="muted">People</a>
+			<a href="/me" class="muted" title="Change your name">{session.user.display_name}</a>
 		</header>
 	{/if}
 	<main>{@render children()}</main>

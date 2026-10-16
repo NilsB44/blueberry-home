@@ -12,6 +12,21 @@ class Settings(BaseSettings):
     # so keep this on in production and off for plain-HTTP local development.
     cookie_secure: bool = True
     session_days: int = 30
+    # Devices are remembered by a cookie for this long, so nobody has to log in.
+    device_days: int = 3650
+    # Anyone on these networks can use the hub without a password: the router is the gate.
+    # Add a VPN range here (e.g. Tailscale's 100.64.0.0/10) to reach the hub from outside.
+    trusted_networks: list[str] = [
+        "127.0.0.0/8",
+        "10.0.0.0/8",
+        "172.16.0.0/12",
+        "192.168.0.0/16",
+        "::1/128",
+        "fc00::/7",
+        "fe80::/10",
+    ]
+    # Name new devices after what the router calls them (reverse DNS), when it says.
+    device_names_from_dns: bool = True
     ollama_url: str = "http://ollama:11434"
     assistant_model: str = "qwen3:4b"
     content_dir: Path = Path(__file__).resolve().parent.parent / "content"

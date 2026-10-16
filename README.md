@@ -1,7 +1,7 @@
 # Blueberry Home
 
 A self-hosted, ad-free app suite for the home network, built to run on a Raspberry Pi 5 (8 GB).
-One login, one dashboard, many modules: language learning, poker tools, file sharing, multiplayer
+No logins, one dashboard, many modules: language learning, poker tools, file sharing, multiplayer
 Tetris, a local AI assistant and more. See [docs/plan.md](docs/plan.md) for the full roadmap.
 
 **No Pi yet?** Your laptop can stand in for it: it runs the same containers and your phone
@@ -9,9 +9,14 @@ connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.
 
 ## What works today
 
-- First-run setup creates the admin account; admins can add guest accounts.
-- Session cookies (HttpOnly, SameSite=Lax, Secure over HTTPS), Argon2 password hashing,
-  session tokens stored hashed.
+- No logins: anyone on the home network can use the hub, and the router is the gate. Each
+  device becomes a person the first time it opens the hub, named after what the router calls
+  it (e.g. "Nils-iPhone") or the device type ("iPhone", "Pixel 7"), and anyone can change their
+  name under **You**. The first device is the admin. Requests from outside the private address
+  ranges are refused (`HUB_TRUSTED_NETWORKS`).
+- Devices are remembered by a long-lived cookie (HttpOnly, SameSite=Lax, Secure over HTTPS),
+  stored hashed. A browser can't see its MAC address, and phones randomise theirs per network,
+  so the cookie is the device's identity: clearing the browser's data makes a new person.
 - Dashboard with a tile per module; planned modules show which phase they land in.
 - **French:** A1 lessons (greetings, café, numbers, introductions, work) with multiple choice,
   translation, word-bank, matching, listening and fill-the-gap exercises. Answers are checked

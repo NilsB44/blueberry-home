@@ -36,7 +36,8 @@ Then:
 docker compose up -d --build
 ```
 
-The first build takes a few minutes. Open <http://localhost> and create your account.
+The first build takes a few minutes. Open <http://localhost>: there's no account to create, your
+laptop just gets a name you can change under your name in the top bar.
 
 ## 3. Open it on your phone
 
@@ -67,9 +68,9 @@ Everything below works from the phone; the laptop is just the server.
   or `nǐ hǎo` (or the characters), and you'll draw 你 and 好 with your finger. Finished
   lessons feed the Review queue, which comes back over the following days.
 - **Files:** upload a photo from the phone under Shared, then open it on the laptop. My files
-  is private to your account.
-- **Accounts:** the first account is the admin. Add a second person under **People** (top bar) and
-  log in on another phone to see that progress and private files are per person.
+  is private to you.
+- **People:** the first device to open the hub is the admin. Open it on another phone and it
+  becomes a second person with its own progress and private files; both show up under **People**.
 - **Assistant** needs the local model: `docker compose --profile llm up -d` then
   `docker compose exec ollama ollama pull qwen3:4b` (a few GB; slower on a laptop without a GPU).
 
@@ -89,4 +90,4 @@ README's "Develop on your laptop" section. The web dev server listens on all int
 ## Plain HTTP is for testing only
 
 On the Pi, keep the default `HUB_HOSTNAME=hub.home` so traffic on your Wi-Fi is encrypted
-and login cookies are marked secure.
+and device cookies are marked secure.

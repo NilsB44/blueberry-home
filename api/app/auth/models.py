@@ -11,7 +11,10 @@ class User(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     username: str = Field(index=True, unique=True, min_length=3, max_length=32)
     display_name: str = Field(max_length=64)
-    password_hash: str
+    # Empty for people who joined from a device; only older accounts have a password.
+    password_hash: str = ""
+    # What the device was when this person joined, e.g. "iPhone" or "Pixel 7".
+    device: str | None = Field(default=None, max_length=64)
     is_admin: bool = False
     created_at: datetime = Field(default_factory=utcnow)
 

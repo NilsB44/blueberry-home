@@ -50,7 +50,14 @@ export async function* streamText(path: string, json: unknown, signal?: AbortSig
 	}
 }
 
-export type User = { id: number; username: string; display_name: string; is_admin: boolean };
+export type User = {
+	id: number;
+	username: string;
+	display_name: string;
+	is_admin: boolean;
+	device: string | null;
+	has_password: boolean;
+};
 
 export type ModuleInfo = {
 	id: string;

@@ -1,25 +1,18 @@
-import { api, ApiError, type User } from './api.ts';
+import { api, ApiError, type User } from "./api.ts";
 
-export const session = $state<{ user: User | null; loaded: boolean; needsSetup: boolean }>({
-	user: null,
-	loaded: false,
-	needsSetup: false
+export const session = $state<{ user: User | null; loaded: boolean }>({
+  user: null,
+  loaded: false,
 });
 
+/** Who is this device? The first visit makes a new person; there's no login on the home network. */
 export async function loadSession() {
-	try {
-		const setup = await api<{ needs_setup: boolean }>('/auth/setup');
-		session.needsSetup = setup.needs_setup;
-		session.user = setup.needs_setup ? null : await api<User>('/auth/me');
-	} catch (e) {
-		if (!(e instanceof ApiError && e.status === 401)) throw e;
-		session.user = null;
-	} finally {
-		session.loaded = true;
-	}
-}
-
-export async function logout() {
-	await api('/auth/logout', { method: 'POST' });
-	session.user = null;
+  try {
+    session.user = await api<User>("/auth/me");
+  } catch (e) {
+    if (!(e instanceof ApiError && e.status === 401)) throw e;
+    session.user = await api<User>("/auth/device", { method: "POST" });
+  } finally {
+    session.loaded = true;
+  }
 }
