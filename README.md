@@ -20,6 +20,9 @@ connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.
   devices you can sign out, a security log, login lockout, and a weekly check of the hub and the Pi: refused visitors, wrong
   passwords, new devices, vulnerable packages, open ports, SSH, firewall and updates. See
   [docs/security.md](docs/security.md).
+- **Claude:** an owner-only page with Claude Code's tokens per day, averages, models and
+  projects, what that would cost at API prices, optional API key spend, and a link to your
+  plan's limits on claude.ai. See [docs/claude-usage.md](docs/claude-usage.md).
 - Devices are remembered by a long-lived cookie (HttpOnly, SameSite=Lax, Secure over HTTPS),
   stored hashed. A browser can't see its MAC address, and phones randomise theirs per network,
   so the cookie is the device's identity: clearing the browser's data makes a new person.
