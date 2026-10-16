@@ -2,7 +2,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from sqlalchemy import event, inspect, text
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import Session, SQLModel, create_engine, select
 
 from app.config import get_settings
 
@@ -41,6 +41,7 @@ def init_db() -> None:
     engine = get_engine()
     SQLModel.metadata.create_all(engine)
     _add_new_columns(engine)
+    _ensure_owner(engine)
 
 
 def _add_new_columns(engine) -> None:
@@ -57,6 +58,20 @@ def _add_new_columns(engine) -> None:
                 if col.name not in have and col.nullable:
                     ddl = col.type.compile(dialect=engine.dialect)
                     conn.execute(text(f'ALTER TABLE "{table.name}" ADD COLUMN "{col.name}" {ddl}'))
+
+
+def _ensure_owner(engine) -> None:
+    """Hubs set up before there was an owner: the first admin becomes it."""
+    from app.auth.models import User
+
+    with Session(engine) as session:
+        if session.exec(select(User).where(User.is_owner == True)).first():  # noqa: E712
+            return
+        first_admin = session.exec(select(User).where(User.is_admin).order_by(User.id)).first()
+        if first_admin:
+            first_admin.is_owner = True
+            session.add(first_admin)
+            session.commit()
 
 
 def get_session() -> Iterator[Session]:

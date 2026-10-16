@@ -25,7 +25,7 @@
 			<li>
 				<strong>{u.display_name}</strong>
 				<span class="muted">
-					@{u.username}{u.device ? ` · ${u.device}` : ''}{u.is_admin ? ' · admin' : ''}{u.id === session.user?.id ? ' · you' : ''}
+					@{u.username}{u.device ? ` · ${u.device}` : ''}{u.is_owner ? ' · owner' : u.is_admin ? ' · admin' : ''}{u.id === session.user?.id ? ' · you' : ''}
 				</span>
 			</li>
 		{/each}

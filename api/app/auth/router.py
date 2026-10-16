@@ -5,6 +5,7 @@ from fastapi import APIRouter, Cookie, Header, HTTPException, Request, Response,
 from pydantic import BaseModel, Field
 from sqlmodel import func, select
 
+from app.auth import lockout
 from app.auth.deps import COOKIE_NAME, AdminUser, CurrentUser, DbSession
 from app.auth.device import device_from_user_agent, new_username, router_name
 from app.auth.models import AuthSession, User
@@ -12,6 +13,7 @@ from app.auth.network import require_home
 from app.auth.security import hash_password, hash_token, new_token, verify_password
 from app.config import get_settings
 from app.modules.security import tracker
+from app.modules.security.events import log_event
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 users_router = APIRouter(prefix="/api/users", tags=["users"])
@@ -43,6 +45,7 @@ class UserOut(BaseModel):
     username: str
     display_name: str
     is_admin: bool
+    is_owner: bool = False
     device: str | None = None
     has_password: bool = False
 
@@ -57,6 +60,7 @@ def _out(user: User) -> UserOut:
         username=user.username,
         display_name=user.display_name,
         is_admin=user.is_admin,
+        is_owner=bool(user.is_owner),
         device=user.device,
         has_password=bool(user.password_hash),
     )
@@ -100,6 +104,7 @@ def setup(body: NewUser, request: Request, db: DbSession, response: Response) ->
         display_name=body.display_name,
         password_hash=hash_password(body.password),
         is_admin=True,
+        is_owner=True,
     )
     db.add(user)
     db.commit()
@@ -124,11 +129,13 @@ def join_from_device(
     name = None
     if get_settings().device_names_from_dns and request.client:
         name = router_name(request.client.host)
+    first = _user_count(db) == 0
     user = User(
         username=new_username(name or device),
         display_name=name or device,
         device=device,
-        is_admin=_user_count(db) == 0,
+        is_admin=first,
+        is_owner=first or None,
     )
     db.add(user)
     db.commit()
@@ -140,9 +147,20 @@ def join_from_device(
 @router.post("/login")
 def login(body: Credentials, request: Request, db: DbSession, response: Response) -> UserOut:
     require_home(request)
+    ip = request.client.host if request.client else None
+    if wait := lockout.locked_for(ip, body.username):
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            f"Too many wrong passwords. Try again in {wait // 60 + 1} minutes.",
+            headers={"Retry-After": str(wait)},
+        )
     user = db.exec(select(User).where(User.username == body.username.lower())).first()
     if not verify_password(user.password_hash if user else None, body.password):
-        tracker.record("login", request.client.host if request.client else None, body.username)
+        tracker.record("login", ip, body.username)
+        if lockout.record_failure(ip, body.username):
+            log_event(
+                db, "lockout", f"logins paused after wrong passwords for @{body.username}", ip=ip
+            )
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Wrong username or password")
     # Logging in is how a device takes over an older password account, so remember it as long.
     _start_session(db, response, user, days=get_settings().device_days)

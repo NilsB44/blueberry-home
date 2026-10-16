@@ -12,6 +12,8 @@ class HubSetting(SQLModel, table=True):
     value: str = ""
     changed_at: datetime = Field(default_factory=utcnow)
     changed_by: int | None = Field(default=None, foreign_key="user.id")
+    # For away access: when it switches itself off again.
+    expires_at: datetime | None = None
 
 
 class AccessAttempt(SQLModel, table=True):
@@ -39,3 +41,15 @@ class SecurityReport(SQLModel, table=True):
     status: str = Field(default="unknown", max_length=16)
     # The checks, as a JSON list of app.modules.security.checks.Check.
     checks: str = "[]"
+
+
+class SecurityEvent(SQLModel, table=True):
+    """Every change to the hub's security, newest kept for a year."""
+
+    id: int | None = Field(default=None, primary_key=True)
+    at: datetime = Field(default_factory=utcnow, index=True)
+    # "away-on", "away-off", "away-expired", "signed-out", "lockout", "owner", "check".
+    action: str = Field(max_length=32)
+    detail: str = Field(default="", max_length=300)
+    user_id: int | None = Field(default=None, foreign_key="user.id")
+    ip: str | None = Field(default=None, max_length=64)

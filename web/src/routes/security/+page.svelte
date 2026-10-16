@@ -1,11 +1,15 @@
 <script lang="ts">
 	import { api } from '#lib/api.ts';
 	import {
+		duration,
+		EVENT_LABEL,
 		STATUS_LABEL,
 		when,
 		type Attempt,
 		type AwayAccess,
 		type Check,
+		type DeviceSession,
+		type SecurityEvent,
 		type Report,
 		type ReportSummary,
 		type Schedule
@@ -17,6 +21,9 @@
 	let report = $state<Report | null>(null);
 	let history = $state<ReportSummary[]>([]);
 	let attempts = $state<Attempt[]>([]);
+	let devices = $state<DeviceSession[]>([]);
+	let events = $state<SecurityEvent[]>([]);
+	let hours = $state(24);
 	let error = $state('');
 	let busy = $state(false);
 	let running = $state(false);
@@ -29,11 +36,13 @@
 
 	async function load() {
 		try {
-			[away, schedule, history, attempts] = await Promise.all([
+			[away, schedule, history, attempts, devices, events] = await Promise.all([
 				api<AwayAccess>('/security/away'),
 				api<Schedule>('/security/schedule'),
 				api<ReportSummary[]>('/security/reports'),
-				api<Attempt[]>('/security/attempts')
+				api<Attempt[]>('/security/attempts'),
+				api<DeviceSession[]>('/security/sessions'),
+				api<SecurityEvent[]>('/security/events')
 			]);
 			report = schedule.latest;
 		} catch (e) {
@@ -42,14 +51,15 @@
 	}
 
 	$effect(() => {
-		if (session.user?.is_admin) load();
+		if (session.user?.is_owner) load();
 	});
 
 	async function setAway(enabled: boolean) {
 		busy = true;
 		error = '';
 		try {
-			away = await api<AwayAccess>('/security/away', { method: 'PUT', json: { enabled } });
+			away = await api<AwayAccess>('/security/away', { method: 'PUT', json: { enabled, hours } });
+			events = await api<SecurityEvent[]>('/security/events');
 		} catch (e) {
 			error = (e as Error).message;
 		} finally {
@@ -67,6 +77,20 @@
 			error = (e as Error).message;
 		} finally {
 			running = false;
+		}
+	}
+
+	async function signOut(d: DeviceSession) {
+		if (!confirm(`Sign out ${d.user}'s ${d.device ?? 'device'}? It will have to join again on the home Wi-Fi.`)) return;
+		error = '';
+		try {
+			await api(`/security/sessions/${d.id}`, { method: 'DELETE' });
+			[devices, events] = await Promise.all([
+				api<DeviceSession[]>('/security/sessions'),
+				api<SecurityEvent[]>('/security/events')
+			]);
+		} catch (e) {
+			error = (e as Error).message;
 		}
 	}
 
@@ -89,8 +113,8 @@
 
 <section>
 	<h1>Security</h1>
-	{#if !session.user?.is_admin}
-		<p class="muted">Only admins can see this page.</p>
+	{#if !session.user?.is_owner}
+		<p class="muted">Only the hub's owner can see this page.</p>
 	{:else}
 		{#if error}<p class="error">{error}</p>{/if}
 
@@ -106,7 +130,10 @@
 						already joined here on the Wi-Fi. New devices can't join from outside.
 					</p>
 					{#if away.changed_at}
-						<p class="muted">Turned on {when(away.changed_at)}{away.changed_by ? ` by ${away.changed_by}` : ''}.</p>
+						<p class="muted">
+							Turned on {when(away.changed_at)}{away.changed_by ? ` by ${away.changed_by}` : ''}.
+							{#if away.expires_at}Switches itself off {when(away.expires_at)}.{/if}
+						</p>
 					{/if}
 					<button class="ghost" disabled={busy} onclick={() => setAway(false)}>Turn off</button>
 				{:else}
@@ -115,7 +142,15 @@
 						things through Tailscale. Nothing is opened on your router either way.
 					</p>
 					{#if away.can_enable}
-						<button disabled={busy} onclick={() => setAway(true)}>Turn on</button>
+						<div class="row wrap">
+							<label class="inline">
+								For
+								<select bind:value={hours}>
+									{#each away.durations as h (h)}<option value={h}>{duration(h)}</option>{/each}
+								</select>
+							</label>
+							<button disabled={busy} onclick={() => setAway(true)}>Turn on</button>
+						</div>
 					{:else}
 						<p class="muted">You can only turn this on at home.</p>
 					{/if}
@@ -169,6 +204,34 @@
 		</div>
 
 		<div class="card stack">
+			<h2>Signed-in devices</h2>
+			<p class="muted small">
+				Don't recognise one? Sign it out. On the home Wi-Fi it could join again as a new person,
+				so if that happens too, change the Wi-Fi password.
+			</p>
+			<ul class="devices">
+				{#each devices as d (d.id)}
+					<li>
+						<div>
+							<strong>{d.user}</strong>
+							<span class="muted">
+								{d.device ?? 'Device'}{d.is_owner ? ' · owner' : ''}{d.this_device ? ' · this device' : ''}
+							</span>
+							<div class="muted small">
+								Signed in {when(d.signed_in_at)}{d.last_seen_at ? ` · last seen ${when(d.last_seen_at)}` : ''}{d.last_ip
+									? ` from ${d.last_ip}`
+									: ''}
+							</div>
+						</div>
+						{#if !d.this_device}
+							<button class="ghost" onclick={() => signOut(d)}>Sign out</button>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		</div>
+
+		<div class="card stack">
 			<h2>Who knocked</h2>
 			{#if attempts.length}
 				<div class="table">
@@ -190,6 +253,23 @@
 				<p class="muted">Nobody was refused, and no wrong passwords, in the last 30 days.</p>
 			{/if}
 		</div>
+
+		{#if events.length}
+			<div class="card stack">
+				<h2>Security log</h2>
+				<ul class="history">
+					{#each events as e, i (i)}
+						<li>
+							<span>{when(e.at)}</span>
+							<strong>{EVENT_LABEL[e.action] ?? e.action}</strong>
+							<span class="muted">
+								{e.detail}{e.who ? ` · by ${e.who}` : ''}{e.ip ? ` · ${e.ip}` : ''}
+							</span>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
 
 		{#if history.length > 1}
 			<div class="card stack">
@@ -249,6 +329,43 @@
 		align-items: center;
 		gap: 0.6rem;
 		width: 100%;
+	}
+	.wrap {
+		flex-wrap: wrap;
+	}
+	.inline {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+	select {
+		font: inherit;
+		color: inherit;
+		padding: 0.5rem 0.6rem;
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		background: var(--surface);
+	}
+	.devices {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		gap: 0.6rem;
+		width: 100%;
+	}
+	.devices > li {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 0.75rem;
+		overflow-wrap: anywhere;
+	}
+	.history > li {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0 0.5rem;
+		overflow-wrap: anywhere;
 	}
 	.small {
 		font-size: 0.85rem;
