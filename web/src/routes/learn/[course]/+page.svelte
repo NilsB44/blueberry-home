@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { api } from '#lib/api.ts';
-	import { setCourse } from '#lib/learn/course.svelte.ts';
+	import { course, prefs, savePrefs, setCourse } from '#lib/learn/course.svelte.ts';
 	import type { CourseOverview, Stats } from '#lib/learn/types.ts';
 
 	const courseId = $derived(page.params.course ?? '');
@@ -16,7 +16,7 @@
 			api<Stats>(`/learn/${courseId}/stats`)
 		])
 			.then(([o, s]) => {
-				setCourse(courseId, o.meta);
+				setCourse(o);
 				overview = o;
 				stats = s;
 			})
@@ -42,6 +42,18 @@
 			<strong>Review</strong>
 			<span class="muted">{stats.due === 0 ? 'Nothing due. Come back later.' : `${stats.due} words due`}</span>
 		</a>
+	{/if}
+
+	{#if overview && course.chinese}
+		<details class="card prefs">
+			<summary>Can't read characters yet?</summary>
+			<p class="muted small">
+				You don't need to. Learn the sounds first with pinyin printed above every character, and
+				answer by typing pinyin. The characters will start to look familiar on their own.
+			</p>
+			<label><input type="checkbox" bind:checked={prefs.pinyin} onchange={savePrefs} /> Show pinyin above characters</label>
+			<label><input type="checkbox" bind:checked={prefs.writing} onchange={savePrefs} /> Include character-writing exercises</label>
+		</details>
 	{/if}
 
 	{#if overview}
@@ -137,6 +149,26 @@
 	}
 	.small {
 		font-size: 0.85rem;
+	}
+	.prefs {
+		margin-top: 0.75rem;
+		display: grid;
+		gap: 0.4rem;
+	}
+	.prefs summary {
+		cursor: pointer;
+		font-weight: 600;
+	}
+	.prefs label {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.prefs input {
+		width: auto;
+	}
+	.prefs p {
+		margin: 0.25rem 0;
 	}
 	.go {
 		color: var(--accent);

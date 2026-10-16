@@ -6,7 +6,7 @@
 
 	const TITLES = $derived({
 		correct: 'Correct!',
-		accent: course.chinese ? 'Almost: check the tones' : 'Almost: mind the accents',
+		accent: course.chinese ? 'Correct, but check the tones:' : 'Correct, mind the accents and apostrophes:',
 		typo: 'Correct, with a typo',
 		wrong: 'Correct answer:'
 	});

@@ -23,6 +23,7 @@ from app.modules.learn.content import (
     accepted_readings,
     answer_lang,
     get_course,
+    pinyin_dict,
     public_exercise,
 )
 from app.modules.learn.grading import Result, Verdict, grade, grade_chinese, normalize
@@ -77,6 +78,8 @@ class CourseOut(BaseModel):
     meta: CourseMeta
     units: list[UnitOut]
     next_lesson: str | None
+    # Chinese only: reading for each word and character the course shows.
+    pinyin: dict[str, str] = {}
 
 
 class Stats(BaseModel):
@@ -226,7 +229,13 @@ def course_overview(course: CourseDep, user: CurrentUser, db: DbSession) -> Cour
     next_lesson = next(
         (lesson.id for lesson in course.lessons() if lesson.id not in progress), None
     )
-    return CourseOut(id=course.id, meta=course.meta, units=units, next_lesson=next_lesson)
+    return CourseOut(
+        id=course.id,
+        meta=course.meta,
+        units=units,
+        next_lesson=next_lesson,
+        pinyin=pinyin_dict(course.id),
+    )
 
 
 @router.get("/stats")

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import AccentKeys from './AccentKeys.svelte';
-	import { course } from './course.svelte.ts';
+	import { course, prefs } from './course.svelte.ts';
+	import Hanzi from './Hanzi.svelte';
 	import SpeakButton from './SpeakButton.svelte';
 	import { speak } from './speech.ts';
 	import type { Exercise } from './types.ts';
@@ -95,28 +96,28 @@
 
 <form class="exercise" onsubmit={submit}>
 	{#if ex.type === 'choice'}
-		<h2>{ex.prompt} {#if ex.speak}<SpeakButton text={ex.speak} />{/if}</h2>
+		<h2><Hanzi text={ex.prompt} /> {#if ex.speak}<SpeakButton text={ex.speak} />{/if}</h2>
 		<div class="options">
 			{#each ex.options as o}
-				<button type="button" class="option" class:selected={choice === o} disabled={locked} onclick={() => (choice = o)}>{o}</button>
+				<button type="button" class="option" class:selected={choice === o} disabled={locked} onclick={() => (choice = o)}><Hanzi text={o} /></button>
 			{/each}
 		</div>
 	{:else if ex.type === 'translate'}
 		<h2 class="muted small">Write this in {ex.source === 'target' ? 'English' : language}</h2>
-		<p class="prompt">{ex.prompt} {#if ex.source === 'target'}<SpeakButton text={ex.prompt} />{/if}</p>
-		{#if ex.prompt_reading}<p class="reading">{ex.prompt_reading}</p>{/if}
+		<p class="prompt"><Hanzi text={ex.prompt} /> {#if ex.source === 'target'}<SpeakButton text={ex.prompt} />{/if}</p>
+		{#if ex.prompt_reading && !(course.chinese && prefs.pinyin)}<p class="reading">{ex.prompt_reading}</p>{/if}
 		<input bind:this={input} bind:value={text} disabled={locked} autocomplete="off" autocapitalize="off" spellcheck="false" lang={ex.source === 'target' ? 'en' : lang} />
 	{:else if ex.type === 'word_bank'}
 		<h2 class="muted small">Translate this sentence</h2>
 		<p class="prompt">{ex.prompt}</p>
 		<div class="built">
 			{#each picked as i, pos (i)}
-				<button type="button" class="word-tile" disabled={locked} onclick={() => picked.splice(pos, 1)}>{ex.tiles[i]}</button>
+				<button type="button" class="word-tile" disabled={locked} onclick={() => picked.splice(pos, 1)}><Hanzi text={ex.tiles[i]} /></button>
 			{/each}
 		</div>
 		<div class="pool">
 			{#each ex.tiles as t, i}
-				<button type="button" class="word-tile" class:used={picked.includes(i)} disabled={locked || picked.includes(i)} onclick={() => picked.push(i)}>{t}</button>
+				<button type="button" class="word-tile" class:used={picked.includes(i)} disabled={locked || picked.includes(i)} onclick={() => picked.push(i)}><Hanzi text={t} /></button>
 			{/each}
 		</div>
 	{:else if ex.type === 'listen'}
@@ -127,14 +128,14 @@
 		<h2 class="muted small">Fill in the blank</h2>
 		<p class="prompt">
 			{#each ex.prompt.split('___') as part, i}
-				{part}{#if i === 0}<span class="blank">{(ex.options.length ? choice : text) || '  '}</span>{/if}
+				<Hanzi text={part} />{#if i === 0}<span class="blank"><Hanzi text={(ex.options.length ? choice : text) || '  '} /></span>{/if}
 			{/each}
 		</p>
 		{#if ex.hint}<p class="muted">{ex.hint}</p>{/if}
 		{#if ex.options.length}
 			<div class="pool">
 				{#each ex.options as o}
-					<button type="button" class="word-tile" class:chosen={choice === o} disabled={locked} onclick={() => (choice = o)}>{o}</button>
+					<button type="button" class="word-tile" class:chosen={choice === o} disabled={locked} onclick={() => (choice = o)}><Hanzi text={o} /></button>
 				{/each}
 			</div>
 		{:else}
@@ -145,7 +146,7 @@
 		<div class="match">
 			<div class="col">
 				{#each lefts as l}
-					<button type="button" class="word-tile" class:chosen={left === l} disabled={done.includes(l)} onclick={() => { left = l; speak(l); }}>{l}</button>
+					<button type="button" class="word-tile" class:chosen={left === l} disabled={done.includes(l)} onclick={() => { left = l; speak(l); }}><Hanzi text={l} /></button>
 				{/each}
 			</div>
 			<div class="col">

@@ -13,6 +13,7 @@ from app.modules.learn.content import (
     accepted_answers,
     accepted_readings,
     get_course,
+    pinyin_dict,
     public_exercise,
 )
 from app.modules.learn.router import _check
@@ -88,3 +89,20 @@ def test_write_exercises_have_stroke_data():
         for ex in lesson.exercises:
             if isinstance(ex, Write):
                 assert (strokes / f"{ex.char}.json").is_file(), ex.char
+
+
+def test_pinyin_covers_every_character_shown():
+    course = get_course("mandarin")
+    readings = pinyin_dict("mandarin")
+    shown = {
+        ch
+        for lesson in course.lessons()
+        for text in [lesson.title, *(v.word for v in lesson.vocab)]
+        for ch in text
+        if "\u4e00" <= ch <= "\u9fff"
+    }
+    assert shown <= readings.keys()
+    # Authored readings win over the dictionary's guess.
+    assert readings["谢谢"] == "xièxie"
+    assert readings["不客气"] == "bú kèqi"
+    assert pinyin_dict("french") == {}

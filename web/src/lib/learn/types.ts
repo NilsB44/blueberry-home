@@ -18,6 +18,12 @@ export type Stats = { xp_today: number; daily_goal: number; streak: number; tota
 export type LessonSummary = { id: string; title: string; exercises: number; completed: boolean; best_mistakes: number | null };
 export type Unit = { id: string; title: string; description: string; cefr: string; lessons: LessonSummary[] };
 export type CourseMeta = { name: string; flag: string; lang: string; answer_hint: string | null };
-export type CourseOverview = { id: string; meta: CourseMeta; units: Unit[]; next_lesson: string | null };
+export type CourseOverview = {
+	id: string;
+	meta: CourseMeta;
+	units: Unit[];
+	next_lesson: string | null;
+	pinyin: Record<string, string>;
+};
 
 export type ReviewItem = { id: number; mode: 'to_en' | 'from_en' | 'listen'; prompt: string; reading: string | null };
