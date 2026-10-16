@@ -13,7 +13,7 @@
 				.then((m) => (modules = m))
 				.catch((e) => (error = e.message));
 		}
-		if (session.user?.is_admin) {
+		if (session.user?.is_owner) {
 			api<Schedule>('/security/schedule')
 				.then((s) => (security = s))
 				.catch(() => {});

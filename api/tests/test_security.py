@@ -4,7 +4,9 @@ from datetime import UTC, datetime, timedelta
 import httpx
 import pytest
 from fastapi.testclient import TestClient
+from sqlmodel import select
 
+from app.auth import lockout
 from app.config import get_settings
 from app.main import app
 from app.modules.security import checks, scheduler, tracker
@@ -70,13 +72,91 @@ def test_away_access_can_be_turned_off_but_not_on_from_away(admin_client):
     assert admin_client.get("/api/security/away").json()["enabled"] is False
 
 
-def test_security_is_for_admins_only(admin_client):
+def test_security_is_for_the_owner_only(admin_client):
+    assert admin_client.get("/api/auth/me").json()["is_owner"] is True
+    other_admin = {"username": "bob", "display_name": "Bob", "password": "another long one"}
+    assert (
+        admin_client.post("/api/users", json={**other_admin, "is_admin": True}).status_code == 201
+    )
     with TestClient(app, client=("192.168.1.40", 50000)) as other:
         other.post("/api/auth/device")
         assert other.get("/api/security/away").status_code == 403
-        assert other.post("/api/security/reports").status_code == 403
-        assert "security" not in [m["id"] for m in other.get("/api/modules").json()]
+        with TestClient(app, client=("192.168.1.41", 50000)) as bob:
+            bob.post("/api/auth/login", json={"username": "bob", "password": "another long one"})
+            assert bob.get("/api/auth/me").json()["is_admin"] is True
+            for client in (other, bob):
+                assert client.put("/api/security/away", json={"enabled": True}).status_code == 403
+                assert client.post("/api/security/reports").status_code == 403
+                assert client.get("/api/security/sessions").status_code == 403
+                assert "security" not in [m["id"] for m in client.get("/api/modules").json()]
     assert "security" in [m["id"] for m in admin_client.get("/api/modules").json()]
+
+
+def test_the_first_device_owns_the_hub(client):
+    first = client.post("/api/auth/device").json()
+    assert first["is_owner"] is True
+    with TestClient(app, client=("192.168.1.40", 50000)) as second:
+        assert second.post("/api/auth/device").json()["is_owner"] is False
+
+
+def test_away_access_turns_itself_off(admin_client):
+    resp = admin_client.put("/api/security/away", json={"enabled": True, "hours": 4})
+    assert resp.json()["enabled"] is True
+    expires = datetime.fromisoformat(resp.json()["expires_at"]).replace(tzinfo=UTC)
+    assert timedelta(hours=3, minutes=59) < expires - datetime.now(UTC) <= timedelta(hours=4)
+    assert (
+        admin_client.put("/api/security/away", json={"enabled": True, "hours": 5}).status_code
+        == 422
+    )
+
+    from sqlmodel import Session
+
+    from app.db import get_engine
+    from app.modules.security.remote import away_setting, expire_away
+
+    later = datetime.now(UTC) + timedelta(hours=5)
+    with Session(get_engine()) as session:
+        setting = away_setting(session)
+        setting.expires_at = datetime.now(UTC) - timedelta(minutes=1)
+        session.add(setting)
+        session.commit()
+    with _away(admin_client) as away:
+        assert away.get("/api/auth/me").status_code == 403
+    assert admin_client.get("/api/security/away").json()["enabled"] is False
+    with Session(get_engine()) as session:
+        assert expire_away(session, later) is True
+    actions = [e["action"] for e in admin_client.get("/api/security/events").json()]
+    assert actions == ["away-expired", "away-on"]
+
+
+def test_owner_sees_devices_and_can_sign_one_out(admin_client):
+    with TestClient(app, client=("192.168.1.40", 50000)) as other:
+        other.post("/api/auth/device")
+        assert other.get("/api/auth/me").status_code == 200
+        devices = admin_client.get("/api/security/sessions").json()
+        assert [d["this_device"] for d in devices] == [False, True]
+        mine, theirs = devices[1], devices[0]
+        assert mine["is_owner"] and mine["last_ip"] == "192.168.1.23"
+        assert admin_client.delete(f"/api/security/sessions/{mine['id']}").status_code == 400
+        assert admin_client.delete(f"/api/security/sessions/{theirs['id']}").status_code == 204
+        assert other.get("/api/auth/me").status_code == 401
+    events = admin_client.get("/api/security/events").json()
+    assert events[0]["action"] == "signed-out"
+    assert events[0]["who"] == "Nils"
+
+
+def test_wrong_passwords_lock_logins_for_a_while(admin_client):
+    admin_client.cookies.clear()
+    wrong = {"username": "nils", "password": "nope"}
+    for _ in range(lockout.MAX_FAILURES):
+        assert admin_client.post("/api/auth/login", json=wrong).status_code == 401
+    resp = admin_client.post("/api/auth/login", json={**wrong, "password": "correct horse battery"})
+    assert resp.status_code == 429
+    assert "Try again" in resp.json()["detail"]
+    lockout.clear()
+    resp = admin_client.post("/api/auth/login", json={**wrong, "password": "correct horse battery"})
+    assert resp.status_code == 200
+    assert admin_client.get("/api/security/events").json()[0]["action"] == "lockout"
 
 
 def test_a_quiet_week_reports_ok_apart_from_the_missing_pi_report(admin_client):
@@ -114,7 +194,8 @@ def test_vpn_visitors_while_off_only_warn(admin_client):
     assert _check(admin_client.post("/api/security/reports").json(), "refused")["status"] == "warn"
 
 
-def test_failed_logins_are_counted(admin_client):
+def test_failed_logins_are_counted(admin_client, monkeypatch):
+    monkeypatch.setattr(lockout, "MAX_FAILURES", 100)
     for _ in range(checks.FAILED_LOGINS_WARN):
         admin_client.post("/api/auth/login", json={"username": "nils", "password": "nope"})
     logins = _check(admin_client.post("/api/security/reports").json(), "failed-logins")
@@ -221,3 +302,31 @@ def test_scheduled_check_runs_once_per_week(admin_client, monkeypatch):
     scheduler.tick()
     reports = admin_client.get("/api/security/reports").json()
     assert [r["trigger"] for r in reports] == ["scheduled"]
+
+
+def test_older_hubs_get_their_first_admin_as_owner(client):
+    from sqlmodel import Session
+
+    from app.auth.models import User
+    from app.db import _ensure_owner, get_engine
+
+    with Session(get_engine()) as session:
+        session.add(User(username="guest", display_name="Guest"))
+        session.add(User(username="nils", display_name="Nils", is_admin=True))
+        session.commit()
+    _ensure_owner(get_engine())
+    with Session(get_engine()) as session:
+        owner = session.exec(select(User).where(User.is_owner == True)).one()  # noqa: E712
+    assert owner.username == "nils"
+
+
+def test_ownership_moves_only_from_the_pi(admin_client, capsys):
+    from app import owner
+
+    other_admin = {"username": "bob", "display_name": "Bob", "password": "another long one"}
+    admin_client.post("/api/users", json={**other_admin, "is_admin": False})
+    assert owner.main(["nobody"]) == 1
+    assert owner.main(["bob"]) == 0
+    assert "@bob (Bob) now owns the hub." in capsys.readouterr().out
+    assert admin_client.get("/api/auth/me").json()["is_owner"] is False
+    assert admin_client.get("/api/security/away").status_code == 403

@@ -6,9 +6,12 @@
   should be able to open a connection to the Pi.
 - **Away access goes through Tailscale**, a VPN where the Pi makes an *outgoing* connection and
   only your own signed-in devices can reach it. In the hub it's a switch on the Security page,
-  **off by default**. Turn it on before a trip, off when you're back.
+  **off by default**. Turn it on before a trip for a set time (4 hours to 30 days); it
+  switches itself off when that runs out.
+- **Only the owner controls security.** The owner is the hub's first device (you). Other
+  people, admins included, can't see the Security page or touch the switch.
 - **A security check runs every Sunday night** on both the hub and the Pi, and shows on the
-  Security page (admins only). The dashboard shows a banner when something needs a look.
+  Security page. The dashboard shows a banner when something needs a look.
 - **The Pi still has outgoing internet**, which it needs for updates, Tailscale, and looking up
   known vulnerabilities. Outgoing is fine; incoming is what attackers use.
 
@@ -26,8 +29,31 @@ home-server answer: the attack surface from the internet is zero, and you keep t
 2. The hub refuses those addresses unless away access is on. Even then:
    - only devices that **already joined on the home Wi-Fi** get in (their remembered cookie);
    - nobody can join, set up, or log in with a password from outside;
-   - the switch can be turned **off** from anywhere, but only turned **on** from home.
+   - only the owner can turn the switch on, only from home, and only for a set time;
+     it can be turned **off** from anywhere.
 3. Every away visit is counted and shows in the weekly check.
+
+## The owner, and what else the Security page does
+
+- **Owner:** the first device that opened the hub. Ownership can only be moved from the Pi
+  itself, so a phone on the Wi-Fi can never take it over:
+
+  ```bash
+  docker compose exec api python -m app.owner              # list people
+  docker compose exec api python -m app.owner <username>   # make them the owner
+  ```
+
+  Use this if you replace your phone or clear its browser data.
+- **Signed-in devices:** every device with access, when it was last seen and from which
+  address. Sign out any you don't recognise. (On the Wi-Fi it could join again as a new
+  person, so if a stranger keeps coming back, change the Wi-Fi password.)
+- **Security log:** every change kept for a year: away access on/off/expired, devices signed
+  out, logins paused, owner changes, checks run by hand.
+- **Login lockout:** after 5 wrong passwords in 15 minutes from one address or for one
+  username, logins pause for 15 minutes and the log says so.
+- **Browser locks:** Caddy sends a Content-Security-Policy that only allows the hub's own
+  files (no outside scripts, trackers or frames), plus headers that turn off camera,
+  microphone and location access and block other sites from framing the hub.
 
 ### Setting up Tailscale
 

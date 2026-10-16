@@ -57,4 +57,4 @@ def health() -> dict[str, str]:
 
 @app.get("/api/modules", tags=["meta"])
 def modules(user: CurrentUser) -> list[ModuleInfo]:
-    return [m for m in MODULES if user.is_admin or not m.admin_only]
+    return [m for m in MODULES if user.is_owner or not m.owner_only]
