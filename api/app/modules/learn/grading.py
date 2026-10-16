@@ -2,7 +2,8 @@
 
 Verdicts:
   correct  exact match after normalising case, punctuation and spacing
-  accent   right apart from accents (cafe vs café); counts, with a nudge
+  accent   right apart from accents (cafe vs café) or apostrophes (jai, j ai vs j'ai);
+           counts, with a nudge
   typo     one letter off in one long word; counts, with a nudge
   wrong    anything else
 """
@@ -16,6 +17,8 @@ Verdict = Literal["correct", "accent", "typo", "wrong"]
 
 _PUNCT = re.compile(r"[.,!?;:«»\"“”()…¿¡，。？！、：；（）《》]")
 _SPACE = re.compile(r"\s+")
+# Every apostrophe-like character a keyboard, phone or autocorrect might produce.
+_APOSTROPHES = re.compile(r"[’‘‛`´ʼʹ′＇]")
 
 _EN_CONTRACTIONS = {
     "i'm": "i am",
@@ -40,7 +43,7 @@ _EN_CONTRACTIONS = {
 
 def normalize(text: str, lang: str = "fr") -> str:
     s = unicodedata.normalize("NFC", text).lower()
-    s = s.replace("’", "'").replace("‘", "'").replace("‐", "-")
+    s = _APOSTROPHES.sub("'", s).replace("‐", "-").replace("–", "-")
     s = _PUNCT.sub(" ", s)
     s = s.replace("-", " ")
     # "j' ai" and "j'ai" should match; drop spaces after apostrophes.
@@ -55,6 +58,12 @@ def strip_accents(text: str) -> str:
     text = text.replace("œ", "oe").replace("æ", "ae")
     decomposed = unicodedata.normalize("NFD", text)
     return "".join(c for c in decomposed if not unicodedata.combining(c))
+
+
+def _loose_forms(text: str) -> set[str]:
+    """Accents dropped, and the apostrophe written as nothing or as a space: j'ai, jai, j ai."""
+    s = strip_accents(text)
+    return {re.sub(r"\s*'\s*", "", s), _SPACE.sub(" ", s.replace("'", " ")).strip()}
 
 
 def _distance_at_most_one(a: str, b: str) -> bool:
@@ -114,11 +123,12 @@ def grade(answer: str, accepted: list[str], lang: str = "fr") -> Result:
     normed = [normalize(a, lang) for a in accepted]
     if given in normed:
         return Result("correct", accepted[normed.index(given)])
+    loose = _loose_forms(given)
     for original, n in zip(accepted, normed, strict=True):
-        if strip_accents(given) == strip_accents(n):
+        if loose & _loose_forms(n):
             return Result("accent", original)
     for original, n in zip(accepted, normed, strict=True):
-        if _one_typo(strip_accents(given), strip_accents(n)):
+        if any(_one_typo(g, e) for g in loose for e in _loose_forms(n)):
             return Result("typo", original)
     return Result("wrong", best)
 

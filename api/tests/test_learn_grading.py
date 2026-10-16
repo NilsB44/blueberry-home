@@ -29,6 +29,17 @@ from app.modules.learn.grading import grade, grade_chinese, normalize, pinyin_ke
         ("Merci", ["Merci"], "correct"),
         ("j' aime le poker", ["J'aime le poker."], "correct"),
         ("coeur", ["cœur"], "accent"),
+        # Apostrophes: any variant counts, and leaving one out is only a nudge.
+        ("j´aime le poker", ["J'aime le poker."], "correct"),
+        ("jʼaime le poker", ["J'aime le poker."], "correct"),
+        ("j`aime le poker", ["J'aime le poker."], "correct"),
+        ("jaime le poker", ["J'aime le poker."], "accent"),
+        ("j aime le poker", ["J'aime le poker."], "accent"),
+        ("sil vous plait", ["S'il vous plaît"], "accent"),
+        ("de leau", ["de l'eau"], "accent"),
+        ("naive", ["naïve"], "accent"),
+        ("aujourdhui", ["aujourd'hui"], "accent"),
+        ("je voudrias un cafe sil vous plait", ["Je voudrais un café, s'il vous plaît."], "typo"),
     ],
 )
 def test_grade_french(answer, accepted, verdict):

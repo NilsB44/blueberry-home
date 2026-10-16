@@ -2,8 +2,9 @@
 	import { page } from '$app/state';
 	import { api } from '#lib/api.ts';
 	import ExerciseView from '#lib/learn/ExerciseView.svelte';
-	import { loadCourse } from '#lib/learn/course.svelte.ts';
+	import { loadCourse, prefs } from '#lib/learn/course.svelte.ts';
 	import Feedback from '#lib/learn/Feedback.svelte';
+	import LearnCards from '#lib/learn/LearnCards.svelte';
 	import SpeakButton from '#lib/learn/SpeakButton.svelte';
 	import type { CheckResult, Lesson, Stats } from '#lib/learn/types.ts';
 
@@ -11,7 +12,9 @@
 	const lessonId = $derived(page.params.id ?? '');
 
 	let lesson = $state<Lesson | null>(null);
-	let started = $state(false);
+	// intro → learn the new words → exercises
+	let phase = $state<'intro' | 'learn' | 'practice'>('intro');
+	let showWords = $state(false);
 	// Exercises answered wrong go to the back of the queue, like Duolingo.
 	let queue = $state<number[]>([]);
 	let step = $state(0); // bumps on every attempt so the exercise view resets
@@ -20,19 +23,22 @@
 	let result = $state<CheckResult | null>(null);
 	let finished = $state<{ xp: number; new_words: number; stats: Stats } | null>(null);
 	let error = $state('');
+	let total = $state(1);
 
 	$effect(() => {
 		Promise.all([api<Lesson>(`/learn/${courseId}/lessons/${lessonId}`), loadCourse(courseId)])
 			.then(([l]) => {
 				lesson = l;
-				queue = l.exercises.map((_, i) => i);
-				if (!l.intro && l.vocab.length === 0) started = true;
+				const all = l.exercises.map((_, i) => i);
+				const kept = prefs.writing ? all : all.filter((i) => l.exercises[i].type !== 'write');
+				queue = kept.length ? kept : all;
+				total = queue.length;
+				if (!l.intro && l.vocab.length === 0) phase = 'practice';
 			})
 			.catch((e) => (error = e.message));
 	});
 
 	const current = $derived(queue[0]);
-	const total = $derived(lesson?.exercises.length ?? 1);
 
 	async function submit(answer: string) {
 		try {
@@ -75,7 +81,22 @@
 	<div class="top">
 		<a href={`/learn/${courseId}`} class="close" aria-label="Quit lesson">✕</a>
 		<progress max={total} value={solved}></progress>
+		{#if lesson?.vocab.length && phase === 'practice' && !finished}
+			<button type="button" class="ghost" aria-expanded={showWords} onclick={() => (showWords = !showWords)}>📖 Words</button>
+		{/if}
 	</div>
+	{#if showWords && lesson && phase === 'practice' && !finished}
+		<ul class="card vocab">
+			{#each lesson.vocab as v}
+				<li>
+					<SpeakButton text={v.word} /> <strong>{v.word}</strong>
+					{#if v.reading}<span class="reading">{v.reading}</span>{/if}
+					<span class="muted">{v.en}</span>
+					{#if v.note}<div class="muted note">{v.note}</div>{/if}
+				</li>
+			{/each}
+		</ul>
+	{/if}
 	{#if error}<p class="error">{error}</p>{/if}
 
 	{#if finished}
@@ -87,23 +108,18 @@
 			<p>🔥 {finished.stats.streak} day streak · {finished.stats.xp_today}/{finished.stats.daily_goal} XP today</p>
 			<a class="button" href={`/learn/${courseId}`}>Continue</a>
 		</div>
-	{:else if lesson && !started}
+	{:else if lesson && phase === 'intro'}
 		<h1>{lesson.title}</h1>
 		{#if lesson.intro}<p class="card">{lesson.intro}</p>{/if}
 		{#if lesson.vocab.length}
-			<h2>New words</h2>
-			<ul class="vocab">
-				{#each lesson.vocab as v}
-					<li>
-						<SpeakButton text={v.word} /> <strong>{v.word}</strong>
-						{#if v.reading}<span class="reading">{v.reading}</span>{/if}
-						<span class="muted">{v.en}</span>
-						{#if v.note}<div class="muted note">{v.note}</div>{/if}
-					</li>
-				{/each}
-			</ul>
+			<p class="muted">This lesson has {lesson.vocab.length} new words. Learn them first, then practise.</p>
+			<button class="wide" onclick={() => (phase = 'learn')}>Learn the new words</button>
+			<button class="wide secondary" onclick={() => (phase = 'practice')}>Skip to the exercises</button>
+		{:else}
+			<button class="wide" onclick={() => (phase = 'practice')}>Start lesson</button>
 		{/if}
-		<button class="wide" onclick={() => (started = true)}>Start lesson</button>
+	{:else if lesson && phase === 'learn'}
+		<LearnCards vocab={lesson.vocab} onDone={() => (phase = 'practice')} />
 	{:else if lesson && current !== undefined}
 		{#key step}
 			<ExerciseView ex={lesson.exercises[current]} locked={result !== null} onSubmit={submit} onLocalDone={localDone} />
@@ -139,7 +155,7 @@
 	}
 	.vocab {
 		list-style: none;
-		padding: 0;
+		margin: 0;
 		display: grid;
 		gap: 0.35rem;
 	}
@@ -155,6 +171,11 @@
 		width: 100%;
 		padding: 0.8rem;
 		text-align: center;
+	}
+	.secondary {
+		background: var(--surface);
+		color: var(--text);
+		border: 1px solid var(--border);
 	}
 	.button {
 		display: block;

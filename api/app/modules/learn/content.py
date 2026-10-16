@@ -210,3 +210,43 @@ def load_course(path: Path) -> Course:
 @lru_cache
 def get_course(course_id: str = "french") -> Course:
     return load_course(get_settings().content_dir / course_id)
+
+
+def _is_hanzi(ch: str) -> bool:
+    return "\u4e00" <= ch <= "\u9fff"
+
+
+def _strings(value) -> list[str]:
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, dict):
+        value = list(value.values())
+    if isinstance(value, list | tuple):
+        return [s for v in value for s in _strings(v)]
+    return []
+
+
+@lru_cache
+def pinyin_dict(course_id: str) -> dict[str, str]:
+    """Pinyin for everything a Chinese course shows, so the app can print it above the
+    characters for learners who can't read them yet.
+
+    Vocabulary words keep their authored reading (it gets neutral tones and tone changes
+    right, e.g. xièxie, bú kèqi); every other character gets its most common reading.
+    The browser matches the longest known word first, then falls back to single characters.
+    """
+    course = get_course(course_id)
+    if not course.meta.is_chinese:
+        return {}
+    from pypinyin import Style, pinyin
+
+    chars = {ch for s in _strings(course.model_dump()) for ch in s if _is_hanzi(ch)}
+    out = {ch: pinyin(ch, style=Style.TONE)[0][0] for ch in sorted(chars)}
+    for lesson in course.lessons():
+        for v in lesson.vocab:
+            if v.reading and all(_is_hanzi(ch) for ch in v.word):
+                out[v.word] = v.reading
+        for ex in lesson.exercises:
+            if isinstance(ex, Write):
+                out[ex.char] = ex.reading
+    return out
