@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { api } from '#lib/api.ts';
+	import { draw } from '#lib/poker/eval.ts';
 	import CardPicker from '#lib/poker/CardPicker.svelte';
 	import PlayingCard from '#lib/poker/PlayingCard.svelte';
 	import PokerNav from '#lib/poker/PokerNav.svelte';
@@ -16,6 +17,12 @@
 	let result = $state<Result | null>(null);
 	let busy = $state(false);
 	let error = $state('');
+	// Simulation: opponents dealt at random, optionally face down until you reveal them.
+	let dealt = $state<number[]>([]);
+	let boardDealt = $state(false);
+	let hide = $state(true);
+	let revealed = $state(false);
+	const masked = $derived(hide && !revealed && dealt.length > 0);
 
 	$effect(() => {
 		const hand = page.url.searchParams.get('hand');
@@ -39,13 +46,16 @@
 	}
 
 	function set(s: { kind: 'p' | 'b'; i: number; j: number }, c: string | null) {
-		if (s.kind === 'p') players[s.i][s.j] = c;
-		else board[s.j] = c;
+		if (s.kind === 'p') {
+			players[s.i][s.j] = c;
+			dealt = dealt.filter((i) => i !== s.i);
+		} else board[s.j] = c;
 		result = null;
 	}
 
 	function tap(s: { kind: 'p' | 'b'; i: number; j: number }) {
-		if (get(s)) set(s, null);
+		if (s.kind === 'p' && masked && dealt.includes(s.i)) revealed = true;
+		else if (get(s)) set(s, null);
 		else picking = s;
 	}
 
@@ -69,6 +79,38 @@
 		if (boardCount === 1 || boardCount === 2) return 'The board needs 0, 3, 4 or 5 cards.';
 		return '';
 	});
+
+	function removePlayer(i: number) {
+		players.splice(i, 1);
+		dealt = dealt.filter((d) => d !== i).map((d) => (d > i ? d - 1 : d));
+		result = null;
+	}
+
+	/** Deal random cards to every opponent you haven't picked cards for, then calculate. */
+	function dealOpponents() {
+		const redeal = new Set(dealt);
+		if (boardDealt) board = [null, null, null, null, null];
+		boardDealt = false;
+		const targets = players.map((p, i) => i).filter((i) => i > 0 && (redeal.has(i) || (!players[i][0] && !players[i][1])));
+		const keep = players.flatMap((p, i) => (targets.includes(i) ? [] : p)).concat(board).filter((c): c is string => !!c);
+		const cards = draw(targets.length * 2, keep);
+		targets.forEach((i, k) => (players[i] = [cards[k * 2], cards[k * 2 + 1]]));
+		dealt = targets;
+		revealed = false;
+		calculate();
+	}
+
+	const nextStreet = $derived(boardCount === 0 ? 'flop' : boardCount === 3 ? 'turn' : boardCount === 4 ? 'river' : '');
+
+	/** Run the board out one street at a time: flop, turn, river. */
+	function dealStreet() {
+		const n = boardCount === 0 ? 3 : 1;
+		const cards = draw(n, used);
+		let k = 0;
+		board = board.map((c) => c ?? (k < n ? cards[k++] : null));
+		boardDealt = true;
+		calculate();
+	}
 
 	async function calculate() {
 		busy = true;
@@ -95,6 +137,8 @@
 		];
 		board = [null, null, null, null, null];
 		result = null;
+		dealt = [];
+		boardDealt = false;
 	}
 
 	const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
@@ -103,7 +147,10 @@
 <section>
 	<PokerNav />
 	<h1>Equity calculator</h1>
-	<p class="muted">Tap a slot to pick a card. Leave a hand empty for a random hand.</p>
+	<p class="muted">
+		Tap a slot to pick a card. Leave a hand empty for a random hand, or pick yours and deal the others to play a hand
+		out.
+	</p>
 
 	<div class="players">
 		{#each players as p, i}
@@ -111,10 +158,17 @@
 				<span class="name">P{i + 1}</span>
 				<span class="cards">
 					{#each [0, 1] as j}
-						<PlayingCard card={p[j]} active={picking?.kind === 'p' && picking.i === i && picking.j === j} onclick={() => tap({ kind: 'p', i, j })} />
+						<PlayingCard
+							card={p[j]}
+							hidden={masked && dealt.includes(i)}
+							active={picking?.kind === 'p' && picking.i === i && picking.j === j}
+							onclick={() => tap({ kind: 'p', i, j })}
+						/>
 					{/each}
 				</span>
-				{#if result}
+				{#if result && masked}
+					<span class="muted small">{i === 0 ? 'your equity is hidden' : 'face down'}</span>
+				{:else if result}
 					{@const r = result.players[i]}
 					<span class="res">
 						<strong>{pct(r.equity)}</strong>
@@ -125,7 +179,7 @@
 					<span class="muted small">random</span>
 				{/if}
 				{#if players.length > 2}
-					<button class="ghost x" aria-label="Remove player" onclick={() => { players.splice(i, 1); result = null; }}>✕</button>
+					<button class="ghost x" aria-label="Remove player" onclick={() => removePlayer(i)}>✕</button>
 				{/if}
 			</div>
 		{/each}
@@ -146,6 +200,26 @@
 	<div class="actions">
 		<button disabled={busy || !!problem} onclick={calculate}>{busy ? 'Calculating…' : 'Calculate'}</button>
 		<button class="ghost" onclick={reset}>Clear</button>
+	</div>
+
+	<div class="card sim">
+		<h2>Simulate a hand</h2>
+		<p class="muted small">Pick your two cards as P1, then deal random hands to the other players and run out the board.</p>
+		<div class="actions">
+			<button disabled={busy || !players[0][0] || !players[0][1]} onclick={dealOpponents}>
+				{dealt.length ? 'Deal new hands' : 'Deal opponents'}
+			</button>
+			{#if dealt.length && nextStreet}
+				<button class="ghost" disabled={busy} onclick={dealStreet}>Deal the {nextStreet}</button>
+			{/if}
+			{#if masked}
+				<button class="ghost" onclick={() => (revealed = true)}>Reveal</button>
+			{/if}
+		</div>
+		<label class="toggle">
+			<input type="checkbox" bind:checked={hide} />
+			Deal face down, so you can guess your equity before revealing it
+		</label>
 	</div>
 	{#if result}
 		<p class="muted small">
@@ -212,5 +286,25 @@
 	}
 	.small {
 		font-size: 0.85rem;
+	}
+	.sim {
+		margin-top: 1.25rem;
+	}
+	.sim h2 {
+		margin: 0;
+	}
+	.sim .actions {
+		flex-wrap: wrap;
+		margin-top: 0.5rem;
+	}
+	.toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-top: 0.75rem;
+		font-size: 0.9rem;
+	}
+	.toggle input {
+		width: auto;
 	}
 </style>

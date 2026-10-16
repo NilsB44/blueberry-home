@@ -1,11 +1,27 @@
 <script lang="ts">
 	import { isRed, label } from './cards.ts';
 
-	let { card, onclick, small = false, active = false }: { card: string | null; onclick?: () => void; small?: boolean; active?: boolean } = $props();
+	let {
+		card,
+		onclick,
+		small = false,
+		active = false,
+		hidden = false
+	}: { card: string | null; onclick?: () => void; small?: boolean; active?: boolean; hidden?: boolean } = $props();
 </script>
 
-<button type="button" class="pc" class:red={card && isRed(card)} class:empty={!card} class:small class:active {onclick}>
-	{card ? label(card) : '?'}
+<button
+	type="button"
+	class="pc"
+	class:red={card && isRed(card) && !hidden}
+	class:empty={!card}
+	class:back={card && hidden}
+	class:small
+	class:active
+	{onclick}
+	aria-label={card && hidden ? 'Face-down card' : undefined}
+>
+	{card ? (hidden ? '' : label(card)) : '?'}
 </button>
 
 <style>
@@ -27,6 +43,10 @@
 		background: transparent;
 		color: var(--muted);
 		border: 2px dashed var(--border);
+	}
+	.pc.back {
+		background: repeating-linear-gradient(45deg, #b0003a 0 4px, #d81b60 4px 8px);
+		border: 2px solid #fff;
 	}
 	.pc.active {
 		outline: 3px solid var(--accent);

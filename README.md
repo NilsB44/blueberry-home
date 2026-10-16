@@ -17,10 +17,12 @@ connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.
   translation, word-bank, matching, listening and fill-the-gap exercises. Answers are checked
   forgivingly (missing accents and one-letter typos count, with a correction). Every word you
   meet goes into spaced-repetition reviews (FSRS). XP, daily goal and streaks, no ads.
-- **Poker:** a 13×13 pre-flop chart (equity of all 169 hands against 1–9 opponents), an
-  equity calculator for any hands and board (exact when possible, Monte Carlo otherwise, from a
-  small Rust engine in `engines/poker`), and a home-game tracker: buy-ins, rebuys, final stacks,
-  the fewest transfers to settle up, and lifetime results per player.
+- **Poker:** a 13×13 pre-flop chart with raise/fold ranges per seat for heads-up, 6-max and
+  full ring (plus raw equity of all 169 hands against 1–9 opponents), an equity calculator for
+  any hands and board (exact when possible, Monte Carlo otherwise, from a small Rust engine in
+  `engines/poker`) that can also deal random opponents and run out a hand, a play-money pre-flop
+  practice game, and a home-game tracker: buy-ins, rebuys, final stacks, the fewest transfers to
+  settle up, and lifetime results per player.
 - **Mandarin:** an HSK 1 unit with a Singapore flavour (greetings, numbers, introductions,
   ordering at a hawker centre). Type answers as characters or pinyin (tone marks or numbers;
   missing tones get a gentle nudge) and draw characters stroke by stroke.
