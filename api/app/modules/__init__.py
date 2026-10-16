@@ -82,10 +82,10 @@ MODULES: list[ModuleInfo] = [
     ModuleInfo(
         id="network",
         name="Network",
-        description="Devices on the Wi-Fi, ad blocking stats and VPN status.",
-        icon="🛡️",
+        description="Who's on the Wi-Fi, internet speed and uptime, and how the Pi is doing.",
+        icon="📶",
         path="/network",
-        status="planned",
+        status="ready",
         phase=3,
     ),
     ModuleInfo(
