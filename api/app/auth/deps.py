@@ -13,17 +13,24 @@ COOKIE_NAME = "hub_session"
 DbSession = Annotated[Session, Depends(get_session)]
 
 
+def user_for_token(db: Session, token: str | None) -> User | None:
+    """The person a session cookie belongs to, or None if it's missing or expired."""
+    if not token:
+        return None
+    session = db.get(AuthSession, hash_token(token))
+    if session is None or _aware(session.expires_at) < datetime.now(UTC):
+        return None
+    return db.get(User, session.user_id)
+
+
 def current_user(
     db: DbSession, token: Annotated[str | None, Cookie(alias=COOKIE_NAME)] = None
 ) -> User:
     if not token:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not logged in")
-    session = db.get(AuthSession, hash_token(token))
-    if session is None or _aware(session.expires_at) < datetime.now(UTC):
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Session expired")
-    user = db.get(User, session.user_id)
+    user = user_for_token(db, token)
     if user is None:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not logged in")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Session expired")
     return user
 
 

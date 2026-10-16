@@ -12,6 +12,7 @@ from app.modules.assistant.router import router as assistant_router
 from app.modules.files.router import router as files_router
 from app.modules.learn.router import router as learn_router
 from app.modules.poker.router import router as poker_router
+from app.modules.tetris.router import router as tetris_router
 
 
 @asynccontextmanager
@@ -36,6 +37,7 @@ app.include_router(assistant_router)
 app.include_router(files_router)
 app.include_router(learn_router)
 app.include_router(poker_router)
+app.include_router(tetris_router)
 
 
 @app.get("/api/health", tags=["meta"])

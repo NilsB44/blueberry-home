@@ -69,6 +69,10 @@ Everything below works from the phone; the laptop is just the server.
   add players and rebuys, enter final stacks (Busted and "Gets the rest" fill them in one
   tap), and press Settle to get who-pays-whom. Try it at the next poker night with everyone
   on their own phone.
+- **Tetris:** play Solo on the phone (buttons at the bottom; you can also drag on the board to
+  move, tap to rotate and flick down to drop). For multiplayer, press Create a room on the
+  laptop, open Tetris on the phone and tap the room under Open rooms (or type its code), then
+  press Start on the laptop. Clear two or more lines at once to send the other player garbage.
 - **French** and **Mandarin:** do the first lesson of each. In Mandarin you can type `ni3 hao3`
   or `nǐ hǎo` (or the characters), and you'll draw 你 and 好 with your finger. Finished
   lessons feed the Review queue, which comes back over the following days.

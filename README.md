@@ -34,6 +34,11 @@ connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.
 - **Files:** a Shared space and a private My files space. Upload from the phone, download on
   the laptop, preview photos and videos, folders, rename, move and delete. See
   [docs/files.md](docs/files.md).
+- **Tetris:** solo with a household high-score table, or 2–4 players in a room on the Wi-Fi
+  (create one, others join with its four-letter code). Everyone gets the same pieces; clearing
+  two or more lines sends garbage to an opponent, last one standing wins. Some pieces carry a ✦
+  star: clear its row to collect a power-up (bomb, slow-mo, long bar; in multiplayer also shield
+  and rush). Keyboard on computers, buttons and swipes on phones.
 - **Assistant:** chat with a small local language model through Ollama, streamed token by token.
 - Caddy serves everything over HTTPS on the LAN at `https://hub.home` with its own local CA.
 - Installable on phones as a web app (PWA manifest), dark mode follows the system.

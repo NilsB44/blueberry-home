@@ -11,6 +11,6 @@ export default defineConfig({
 	],
 	server: {
 		// In development the API runs on :8000; proxy so cookies stay same-origin.
-		proxy: { '/api': 'http://localhost:8000' }
+		proxy: { '/api': { target: 'http://localhost:8000', ws: true } }
 	}
 });
