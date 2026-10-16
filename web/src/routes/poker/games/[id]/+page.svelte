@@ -45,6 +45,15 @@
 		act(`/players/${entryId}/cash-out`, 'PUT', { amount: toMinor(v) });
 	}
 
+	function setStack(entryId: number, amount: number) {
+		stacks[entryId] = String(amount / 100);
+		act(`/players/${entryId}/cash-out`, 'PUT', { amount });
+	}
+
+	// When only one stack is left to count, that player holds whatever the others didn't take.
+	const waiting = $derived(game?.entries.filter((e) => e.cash_out === null) ?? []);
+	const rest = $derived(game && waiting.length === 1 ? game.total_in - game.total_out : null);
+
 	async function remove() {
 		if (!confirm('Delete this game?')) return;
 		await api(`/poker/games/${id}`, { method: 'DELETE' });
@@ -86,6 +95,13 @@
 								onchange={() => saveStack(e.id)}
 							/>
 						</label>
+						{#if e.cash_out === null}
+							{#if rest !== null && rest >= 0}
+								<button class="ghost quick" onclick={() => setStack(e.id, rest)}>Gets the rest: {m(rest)}</button>
+							{:else if waiting.length > 1}
+								<button class="ghost quick" onclick={() => setStack(e.id, 0)}>Busted</button>
+							{/if}
+						{/if}
 					{:else}
 						<span class="net" class:pos={(e.net ?? 0) > 0} class:neg={(e.net ?? 0) < 0}>{m(e.net ?? 0)}</span>
 					{/if}
@@ -124,7 +140,10 @@
 				<p class="muted small">Settling locks the game and adds it to lifetime results.</p>
 			{/if}
 		{:else if open && game.entries.length}
-			<p class="muted small">Enter every final stack to see who pays whom.</p>
+			<p class="muted small">
+				Enter every final stack to see who pays whom. Tap Busted for anyone with no chips left; the last player gets the
+				rest of the pot in one tap.
+			</p>
 		{/if}
 
 		<p><button class="ghost danger" onclick={remove}>Delete game</button></p>
@@ -154,6 +173,13 @@
 	.stack {
 		display: grid;
 		width: 6.5rem;
+	}
+	.entry {
+		flex-wrap: wrap;
+	}
+	.quick {
+		padding: 0.35rem 0.6rem;
+		font-size: 0.85rem;
 	}
 	.stack input {
 		padding: 0.35rem 0.5rem;

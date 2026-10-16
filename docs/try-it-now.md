@@ -59,10 +59,15 @@ can pick nicer voices under Settings → Accessibility → Spoken Content → Vo
 
 Everything below works from the phone; the laptop is just the server.
 
-- **Poker → Pre-flop chart:** tap any hand (AKs, 72o, ...) to see its equity against 1–9
-  opponents. **Calculator:** pick your two cards, optionally a board and other players' hands,
-  and get win/tie odds. **Home games:** start a game, add players and rebuys, enter final
-  stacks, and press Settle to get who-pays-whom. Try it at the next poker night with everyone
+- **Poker → Chart:** pick heads-up, 6-max or full ring and a seat to see exactly which hands
+  to raise (highlighted and outlined) and which to fold; "All seats" shows the earliest seat
+  each hand opens from. "Raw equity" still shows each hand against 1–9 opponents.
+  **Calculator:** pick your two cards, optionally a board and other players' hands, and get
+  win/tie odds, or deal the other players at random (face down if you like) and run out the
+  flop, turn and river. **Practice:** a play-money pre-flop game starting with $100: raise or
+  fold, see whether the chart agrees, and watch your bankroll. **Home games:** start a game,
+  add players and rebuys, enter final stacks (Busted and "Gets the rest" fill them in one
+  tap), and press Settle to get who-pays-whom. Try it at the next poker night with everyone
   on their own phone.
 - **French** and **Mandarin:** do the first lesson of each. In Mandarin you can type `ni3 hao3`
   or `nǐ hǎo` (or the characters), and you'll draw 你 and 好 with your finger. Finished

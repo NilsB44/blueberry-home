@@ -2,8 +2,9 @@
 	import { page } from '$app/state';
 
 	const TABS = [
-		{ href: '/poker', label: 'Pre-flop chart' },
+		{ href: '/poker', label: 'Chart' },
 		{ href: '/poker/calculator', label: 'Calculator' },
+		{ href: '/poker/practice', label: 'Practice' },
 		{ href: '/poker/games', label: 'Home games' }
 	];
 	const current = $derived(
