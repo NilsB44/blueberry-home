@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { drawBoard, drawPreview, fit } from './draw.ts';
 	import { COLS, Game, HIDDEN, MAX_POWERS, POWERS, ROWS, type Power } from './game.ts';
+	import { isDark } from '#lib/theme.svelte.ts';
 
 	type Result = { score: number; lines: number; level: number };
 
@@ -238,7 +239,7 @@
 	// --- the loop -----------------------------------------------------------------------------
 
 	onMount(() => {
-		const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+		const dark = isDark();
 		let ctx = fit(board, COLS * cell, (ROWS - HIDDEN) * cell);
 		let drawnCell = cell;
 		let last = performance.now();

@@ -9,6 +9,8 @@ from typing import Literal
 from pydantic import BaseModel
 
 Status = Literal["ready", "planned"]
+# The home-screen folder a module starts in; people can move it from there.
+Folder = Literal["games", "learning", "nerd", "life"]
 
 
 class ModuleInfo(BaseModel):
@@ -19,6 +21,7 @@ class ModuleInfo(BaseModel):
     path: str
     status: Status
     phase: int
+    folder: Folder
     # Only shown to the hub's owner.
     owner_only: bool = False
 
@@ -32,6 +35,7 @@ MODULES: list[ModuleInfo] = [
         path="/learn/french",
         status="ready",
         phase=1,
+        folder="learning",
     ),
     ModuleInfo(
         id="mandarin",
@@ -41,6 +45,7 @@ MODULES: list[ModuleInfo] = [
         path="/learn/mandarin",
         status="ready",
         phase=1,
+        folder="learning",
     ),
     ModuleInfo(
         id="assistant",
@@ -50,6 +55,7 @@ MODULES: list[ModuleInfo] = [
         path="/assistant",
         status="ready",
         phase=0,
+        folder="nerd",
     ),
     ModuleInfo(
         id="poker",
@@ -59,6 +65,7 @@ MODULES: list[ModuleInfo] = [
         path="/poker",
         status="ready",
         phase=2,
+        folder="games",
     ),
     ModuleInfo(
         id="files",
@@ -68,6 +75,7 @@ MODULES: list[ModuleInfo] = [
         path="/files",
         status="ready",
         phase=3,
+        folder="life",
     ),
     ModuleInfo(
         id="security",
@@ -77,6 +85,7 @@ MODULES: list[ModuleInfo] = [
         path="/security",
         status="ready",
         phase=3,
+        folder="nerd",
         owner_only=True,
     ),
     ModuleInfo(
@@ -87,6 +96,7 @@ MODULES: list[ModuleInfo] = [
         path="/network",
         status="ready",
         phase=3,
+        folder="nerd",
     ),
     ModuleInfo(
         id="tetris",
@@ -96,6 +106,7 @@ MODULES: list[ModuleInfo] = [
         path="/tetris",
         status="ready",
         phase=4,
+        folder="games",
     ),
     ModuleInfo(
         id="finance",
@@ -105,6 +116,7 @@ MODULES: list[ModuleInfo] = [
         path="/finance",
         status="planned",
         phase=6,
+        folder="life",
     ),
     ModuleInfo(
         id="plants",
@@ -114,6 +126,7 @@ MODULES: list[ModuleInfo] = [
         path="/plants",
         status="planned",
         phase=6,
+        folder="life",
     ),
     ModuleInfo(
         id="reading",
@@ -123,6 +136,7 @@ MODULES: list[ModuleInfo] = [
         path="/reading",
         status="planned",
         phase=6,
+        folder="learning",
     ),
     ModuleInfo(
         id="wow",
@@ -132,5 +146,6 @@ MODULES: list[ModuleInfo] = [
         path="/wow",
         status="planned",
         phase=6,
+        folder="games",
     ),
 ]
