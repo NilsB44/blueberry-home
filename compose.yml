@@ -33,6 +33,8 @@ services:
       HUB_ASSISTANT_MODEL: ${HUB_ASSISTANT_MODEL:-qwen3:4b}
       HUB_FILES_DIR: /srv/files
       HUB_MAX_UPLOAD_MB: ${HUB_MAX_UPLOAD_MB:-8192}
+      # Extra names the API answers to besides local ones (see .env.example).
+      HUB_ALLOWED_HOSTS: ${HUB_ALLOWED_HOSTS:-[]}
       # Written weekly by scripts/pi-security-check.py into ./data/api on the Pi.
       HUB_HOST_REPORT_PATH: /srv/data/host-security.json
       # Written every 5 minutes by scripts/pi-network-scan.py into ./data/api on the Pi.

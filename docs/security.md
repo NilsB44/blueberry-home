@@ -138,7 +138,34 @@ scripts/update-hub.sh
 ```
 
 Pulls the latest code, rebuilds with fresh base images (picking up their security fixes) and
-restarts. Raspberry Pi OS updates itself through unattended-upgrades.
+restarts, and pulls the newest Ollama image if the local model is running. Raspberry Pi OS
+updates itself through unattended-upgrades.
+
+On GitHub, the code is kept clean before it ever reaches the Pi:
+
+- **Dependabot** (`.github/dependabot.yml`) opens a pull request as soon as a published
+  vulnerability affects one of the hub's Python, npm, Rust, Docker or GitHub Actions
+  dependencies, plus a weekly one for everything else that's new. New releases wait five
+  days first, so a hijacked package that gets yanked quickly never lands. Patch and minor
+  updates merge themselves once CI passes; major ones wait for you.
+- **Dependency review** (the `dependencies` job in CI) fails any pull request that adds or
+  upgrades to a package with a known vulnerability.
+- **CodeQL** (`.github/workflows/codeql.yml`) scans the hub's own code for security bugs on
+  every pull request and weekly.
+- The weekly **Security** workflow audits everything the hub is built from with pip-audit,
+  npm audit and cargo audit.
+
+## Websites you visit at home
+
+The hub lets in anything on the Wi-Fi, and a website open on a phone at home sends its
+requests from that phone. Two checks keep websites from using that:
+
+- **DNS rebinding.** A website's owner can point its own name at the Pi's address. The hub
+  only answers to names nobody can register on the internet: `*.home`, `*.lan`, `*.local`,
+  `*.ts.net`, single names like `raspberrypi`, and IP addresses. Using a real domain of your
+  own? Add it to `HUB_ALLOWED_HOSTS` in `.env`.
+- **Cross-site requests.** Changes (anything but reading) are refused when the browser says
+  they came from another website's page.
 
 ## One deliberate detail
 
