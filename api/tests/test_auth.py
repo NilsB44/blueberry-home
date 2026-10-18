@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app.auth.device import device_from_user_agent, new_username
+from app.config import get_settings
 from app.main import app
 from tests.conftest import ADMIN, IPHONE_UA
 
@@ -160,3 +161,32 @@ def test_device_names_from_user_agents():
     assert device_from_user_agent(win) == "Windows PC"
     assert device_from_user_agent(None) == "Device"
     assert new_username("Nils's iPhone").startswith("nils-s-iphone-")
+
+
+def test_websites_pointing_their_own_name_at_the_hub_are_refused(client):
+    # DNS rebinding: evil.example resolves to the Pi, so the request comes from a home phone.
+    for host in ["evil.example", "evil.example:80", "hub.home.evil.example"]:
+        assert client.get("/api/health", headers={"host": host}).status_code == 403
+    for host in ["hub.home", "hub.home:8443", "raspberrypi.local", "192.168.1.5", "[fd12::1]:80"]:
+        assert client.get("/api/health", headers={"host": host}).status_code == 200
+    assert client.get("/api/health", headers={"host": "pi.tail1234.ts.net"}).status_code == 200
+
+
+def test_extra_allowed_hosts(client, monkeypatch):
+    monkeypatch.setenv("HUB_ALLOWED_HOSTS", '["hub.example.com"]')
+    get_settings.cache_clear()
+    assert client.get("/api/health", headers={"host": "hub.example.com"}).status_code == 200
+    assert client.get("/api/health", headers={"host": "other.example.com"}).status_code == 403
+
+
+def test_changes_from_other_websites_are_refused(client):
+    evil = {"origin": "https://evil.example", "host": "hub.home"}
+    assert client.post("/api/auth/device", headers=evil).status_code == 403
+    fetch = {"sec-fetch-site": "cross-site", "host": "hub.home"}
+    assert client.post("/api/auth/device", headers=fetch).status_code == 403
+    sandboxed = {"origin": "null", "host": "hub.home"}
+    assert client.post("/api/auth/device", headers=sandboxed).status_code == 403
+    # Reading is fine (the browser won't let the other site see the answer anyway).
+    assert client.get("/api/health", headers=evil).status_code == 200
+    own = {"origin": "https://hub.home", "host": "hub.home", "sec-fetch-site": "same-origin"}
+    assert client.post("/api/auth/device", headers=own).status_code == 201

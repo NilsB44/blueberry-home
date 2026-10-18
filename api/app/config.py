@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     # Your VPN's addresses (Tailscale's by default). Devices here are only let in while an admin
     # has turned away access on in Security, and only devices that already joined at home.
     away_networks: list[str] = ["100.64.0.0/10", "fd7a:115c:a1e0::/48"]
+    # Extra names the hub answers to besides local ones (*.home, *.local, *.ts.net, IP
+    # addresses...), e.g. a real domain you point at the Pi. Any other name is refused, so a
+    # website can't reach the hub by pointing its own name at the Pi (DNS rebinding).
+    allowed_hosts: list[str] = []
     # Name new devices after what the router calls them (reverse DNS), when it says.
     device_names_from_dns: bool = True
     ollama_url: str = "http://ollama:11434"

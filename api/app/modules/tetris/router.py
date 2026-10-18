@@ -7,7 +7,7 @@ from sqlmodel import col, func, select
 
 from app.auth.deps import COOKIE_NAME, CurrentUser, DbSession, user_for_token
 from app.auth.models import User
-from app.auth.network import is_trusted
+from app.auth.network import host_allowed, is_trusted
 from app.modules.security import tracker
 from app.modules.tetris.models import TetrisScore
 from app.modules.tetris.rooms import MAX_PLAYERS, Player, rooms
@@ -92,6 +92,8 @@ def _same_origin(ws: WebSocket) -> bool:
     # Browsers send cookies with cross-site WebSocket handshakes in some cases, so only let in
     # pages served by the hub itself.
     origin = ws.headers.get("origin")
+    if not host_allowed(ws.headers.get("host")):
+        return False
     if origin is None:
         return True  # not a browser
     return urlsplit(origin).netloc == ws.headers.get("host")
