@@ -35,6 +35,7 @@ def init_db() -> None:
     from app.auth import models  # noqa: F401
     from app.modules.home import models as home_models  # noqa: F401
     from app.modules.learn import models as learn_models  # noqa: F401
+    from app.modules.network import models as network_models  # noqa: F401
     from app.modules.poker import models as poker_models  # noqa: F401
     from app.modules.security import models as security_models  # noqa: F401
     from app.modules.tetris import models as tetris_models  # noqa: F401

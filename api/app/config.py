@@ -51,6 +51,15 @@ class Settings(BaseSettings):
     host_report_path: Path = Path("./data/host-security.json")
     # Known vulnerabilities in the API's Python packages are looked up here (outbound only).
     osv_url: str = "https://api.osv.dev/v1/querybatch"
+    # Network page: watch the internet connection once a minute and measure its speed every
+    # few hours (0 = only when asked). Off in tests.
+    network_monitor: bool = True
+    network_speedtest_hours: int = 6
+    # Addresses the internet check connects to (TCP 443); the connection is up if any answers.
+    network_probe_hosts: list[str] = ["1.1.1.1", "8.8.8.8", "9.9.9.9"]
+    network_speedtest_url: str = "https://speed.cloudflare.com"
+    # Written every 5 minutes by scripts/pi-network-scan.py on the Pi.
+    network_scan_path: Path = Path("./data/network-scan.json")
 
 
 @lru_cache
