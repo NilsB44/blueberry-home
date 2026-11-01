@@ -10,9 +10,6 @@ dependencies = [
     "argon2-cffi>=25.1",
     "httpx>=0.28",
     "pydantic-settings>=2.6",
-    "fsrs>=6.3,<7",
-    "pyyaml>=6.0",
-    "pypinyin>=0.55,<1",
 ]
 
 [project.optional-dependencies]

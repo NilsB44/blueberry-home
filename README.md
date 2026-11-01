@@ -1,8 +1,8 @@
 # Blueberry Home
 
 A self-hosted, ad-free app suite for the home network, built to run on a Raspberry Pi 5 (8 GB).
-No logins, one dashboard, many modules: language learning, poker tools, file sharing, multiplayer
-Tetris, a local AI assistant and more. See [docs/plan.md](docs/plan.md) for the full roadmap.
+No logins, one dashboard, many modules: poker tools, file sharing, multiplayer Tetris, network
+and security checks and more. See [docs/plan.md](docs/plan.md) for the full roadmap.
 
 **No Pi yet?** Your laptop can stand in for it: it runs the same containers and your phone
 connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.md](docs/try-it-now.md).
@@ -20,23 +20,19 @@ connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.
   devices you can sign out, a security log, login lockout, and a weekly check of the hub and the Pi: refused visitors, wrong
   passwords, new devices, vulnerable packages, open ports, SSH, firewall and updates. See
   [docs/security.md](docs/security.md).
+- **Claude:** an owner-only page with Claude Code's tokens per day, averages, models and
+  projects, what that would cost at API prices, optional API key spend, and a link to your
+  plan's limits on claude.ai. See [docs/claude-usage.md](docs/claude-usage.md).
 - Devices are remembered by a long-lived cookie (HttpOnly, SameSite=Lax, Secure over HTTPS),
   stored hashed. A browser can't see its MAC address, and phones randomise theirs per network,
   so the cookie is the device's identity: clearing the browser's data makes a new person.
 - Dashboard with a tile per module; planned modules show which phase they land in.
-- **French:** A1 lessons (greetings, café, numbers, introductions, work) with multiple choice,
-  translation, word-bank, matching, listening and fill-the-gap exercises. Answers are checked
-  forgivingly (missing accents and one-letter typos count, with a correction). Every word you
-  meet goes into spaced-repetition reviews (FSRS). XP, daily goal and streaks, no ads.
 - **Poker:** a 13×13 pre-flop chart with raise/fold ranges per seat for heads-up, 6-max and
   full ring (plus raw equity of all 169 hands against 1–9 opponents), an equity calculator for
   any hands and board (exact when possible, Monte Carlo otherwise, from a small Rust engine in
   `engines/poker`) that can also deal random opponents and run out a hand, a play-money pre-flop
   practice game, and a home-game tracker: buy-ins, rebuys, final stacks, the fewest transfers to
   settle up, and lifetime results per player.
-- **Mandarin:** an HSK 1 unit with a Singapore flavour (greetings, numbers, introductions,
-  ordering at a hawker centre). Type answers as characters or pinyin (tone marks or numbers;
-  missing tones get a gentle nudge) and draw characters stroke by stroke.
 - **Files:** a Shared space and a private My files space. Upload from the phone, download on
   the laptop, preview photos and videos, folders, rename, move and delete. See
   [docs/files.md](docs/files.md).
@@ -54,7 +50,6 @@ connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.
   your phone through ntfy when a price comes near a level, with the stop distance and a position
   size from your equity and risk %. It also pings you when a new analysis is posted. How often it
   checks, the risk and the alerts are set on its settings page. See [docs/trading.md](docs/trading.md).
-- **Assistant:** chat with a small local language model through Ollama, streamed token by token.
 - Caddy serves everything over HTTPS on the LAN at `https://hub.home` with its own local CA.
 - Installable on phones as a web app (PWA manifest), dark mode follows the system.
 
@@ -64,8 +59,8 @@ connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.
 api/        FastAPI + SQLModel + SQLite. Each feature lives in app/modules/<name>/.
 engines/    Rust: the poker hand evaluator and equity engine (no dependencies).
 web/        SvelteKit (static SPA) + the Caddy config that serves it.
-compose.yml Caddy (web), API, and Ollama (opt-in "llm" profile).
-docs/       Plan, architecture, Pi setup, local LLM notes.
+compose.yml Caddy (web) and the API.
+docs/       Plan, architecture, Pi setup.
 ```
 
 ## Develop on your laptop
@@ -94,9 +89,6 @@ $env:HUB_COOKIE_SECURE="false"; .venv\Scripts\uvicorn app.main:app --reload
 Running everything with Docker (see [docs/try-it-now.md](docs/try-it-now.md)) avoids
 installing Python, Node and Rust at all.
 
-The assistant needs Ollama. Install it on your laptop (`ollama pull qwen3:4b`) and start the
-API with `HUB_OLLAMA_URL=http://localhost:11434`.
-
 The poker calculator needs the Rust engine: `cargo build --release` in `engines/poker`
 (install Rust from https://rustup.rs). The API finds it there automatically.
 
@@ -115,18 +107,10 @@ See [docs/pi-setup.md](docs/pi-setup.md). In short:
 ```bash
 git clone <this repo> hub && cd hub
 cp .env.example .env
-docker compose up -d                      # hub only
-docker compose --profile llm up -d        # hub + local language model
-docker compose exec ollama ollama pull qwen3:4b
+docker compose up -d
 sudo scripts/install-security-check.sh     # the Pi's weekly security check
 scripts/update-hub.sh                     # later: pull the latest version and rebuild
 ```
-
-## Writing lessons
-
-Lessons live in `api/content/<course>/*.yaml`, one file per unit. Copy an existing lesson,
-change it, and run `pytest`: the content tests check that every exercise loads and accepts its
-own answer. Quote any list item that contains a comma or a question mark.
 
 ## Adding a module
 

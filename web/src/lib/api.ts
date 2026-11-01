@@ -32,24 +32,6 @@ export async function api<T>(path: string, init: RequestInit & { json?: unknown 
 	return res.json() as Promise<T>;
 }
 
-/** POST and yield the response body as text chunks while it streams in. */
-export async function* streamText(path: string, json: unknown, signal?: AbortSignal) {
-	const res = await fetch(`/api${path}`, {
-		method: 'POST',
-		credentials: 'same-origin',
-		headers: { 'content-type': 'application/json' },
-		body: JSON.stringify(json),
-		signal
-	});
-	if (!res.ok || !res.body) throw await errorFrom(res);
-	const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
-	while (true) {
-		const { done, value } = await reader.read();
-		if (done) return;
-		yield value;
-	}
-}
-
 export type User = {
 	id: number;
 	username: string;

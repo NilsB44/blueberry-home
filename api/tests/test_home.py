@@ -13,7 +13,7 @@ def test_every_module_starts_in_a_folder(admin_client):
     assert {m["folder"] for m in modules} <= {"games", "learning", "nerd", "life"}
     folder = {m["id"]: m["folder"] for m in modules}
     assert folder["tetris"] == folder["poker"] == "games"
-    assert folder["french"] == "learning"
+    assert folder["files"] == "life"
 
 
 def test_layout_is_empty_until_saved(admin_client):

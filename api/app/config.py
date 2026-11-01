@@ -34,12 +34,9 @@ class Settings(BaseSettings):
     allowed_hosts: list[str] = []
     # Name new devices after what the router calls them (reverse DNS), when it says.
     device_names_from_dns: bool = True
-    ollama_url: str = "http://ollama:11434"
-    assistant_model: str = "qwen3:4b"
     content_dir: Path = Path(__file__).resolve().parent.parent / "content"
-    # Streaks and "today" are counted in this timezone.
+    # Scheduled jobs are timed in this timezone.
     timezone: str = "Europe/Stockholm"
-    daily_xp_goal: int = 30
     # The Rust equity engine. In Docker it's on PATH; in development, build it with
     # `cargo build --release` in engines/poker and it's found there.
     poker_engine: str = "poker-engine"
@@ -64,6 +61,11 @@ class Settings(BaseSettings):
     network_speedtest_url: str = "https://speed.cloudflare.com"
     # Written every 5 minutes by scripts/pi-network-scan.py on the Pi.
     network_scan_path: Path = Path("./data/network-scan.json")
+    # Claude Code's session logs (~/.claude/projects), mounted read-only, for the Claude page.
+    claude_logs_dir: Path = Path("./data/claude-logs")
+    # Optional Admin API key (sk-ant-admin...) to also show spend on Anthropic API keys.
+    # Only ever sent to api.anthropic.com; never shown in the hub.
+    anthropic_admin_key: str = ""
     # Trading: the watcher reads prices from IG's API (keys from My Account on IG). Everything
     # else (how often, risk, alerts) is on the trading settings page. Off in tests.
     trading_watcher: bool = True

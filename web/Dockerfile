@@ -1,5 +1,5 @@
 # Builds the web app and bakes it into a Caddy image that also proxies /api.
-FROM node:22-alpine AS build
+FROM node:25-alpine AS build
 WORKDIR /src
 COPY package.json package-lock.json ./
 RUN npm ci
