@@ -20,7 +20,8 @@ class TradingLevel(SQLModel, table=True):
     entry_low: float
     entry_high: float
     # How far beyond the zone the stop goes: above it for a short, below it for a long.
-    stop_points: float
+    # 0: no stop, so no position size either.
+    stop_points: float = 0
     # Free text, e.g. "25400, 25200".
     targets: str = Field(default="", max_length=100)
     note: str = Field(default="", max_length=300)

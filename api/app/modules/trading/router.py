@@ -41,7 +41,8 @@ class LevelIn(BaseModel):
     entry_low: float
     # Leave out for a single price level.
     entry_high: float | None = None
-    stop_points: float = Field(gt=0, le=100_000)
+    # Optional: 0 means no stop and no position size.
+    stop_points: float = Field(default=0, ge=0, le=100_000)
     targets: str = Field(default="", max_length=100)
     note: str = Field(default="", max_length=300)
     valid_until: date | None = None
@@ -129,7 +130,7 @@ def _level_out(level: TradingLevel, settings: TradingSettings) -> LevelOut:
         distance=watcher.distance(level, price),
         bias=side,
         stop=stop,
-        contracts=watcher.contracts(settings, level.instrument, entry, stop),
+        contracts=watcher.contracts(settings, level.instrument, entry, stop) if stop else None,
     )
 
 

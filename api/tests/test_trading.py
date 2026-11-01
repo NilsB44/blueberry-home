@@ -165,8 +165,8 @@ def test_settings_have_defaults_and_are_checked(admin_client):
     )
 
 
-def test_levels_need_a_known_instrument_and_a_stop_distance(trader):
-    assert trader.post("/api/trading/levels", json={**LEVEL, "stop_points": 0}).status_code == 422
+def test_levels_need_a_known_instrument(trader):
+    assert trader.post("/api/trading/levels", json={**LEVEL, "stop_points": -5}).status_code == 422
     ftse = {**LEVEL, "instrument": "FTSE"}
     assert trader.post("/api/trading/levels", json=ftse).status_code == 422
 
@@ -230,6 +230,19 @@ def test_price_near_a_level_alerts_once_with_the_stop_and_size(trader, world):
     level = trader.get("/api/trading/levels").json()[0]
     assert level["distance"] == 9 and level["last_alert_at"]
     assert (level["bias"], level["stop"], level["contracts"]) == ("short", 25_780, 19.23)
+
+
+def test_a_level_needs_only_the_market_and_its_prices(trader, world):
+    bare = {"instrument": "DAX", "entry_low": 25_650, "entry_high": 25_700}
+    level = trader.post("/api/trading/levels", json=bare).json()
+    assert level["stop_points"] == 0 and level["valid_until"] is None
+    world.bid, world.offer = 25_640, 25_642
+    trader.post("/api/trading/check")
+    a = trader.get("/api/trading/alerts").json()[0]
+    assert a["title"] == "DAX short level near"
+    assert "stop" not in a["message"] and "contracts" not in a["message"]
+    level = trader.get("/api/trading/levels").json()[0]
+    assert (level["bias"], level["stop"], level["contracts"]) == ("short", None, None)
 
 
 def test_coming_down_onto_a_level_is_a_long(trader, world):
