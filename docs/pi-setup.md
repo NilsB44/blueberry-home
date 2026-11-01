@@ -73,12 +73,3 @@ Never forward ports on the router. To reach the hub while you're out, set up Tai
 use the away access switch on the Security page: see [security.md](security.md).
 
 To update later: `scripts/update-hub.sh`.
-
-## 8. Local model (optional)
-
-```bash
-docker compose --profile llm up -d
-docker compose exec ollama ollama pull qwen3:4b
-```
-
-See [local-llm.md](local-llm.md) for model choices.

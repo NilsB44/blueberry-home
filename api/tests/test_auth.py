@@ -69,9 +69,9 @@ def test_modules_requires_login(client):
 
 def test_modules_lists_tiles(admin_client):
     ids = [m["id"] for m in admin_client.get("/api/modules").json()]
-    assert ids[:3] == ["french", "mandarin", "assistant"]
-    assert "poker" in ids
-    assert {"french", "poker", "tetris", "mandarin"} <= set(ids)
+    assert ids[:2] == ["poker", "files"]
+    assert {"poker", "files", "network", "tetris"} <= set(ids)
+    assert not {"french", "mandarin", "assistant"} & set(ids)
 
 
 def test_first_device_joins_without_password_and_is_admin(client):

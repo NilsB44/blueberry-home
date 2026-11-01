@@ -28,36 +28,6 @@ class ModuleInfo(BaseModel):
 
 MODULES: list[ModuleInfo] = [
     ModuleInfo(
-        id="french",
-        name="French",
-        description="Lessons, spaced-repetition review and listening practice.",
-        icon="🇫🇷",
-        path="/learn/french",
-        status="ready",
-        phase=1,
-        folder="learning",
-    ),
-    ModuleInfo(
-        id="mandarin",
-        name="Mandarin",
-        description="Pinyin, tones and characters, with Singapore everyday phrases.",
-        icon="🇸🇬",
-        path="/learn/mandarin",
-        status="ready",
-        phase=1,
-        folder="learning",
-    ),
-    ModuleInfo(
-        id="assistant",
-        name="Assistant",
-        description="Chat with a small language model running on the Pi.",
-        icon="🤖",
-        path="/assistant",
-        status="ready",
-        phase=0,
-        folder="nerd",
-    ),
-    ModuleInfo(
         id="poker",
         name="Poker",
         description="Pre-flop equity, hand calculator and home-game settle-up.",
