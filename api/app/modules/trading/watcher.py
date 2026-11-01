@@ -175,7 +175,9 @@ def bias(level: TradingLevel, price: float) -> str:
     return "short" if price - low <= high - price else "long"
 
 
-def stop_for(level: TradingLevel, side: str) -> float:
+def stop_for(level: TradingLevel, side: str) -> float | None:
+    if not level.stop_points:
+        return None
     low, high = zone(level)
     return high + level.stop_points if side == "short" else low - level.stop_points
 
@@ -205,12 +207,13 @@ def level_message(settings: TradingSettings, level: TradingLevel, price: float) 
     risk = settings.equity * settings.risk_pct / 100
     side = bias(level, price)
     stop = stop_for(level, side)
-    size = contracts(settings, level.instrument, entry, stop)
+    size = contracts(settings, level.instrument, entry, stop) if stop is not None else None
     came = "from below" if side == "short" else "from above"
-    lines = [
-        f"{level.instrument} {_fmt(price)}, entry {where}, {came}.",
-        f"{side.capitalize()}, stop {_fmt(stop)} ({_fmt(abs(entry - stop))} pts).",
-    ]
+    lines = [f"{level.instrument} {_fmt(price)}, entry {where}, {came}."]
+    if stop is None:
+        lines.append(f"{side.capitalize()}.")
+    else:
+        lines.append(f"{side.capitalize()}, stop {_fmt(stop)} ({_fmt(abs(entry - stop))} pts).")
     if size is not None:
         lines.append(
             f"Size {_fmt(size)} contracts risks {_fmt(risk)} ({_fmt(settings.risk_pct)}% of "

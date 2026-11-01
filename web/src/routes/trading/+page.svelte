@@ -15,10 +15,7 @@
 		instrument: '',
 		entry_low: '',
 		entry_high: '',
-		stop_points: '',
-		targets: '',
-		note: '',
-		valid_until: ''
+		stop_points: ''
 	});
 
 	async function load() {
@@ -67,13 +64,10 @@
 					instrument: form.instrument,
 					entry_low: Number(form.entry_low),
 					entry_high: form.entry_high === '' ? null : Number(form.entry_high),
-					stop_points: Number(form.stop_points),
-					targets: form.targets,
-					note: form.note,
-					valid_until: form.valid_until || null
+					stop_points: Number(form.stop_points) || 0
 				}
 			});
-			form = { ...form, entry_low: '', entry_high: '', stop_points: '', targets: '', note: '' };
+			form = { ...form, entry_low: '', entry_high: '', stop_points: '' };
 		});
 	}
 
@@ -143,22 +137,16 @@
 							{#each settings.instruments as i (i.name)}<option value={i.name}>{i.name}</option>{/each}
 						</select>
 					</label>
-					<label>Entry <input type="number" step="any" inputmode="decimal" bind:value={form.entry_low} required /></label>
+					<label>Lower level <input type="number" step="any" inputmode="decimal" bind:value={form.entry_low} required /></label>
+					<label>Upper level <input type="number" step="any" inputmode="decimal" bind:value={form.entry_high} required /></label>
 					<label>
-						Entry to
-						<input type="number" step="any" inputmode="decimal" bind:value={form.entry_high} placeholder="for a zone" />
+						Stop, points beyond
+						<input type="number" min="0" step="any" inputmode="decimal" bind:value={form.stop_points} placeholder="optional" />
 					</label>
-					<label>
-						Stop (points beyond)
-						<input type="number" min="0.01" step="any" inputmode="decimal" bind:value={form.stop_points} required />
-					</label>
-					<label>Targets <input bind:value={form.targets} maxlength="100" placeholder="25400, 25200" /></label>
-					<label>Valid until <input type="date" bind:value={form.valid_until} /></label>
-					<label>Note <input bind:value={form.note} maxlength="300" /></label>
 				</div>
 				<p class="muted small">
-					Long or short is decided when the price gets there: coming up from below is a short with the stop above the
-					zone, coming down from above is a long with the stop below it.
+					Long or short is decided when the price gets there: coming up from below is a short, coming down from above is a
+					long. Levels stay until you delete them. With a stop, alerts also show the position size.
 				</p>
 				<button disabled={busy}>Add</button>
 			</form>
@@ -172,11 +160,11 @@
 						<li class:paused={!l.active}>
 							<div>
 								<strong>{l.instrument}</strong>
-								{zone(l)}, stop {num(l.stop_points)} pts beyond
+								{zone(l)}{l.stop_points ? `, stop ${num(l.stop_points)} pts beyond` : ''}
 								{#if l.targets}<span class="muted">· targets {l.targets}</span>{/if}
 								<div class="muted small">
 									{#if l.distance != null}{l.distance === 0 ? 'Price is in the zone' : `${num(l.distance)} pts away`} ·{/if}
-									{#if l.bias}now {l.bias}, stop {num(l.stop)}{l.contracts ? `, ${num(l.contracts)} contracts` : ''} ·{/if}
+									{#if l.bias}now {l.bias}{l.stop ? `, stop ${num(l.stop)}` : ''}{l.contracts ? `, ${num(l.contracts)} contracts` : ''} ·{/if}
 									{#if l.valid_until}until {l.valid_until} ·{/if}
 									{#if l.last_alert_at}alerted {when(l.last_alert_at)}{:else}no alert yet{/if}
 								</div>
