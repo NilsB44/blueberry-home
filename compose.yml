@@ -32,6 +32,11 @@ services:
       HUB_MAX_UPLOAD_MB: ${HUB_MAX_UPLOAD_MB:-8192}
       # Extra names the API answers to besides local ones (see .env.example).
       HUB_ALLOWED_HOSTS: ${HUB_ALLOWED_HOSTS:-[]}
+      # Trading prices from IG (see docs/trading.md).
+      HUB_IG_API_KEY: ${HUB_IG_API_KEY:-}
+      HUB_IG_USERNAME: ${HUB_IG_USERNAME:-}
+      HUB_IG_PASSWORD: ${HUB_IG_PASSWORD:-}
+      HUB_IG_DEMO: ${HUB_IG_DEMO:-true}
       # Written weekly by scripts/pi-security-check.py into ./data/api on the Pi.
       HUB_HOST_REPORT_PATH: /srv/data/host-security.json
       # Written every 5 minutes by scripts/pi-network-scan.py into ./data/api on the Pi.

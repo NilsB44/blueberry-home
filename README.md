@@ -45,6 +45,11 @@ connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.
   speed test every few hours, how the Pi is doing (temperature, power, memory, disks), and the
   devices on the Wi-Fi with an alert when a new one joins (admins only). The device list needs
   a small scan installed on the Pi: see [docs/network.md](docs/network.md).
+- **Trading (owner only):** type in the index levels from your weekly analysis (entry zone, stop,
+  targets); the hub reads DAX, OMXS30, Nasdaq, S&P 500 and gold prices from IG's API and alerts
+  your phone through ntfy when a price comes near a level, with the stop distance and a position
+  size from your equity and risk %. It also pings you when a new analysis is posted. How often it
+  checks, the risk and the alerts are set on its settings page. See [docs/trading.md](docs/trading.md).
 - Caddy serves everything over HTTPS on the LAN at `https://hub.home` with its own local CA.
 - Installable on phones as a web app (PWA manifest), dark mode follows the system.
 

@@ -10,6 +10,7 @@ from app.db import get_session
 from app.main import app
 from app.modules.network import monitor as network_monitor
 from app.modules.security import tracker
+from app.modules.trading import watcher as trading_watcher
 
 
 @pytest.fixture(autouse=True)
@@ -17,9 +18,11 @@ def _no_background_checks(monkeypatch):
     # The weekly check would otherwise start with every TestClient and look things up online.
     monkeypatch.setenv("HUB_SECURITY_SCHEDULE", "false")
     monkeypatch.setenv("HUB_NETWORK_MONITOR", "false")
+    monkeypatch.setenv("HUB_TRADING_WATCHER", "false")
     get_settings.cache_clear()
     tracker.clear()
     network_monitor.state.reset()
+    trading_watcher.state.reset()
     lockout.clear()
     yield
     get_settings.cache_clear()

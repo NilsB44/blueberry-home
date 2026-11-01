@@ -90,6 +90,17 @@ MODULES: list[ModuleInfo] = [
         folder="games",
     ),
     ModuleInfo(
+        id="trading",
+        name="Trading",
+        description="Index levels from your analyses, live IG prices and alerts near a level.",
+        icon="📉",
+        path="/trading",
+        status="ready",
+        phase=6,
+        folder="life",
+        owner_only=True,
+    ),
+    ModuleInfo(
         id="finance",
         name="Finance",
         description="Budgets, portfolio and net worth, kept on the Pi.",

@@ -66,6 +66,14 @@ class Settings(BaseSettings):
     # Optional Admin API key (sk-ant-admin...) to also show spend on Anthropic API keys.
     # Only ever sent to api.anthropic.com; never shown in the hub.
     anthropic_admin_key: str = ""
+    # Trading: the watcher reads prices from IG's API (keys from My Account on IG). Everything
+    # else (how often, risk, alerts) is on the trading settings page. Off in tests.
+    trading_watcher: bool = True
+    ig_api_key: str = ""
+    ig_username: str = ""
+    ig_password: str = ""
+    # A demo account's key can only see prices and play money, never your real account.
+    ig_demo: bool = True
 
 
 @lru_cache

@@ -19,6 +19,8 @@ from app.modules.poker.router import router as poker_router
 from app.modules.security import scheduler
 from app.modules.security.router import router as security_router
 from app.modules.tetris.router import router as tetris_router
+from app.modules.trading import watcher as trading_watcher
+from app.modules.trading.router import router as trading_router
 
 
 @asynccontextmanager
@@ -30,6 +32,8 @@ async def lifespan(_: FastAPI):
         tasks.append(asyncio.create_task(scheduler.loop()))
     if settings.network_monitor:
         tasks.append(asyncio.create_task(network_monitor.loop()))
+    if settings.trading_watcher:
+        tasks.append(asyncio.create_task(trading_watcher.loop()))
     yield
     for task in tasks:
         task.cancel()
@@ -56,6 +60,7 @@ app.include_router(network_router)
 app.include_router(poker_router)
 app.include_router(security_router)
 app.include_router(tetris_router)
+app.include_router(trading_router)
 
 
 @app.get("/api/health", tags=["meta"])
