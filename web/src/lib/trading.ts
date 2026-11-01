@@ -39,10 +39,9 @@ export type Level = {
   id: number;
   created_at: string;
   instrument: string;
-  bias: "long" | "short";
   entry_low: number;
   entry_high: number;
-  stop: number;
+  stop_points: number;
   targets: string;
   note: string;
   valid_until: string | null;
@@ -50,6 +49,8 @@ export type Level = {
   last_alert_at: string | null;
   price: number | null;
   distance: number | null;
+  bias: "long" | "short" | null;
+  stop: number | null;
   contracts: number | null;
 };
 

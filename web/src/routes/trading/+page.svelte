@@ -13,10 +13,9 @@
 
 	let form = $state({
 		instrument: '',
-		bias: 'long' as 'long' | 'short',
 		entry_low: '',
 		entry_high: '',
-		stop: '',
+		stop_points: '',
 		targets: '',
 		note: '',
 		valid_until: ''
@@ -66,16 +65,15 @@
 				method: 'POST',
 				json: {
 					instrument: form.instrument,
-					bias: form.bias,
 					entry_low: Number(form.entry_low),
 					entry_high: form.entry_high === '' ? null : Number(form.entry_high),
-					stop: Number(form.stop),
+					stop_points: Number(form.stop_points),
 					targets: form.targets,
 					note: form.note,
 					valid_until: form.valid_until || null
 				}
 			});
-			form = { ...form, entry_low: '', entry_high: '', stop: '', targets: '', note: '' };
+			form = { ...form, entry_low: '', entry_high: '', stop_points: '', targets: '', note: '' };
 		});
 	}
 
@@ -83,7 +81,7 @@
 		act(() => api(`/trading/levels/${l.id}`, { method: 'PATCH', json: { active } }));
 
 	function remove(l: Level) {
-		if (confirm(`Delete the ${l.instrument} ${l.bias} level?`)) act(() => api(`/trading/levels/${l.id}`, { method: 'DELETE' }));
+		if (confirm(`Delete the ${l.instrument} ${zone(l)} level?`)) act(() => api(`/trading/levels/${l.id}`, { method: 'DELETE' }));
 	}
 
 	const zone = (l: Level) => (l.entry_low === l.entry_high ? num(l.entry_low) : `${num(l.entry_low)}–${num(l.entry_high)}`);
@@ -145,23 +143,23 @@
 							{#each settings.instruments as i (i.name)}<option value={i.name}>{i.name}</option>{/each}
 						</select>
 					</label>
-					<label>
-						Bias
-						<select bind:value={form.bias}>
-							<option value="long">Long</option>
-							<option value="short">Short</option>
-						</select>
-					</label>
 					<label>Entry <input type="number" step="any" inputmode="decimal" bind:value={form.entry_low} required /></label>
 					<label>
 						Entry to
 						<input type="number" step="any" inputmode="decimal" bind:value={form.entry_high} placeholder="for a zone" />
 					</label>
-					<label>Stop <input type="number" step="any" inputmode="decimal" bind:value={form.stop} required /></label>
+					<label>
+						Stop (points beyond)
+						<input type="number" min="0.01" step="any" inputmode="decimal" bind:value={form.stop_points} required />
+					</label>
 					<label>Targets <input bind:value={form.targets} maxlength="100" placeholder="25400, 25200" /></label>
 					<label>Valid until <input type="date" bind:value={form.valid_until} /></label>
 					<label>Note <input bind:value={form.note} maxlength="300" /></label>
 				</div>
+				<p class="muted small">
+					Long or short is decided when the price gets there: coming up from below is a short with the stop above the
+					zone, coming down from above is a long with the stop below it.
+				</p>
 				<button disabled={busy}>Add</button>
 			</form>
 		{/if}
@@ -173,12 +171,12 @@
 					{#each levels as l (l.id)}
 						<li class:paused={!l.active}>
 							<div>
-								<strong>{l.instrument} {l.bias}</strong>
-								{zone(l)}, stop {num(l.stop)}
+								<strong>{l.instrument}</strong>
+								{zone(l)}, stop {num(l.stop_points)} pts beyond
 								{#if l.targets}<span class="muted">· targets {l.targets}</span>{/if}
 								<div class="muted small">
 									{#if l.distance != null}{l.distance === 0 ? 'Price is in the zone' : `${num(l.distance)} pts away`} ·{/if}
-									{#if l.contracts}{num(l.contracts)} contracts ·{/if}
+									{#if l.bias}now {l.bias}, stop {num(l.stop)}{l.contracts ? `, ${num(l.contracts)} contracts` : ''} ·{/if}
 									{#if l.valid_until}until {l.valid_until} ·{/if}
 									{#if l.last_alert_at}alerted {when(l.last_alert_at)}{:else}no alert yet{/if}
 								</div>

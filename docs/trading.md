@@ -5,13 +5,18 @@ when a price comes near one. It never places trades.
 
 ## How it works
 
-1. After the weekend analysis, add each level on **Trading**: market, long or short, the entry
-   (or an entry zone), the stop, targets and a note. "Valid until" retires it on its own.
+1. After the weekend analysis, add each level on **Trading**: market, the entry (or an entry
+   zone), how many points beyond the zone the stop goes, targets and a note. "Valid until"
+   retires it on its own.
 2. The hub reads prices from IG's REST API, every 60 seconds by default, in one request for all
    markets. When a market is open and its price is within *N* points of a level's entry zone
-   (or inside it), you get an alert with the stop distance and a position size, and the level then stays quiet for
-   the cooldown.
-3. It reads the analysis site's RSS feed (`https://mikrittrading.com/feed/` by default) every
+   (or inside it), you get an alert with the trade, the stop and a position size, and the level
+   then stays quiet for the cooldown.
+3. The trade is **contrarian, decided when the price gets there**: coming up to the level from
+   below is a short with the stop above the zone; coming down from above is a long with the
+   stop below it. Inside the zone, the edge the price is nearer counts as where it came from.
+   So one level works both ways, e.g. resistance that later becomes support.
+4. It reads the analysis site's RSS feed (`https://mikrittrading.com/feed/` by default) every
    30 minutes and pings you about new posts; premium posts show up by title even when the
    content is for members. The first read only remembers what's already there.
 

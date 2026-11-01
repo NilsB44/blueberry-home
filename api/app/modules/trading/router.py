@@ -1,10 +1,9 @@
 from datetime import date, datetime
-from typing import Literal
 
 import httpx
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.concurrency import run_in_threadpool
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 from sqlmodel import Session, select
 
 from app.auth.deps import DbSession, OwnerUser
@@ -39,11 +38,10 @@ class Status(BaseModel):
 
 class LevelIn(BaseModel):
     instrument: str = Field(min_length=1, max_length=20)
-    bias: Literal["long", "short"]
     entry_low: float
     # Leave out for a single price level.
     entry_high: float | None = None
-    stop: float
+    stop_points: float = Field(gt=0, le=100_000)
     targets: str = Field(default="", max_length=100)
     note: str = Field(default="", max_length=300)
     valid_until: date | None = None
@@ -51,15 +49,6 @@ class LevelIn(BaseModel):
     def zone(self) -> tuple[float, float]:
         other = self.entry_low if self.entry_high is None else self.entry_high
         return min(self.entry_low, other), max(self.entry_low, other)
-
-    @model_validator(mode="after")
-    def _stop_on_the_right_side(self) -> "LevelIn":
-        low, high = self.zone()
-        if self.bias == "long" and self.stop >= low:
-            raise ValueError("A long's stop goes below the entry")
-        if self.bias == "short" and self.stop <= high:
-            raise ValueError("A short's stop goes above the entry")
-        return self
 
 
 class LevelChange(BaseModel):
@@ -70,18 +59,19 @@ class LevelOut(BaseModel):
     id: int
     created_at: datetime
     instrument: str
-    bias: str
     entry_low: float
     entry_high: float
-    stop: float
+    stop_points: float
     targets: str
     note: str
     valid_until: date | None
     active: bool
     last_alert_at: datetime | None
-    # From the latest price, when there is one.
+    # From the latest price, when there is one: the trade if it got there now.
     price: float | None
     distance: float | None
+    bias: str | None
+    stop: float | None
     # Contracts that risk the set share of equity, entering at the zone.
     contracts: float | None
 
@@ -126,12 +116,20 @@ def _status(enabled: bool) -> Status:
 def _level_out(level: TradingLevel, settings: TradingSettings) -> LevelOut:
     p = watcher.state.prices.get(level.instrument)
     price = p.mid if p else None
+    if price is None:
+        return LevelOut(
+            **level.model_dump(), price=None, distance=None, bias=None, stop=None, contracts=None
+        )
+    side = watcher.bias(level, price)
+    stop = watcher.stop_for(level, side)
     entry = watcher.entry_for(level, price)
     return LevelOut(
         **level.model_dump(),
         price=price,
-        distance=watcher.distance(level, price) if price is not None else None,
-        contracts=watcher.contracts(settings, level.instrument, entry, level.stop),
+        distance=watcher.distance(level, price),
+        bias=side,
+        stop=stop,
+        contracts=watcher.contracts(settings, level.instrument, entry, stop),
     )
 
 

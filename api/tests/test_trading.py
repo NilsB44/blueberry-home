@@ -118,12 +118,12 @@ SETTINGS = {
     "instruments": [{"name": "DAX", "epic": DAX_EPIC}, {"name": "OMXS30", "epic": ""}],
 }
 
-SHORT = {
+LEVEL = {
     "instrument": "DAX",
-    "bias": "short",
     "entry_low": 25_700,
     "entry_high": 25_650,
-    "stop": 25_780,
+    # A short's stop at 25,780, a long's at 25,570.
+    "stop_points": 80,
     "targets": "25400, 25200",
 }
 
@@ -165,23 +165,30 @@ def test_settings_have_defaults_and_are_checked(admin_client):
     )
 
 
-def test_levels_need_a_known_instrument_and_a_stop_on_the_right_side(trader):
-    assert trader.post("/api/trading/levels", json={**SHORT, "stop": 25_600}).status_code == 422
-    long = {**SHORT, "bias": "long", "stop": 25_660}
-    assert trader.post("/api/trading/levels", json=long).status_code == 422
-    ftse = {**SHORT, "instrument": "FTSE"}
+def test_levels_need_a_known_instrument_and_a_stop_distance(trader):
+    assert trader.post("/api/trading/levels", json={**LEVEL, "stop_points": 0}).status_code == 422
+    ftse = {**LEVEL, "instrument": "FTSE"}
     assert trader.post("/api/trading/levels", json=ftse).status_code == 422
 
-    level = trader.post("/api/trading/levels", json=SHORT).json()
-    # The zone is stored low to high.
+    level = trader.post("/api/trading/levels", json=LEVEL).json()
+    # The zone is stored low to high; the trade waits for a price.
     assert (level["entry_low"], level["entry_high"]) == (25_650, 25_700)
-    # Before there's a price: 2,500 risked over the 105 points from the zone's middle to the stop.
-    assert level["contracts"] == pytest.approx(2500 / 105, abs=0.01)
+    assert level["bias"] is None and level["contracts"] is None
 
     single = trader.post(
-        "/api/trading/levels", json={**SHORT, "entry_low": 25_700, "entry_high": None}
+        "/api/trading/levels", json={**LEVEL, "entry_low": 25_700, "entry_high": None}
     ).json()
     assert single["entry_high"] == 25_700
+
+
+def test_bias_is_contrarian_to_where_the_price_comes_from():
+    level = TradingLevel(instrument="DAX", entry_low=25_650, entry_high=25_700, stop_points=80)
+    assert watcher.bias(level, 25_600) == "short"  # coming up into it
+    assert watcher.bias(level, 25_660) == "short"  # inside, nearer the bottom
+    assert watcher.bias(level, 25_690) == "long"  # inside, nearer the top
+    assert watcher.bias(level, 25_750) == "long"  # coming down onto it
+    assert watcher.stop_for(level, "short") == 25_780
+    assert watcher.stop_for(level, "long") == 25_570
 
 
 def test_contracts_use_what_a_point_is_worth():
@@ -195,7 +202,7 @@ def test_contracts_use_what_a_point_is_worth():
 
 
 def test_price_near_a_level_alerts_once_with_the_stop_and_size(trader, world):
-    trader.post("/api/trading/levels", json=SHORT)
+    trader.post("/api/trading/levels", json=LEVEL)
     world.bid, world.offer = 25_630, 25_632  # 19 points below the zone: quiet
 
     status = trader.post("/api/trading/check").json()
@@ -210,7 +217,8 @@ def test_price_near_a_level_alerts_once_with_the_stop_and_size(trader, world):
     a = alerts[0]
     assert a["kind"] == "level" and a["delivered"] is True and a["price"] == 25_641
     # Entering at the bottom of the zone, 130 points from the stop: 2,500 / 130.
-    assert "stop 25,780 (130 pts)" in a["message"]
+    assert a["title"] == "DAX short level near"
+    assert "Short, stop 25,780 (130 pts)" in a["message"]
     assert "Size 19.23 contracts risks 2,500 (1% of 250,000)" in a["message"]
     push = world.pushes[-1]
     assert push.headers["Priority"] == "high"
@@ -221,10 +229,22 @@ def test_price_near_a_level_alerts_once_with_the_stop_and_size(trader, world):
     assert len(trader.get("/api/trading/alerts").json()) == 1
     level = trader.get("/api/trading/levels").json()[0]
     assert level["distance"] == 9 and level["last_alert_at"]
+    assert (level["bias"], level["stop"], level["contracts"]) == ("short", 25_780, 19.23)
+
+
+def test_coming_down_onto_a_level_is_a_long(trader, world):
+    trader.post("/api/trading/levels", json=LEVEL)
+    world.bid, world.offer = 25_705, 25_707  # 6 points above the zone
+    trader.post("/api/trading/check")
+    a = trader.get("/api/trading/alerts").json()[0]
+    assert a["title"] == "DAX long level near"
+    assert "from above" in a["message"]
+    # Entering at the top of the zone, 130 points above the stop.
+    assert "Long, stop 25,570 (130 pts)" in a["message"]
 
 
 def test_cooldown_ends_and_closed_markets_and_old_levels_stay_quiet(trader, world):
-    level_id = trader.post("/api/trading/levels", json=SHORT).json()["id"]
+    level_id = trader.post("/api/trading/levels", json=LEVEL).json()["id"]
     world.bid, world.offer = 25_660, 25_662
 
     world.market_status = "CLOSED"
@@ -254,7 +274,7 @@ def test_cooldown_ends_and_closed_markets_and_old_levels_stay_quiet(trader, worl
 
 
 def test_paused_levels_stay_quiet_and_can_be_deleted(trader, world):
-    level_id = trader.post("/api/trading/levels", json=SHORT).json()["id"]
+    level_id = trader.post("/api/trading/levels", json=LEVEL).json()["id"]
     world.bid, world.offer = 25_660, 25_662
     paused = trader.patch(f"/api/trading/levels/{level_id}", json={"active": False})
     assert paused.json()["active"] is False
