@@ -64,6 +64,14 @@ class Settings(BaseSettings):
     network_speedtest_url: str = "https://speed.cloudflare.com"
     # Written every 5 minutes by scripts/pi-network-scan.py on the Pi.
     network_scan_path: Path = Path("./data/network-scan.json")
+    # Trading: the watcher reads prices from IG's API (keys from My Account on IG). Everything
+    # else (how often, risk, alerts) is on the trading settings page. Off in tests.
+    trading_watcher: bool = True
+    ig_api_key: str = ""
+    ig_username: str = ""
+    ig_password: str = ""
+    # A demo account's key can only see prices and play money, never your real account.
+    ig_demo: bool = True
 
 
 @lru_cache

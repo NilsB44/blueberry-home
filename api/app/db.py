@@ -39,6 +39,7 @@ def init_db() -> None:
     from app.modules.poker import models as poker_models  # noqa: F401
     from app.modules.security import models as security_models  # noqa: F401
     from app.modules.tetris import models as tetris_models  # noqa: F401
+    from app.modules.trading import models as trading_models  # noqa: F401
 
     engine = get_engine()
     SQLModel.metadata.create_all(engine)
