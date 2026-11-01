@@ -284,6 +284,21 @@ def test_paused_levels_stay_quiet_and_can_be_deleted(trader, world):
     assert trader.get("/api/trading/levels").json() == []
 
 
+def test_prices_follow_the_settings_order(world):
+    instruments = [watcher.Instrument(name=n, epic=e) for n, e in (("B", "E.B"), ("A", "E.A"))]
+
+    def answer(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("/session"):
+            return httpx.Response(200, headers={"CST": "c", "X-SECURITY-TOKEN": "t"}, json={})
+        details = [
+            {"instrument": {"epic": e}, "snapshot": {"bid": 1, "offer": 2}} for e in ("E.A", "E.B")
+        ]
+        return httpx.Response(200, json={"marketDetails": details})
+
+    with httpx.Client(transport=httpx.MockTransport(answer)) as client:
+        assert list(watcher.fetch_prices(client, instruments)) == ["B", "A"]
+
+
 def test_an_expired_ig_session_logs_in_again(trader, world):
     trader.post("/api/trading/check")
     assert world.logins == 1

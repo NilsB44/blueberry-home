@@ -332,7 +332,8 @@ def fetch_prices(client: httpx.Client, instruments: list[Instrument]) -> dict[st
             status=str(snap.get("marketStatus", "")),
             at=now,
         )
-    return prices
+    # In the settings' order, whatever order IG answers in.
+    return {i.name: prices[i.name] for i in instruments if i.name in prices}
 
 
 def search_markets(client: httpx.Client, term: str) -> list[dict]:
