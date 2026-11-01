@@ -48,6 +48,8 @@ class Instrument(BaseModel):
     # What one point is worth per contract, in the equity's currency. IG shows it on the market's
     # info page, e.g. Tyskland 40 Micro: "En punkt är värd EUR 1 (SEK 10.96)" means 10.96.
     point_value: float = Field(default=1, gt=0, le=1e6)
+    # Alert within this many points of a level; 0 uses near_pct of the price instead.
+    near_points: float = Field(default=0, ge=0, le=100_000)
 
 
 class TradingSettings(BaseModel):
@@ -56,8 +58,9 @@ class TradingSettings(BaseModel):
     enabled: bool = False
     # IG allows 30 price requests a minute per account; one check is one request.
     price_check_seconds: int = Field(default=60, ge=15, le=3600)
-    # Alert when the price is this many points from the entry zone, or inside it.
-    near_points: float = Field(default=10, gt=0, le=10_000)
+    # Alert when the price is this share of itself from the entry zone, or inside it, for
+    # markets without their own points: 0.1% is ~5 points on OMXS30, ~26 on DAX.
+    near_pct: float = Field(default=0.1, gt=0, le=10)
     # After an alert, the same level stays quiet this long.
     cooldown_minutes: int = Field(default=240, ge=1, le=10_080)
     equity: float = Field(default=250_000, gt=0, le=1e10)
@@ -180,6 +183,12 @@ def stop_for(level: TradingLevel, side: str) -> float | None:
         return None
     low, high = zone(level)
     return high + level.stop_points if side == "short" else low - level.stop_points
+
+
+def near_for(settings: TradingSettings, instrument: str, price: float) -> float:
+    """How close counts as near: the market's own points, or near_pct of the price."""
+    own = next((i.near_points for i in settings.instruments if i.name == instrument), 0)
+    return own or round(price * settings.near_pct / 100, 2)
 
 
 def point_value(settings: TradingSettings, instrument: str) -> float:
@@ -405,7 +414,7 @@ def check_levels(
             continue
         if level.last_alert_at and now - _aware(level.last_alert_at) < cooldown:
             continue
-        if distance(level, price.mid) > settings.near_points:
+        if distance(level, price.mid) > near_for(settings, level.instrument, price.mid):
             continue
         level.last_alert_at = now
         session.add(level)

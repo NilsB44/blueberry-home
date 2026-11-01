@@ -112,10 +112,12 @@ SETTINGS = {
     "enabled": True,
     "ntfy_url": NTFY,
     "feed_url": FEED,
-    "near_points": 10,
     "equity": 250_000,
     "risk_pct": 1,
-    "instruments": [{"name": "DAX", "epic": DAX_EPIC}, {"name": "OMXS30", "epic": ""}],
+    "instruments": [
+        {"name": "DAX", "epic": DAX_EPIC, "near_points": 10},
+        {"name": "OMXS30", "epic": ""},
+    ],
 }
 
 LEVEL = {
@@ -189,6 +191,14 @@ def test_bias_is_contrarian_to_where_the_price_comes_from():
     assert watcher.bias(level, 25_750) == "long"  # coming down onto it
     assert watcher.stop_for(level, "short") == 25_780
     assert watcher.stop_for(level, "long") == 25_570
+
+
+def test_near_is_per_market_or_a_share_of_the_price():
+    s = TradingSettings(near_pct=0.1)
+    assert watcher.near_for(s, "OMXS30", 3_260) == 3.26
+    assert watcher.near_for(s, "DAX", 25_775) == pytest.approx(25.78, abs=0.02)
+    s.instruments[0].near_points = 20
+    assert watcher.near_for(s, "DAX", 25_775) == 20
 
 
 def test_contracts_use_what_a_point_is_worth():

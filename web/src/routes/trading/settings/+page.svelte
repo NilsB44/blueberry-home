@@ -93,15 +93,18 @@
 						<input type="number" min="15" max="3600" bind:value={s.price_check_seconds} required />
 					</label>
 					<label>
-						Alert within (points)
-						<input type="number" min="0.1" step="any" bind:value={s.near_points} required />
+						Alert within (% of price)
+						<input type="number" min="0.001" max="10" step="any" bind:value={s.near_pct} required />
 					</label>
 					<label>
 						Quiet after an alert (minutes)
 						<input type="number" min="1" max="10080" bind:value={s.cooldown_minutes} required />
 					</label>
 				</div>
-				<p class="muted small">IG allows 30 price requests a minute; each check is one.</p>
+				<p class="muted small">
+					IG allows 30 price requests a minute; each check is one. 0.1% is about 3 points on OMXS30 and 26 on DAX. A
+					market's own "Alert within" points (under Markets) win over the %; 0 uses the %.
+				</p>
 			</div>
 
 			<div class="card stack">
@@ -160,6 +163,11 @@
 								<input class="point" type="number" min="0.0001" step="any" bind:value={inst.point_value} required />
 								per contract
 							</label>
+							<label class="inline small">
+								Alert within
+								<input class="point" type="number" min="0" step="any" bind:value={inst.near_points} placeholder="% default" />
+								points
+							</label>
 							{#if searching === i}
 								<div class="row">
 									<input bind:value={term} aria-label="Search IG" />
@@ -174,7 +182,7 @@
 						</li>
 					{/each}
 				</ul>
-				<button type="button" class="ghost" onclick={() => s!.instruments.push({ name: '', epic: '', point_value: 1 })}>Add a market</button>
+				<button type="button" class="ghost" onclick={() => s!.instruments.push({ name: '', epic: '', point_value: 1, near_points: 0 })}>Add a market</button>
 			</div>
 
 			{#if error}<p class="error">{error}</p>{/if}
