@@ -82,8 +82,8 @@ class LevelOut(BaseModel):
     # From the latest price, when there is one.
     price: float | None
     distance: float | None
-    # Stake per point that risks the set share of equity, entering at the zone.
-    size_per_point: float | None
+    # Contracts that risk the set share of equity, entering at the zone.
+    contracts: float | None
 
 
 class AlertOut(BaseModel):
@@ -131,7 +131,7 @@ def _level_out(level: TradingLevel, settings: TradingSettings) -> LevelOut:
         **level.model_dump(),
         price=price,
         distance=watcher.distance(level, price) if price is not None else None,
-        size_per_point=watcher.size_per_point(settings, entry, level.stop),
+        contracts=watcher.contracts(settings, level.instrument, entry, level.stop),
     )
 
 

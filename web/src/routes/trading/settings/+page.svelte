@@ -111,7 +111,7 @@
 					<label>Risk per trade (%) <input type="number" min="0.01" max="10" step="any" bind:value={s.risk_pct} required /></label>
 				</div>
 				<p class="muted small">
-					Risking {num((s.equity * s.risk_pct) / 100)} a trade. Sizes are per point, in your IG account's currency.
+					Risking {num((s.equity * s.risk_pct) / 100)} a trade. Sizes are in contracts, using each market's point value below.
 				</p>
 			</div>
 
@@ -142,7 +142,10 @@
 
 			<div class="card stack">
 				<h2>Markets</h2>
-				<p class="muted small">Each market needs IG's id for it (its epic). Find picks it from IG's search.</p>
+				<p class="muted small">
+					Each market needs IG's id for it (its epic): Find picks it from IG's search. "1 point =" is what one point is worth
+					per contract in the equity's currency, from the market's info page on IG (Tyskland 40 Micro: SEK 10.96).
+				</p>
 				<ul class="markets">
 					{#each s.instruments as inst, i (i)}
 						<li>
@@ -152,6 +155,11 @@
 								<button type="button" class="ghost" disabled={busy} onclick={() => startSearch(i)}>Find</button>
 								<button type="button" class="ghost" onclick={() => s!.instruments.splice(i, 1)} aria-label="Remove">✕</button>
 							</div>
+							<label class="inline small">
+								1 point =
+								<input class="point" type="number" min="0.0001" step="any" bind:value={inst.point_value} required />
+								per contract
+							</label>
 							{#if searching === i}
 								<div class="row">
 									<input bind:value={term} aria-label="Search IG" />
@@ -166,7 +174,7 @@
 						</li>
 					{/each}
 				</ul>
-				<button type="button" class="ghost" onclick={() => s!.instruments.push({ name: '', epic: '' })}>Add a market</button>
+				<button type="button" class="ghost" onclick={() => s!.instruments.push({ name: '', epic: '', point_value: 1 })}>Add a market</button>
 			</div>
 
 			{#if error}<p class="error">{error}</p>{/if}
@@ -253,6 +261,9 @@
 		display: grid;
 		grid-template-columns: 1fr 1.4fr auto auto;
 		gap: 0.4rem;
+	}
+	.markets input.point {
+		width: 7rem;
 	}
 	.markets input,
 	.market button {

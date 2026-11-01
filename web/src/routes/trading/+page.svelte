@@ -178,7 +178,7 @@
 								{#if l.targets}<span class="muted">· targets {l.targets}</span>{/if}
 								<div class="muted small">
 									{#if l.distance != null}{l.distance === 0 ? 'Price is in the zone' : `${num(l.distance)} pts away`} ·{/if}
-									{#if l.size_per_point}{num(l.size_per_point)} per point ·{/if}
+									{#if l.contracts}{num(l.contracts)} contracts ·{/if}
 									{#if l.valid_until}until {l.valid_until} ·{/if}
 									{#if l.last_alert_at}alerted {when(l.last_alert_at)}{:else}no alert yet{/if}
 								</div>
