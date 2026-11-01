@@ -152,7 +152,7 @@ def read() -> Health:
         if d.total_bytes and d.free_bytes / d.total_bytes < 1 - DISK_WARN:
             flag("warn", f"{d.label}: the disk is over {DISK_WARN:.0%} full.")
     if total and available is not None and available / total < MEMORY_WARN:
-        flag("warn", "Memory is nearly full. The assistant's model is the usual cause.")
+        flag("warn", "Memory is nearly full.")
 
     return Health(
         status=status,

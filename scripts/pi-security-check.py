@@ -87,8 +87,7 @@ def check_ports() -> dict:
             title,
             "warn",
             "Something besides SSH and the hub is listening on the network. Check you know "
-            "what each one is; anything on 8000 or 11434 means the API or Ollama is exposed "
-            "past Caddy.",
+            "what each one is; anything on 8000 means the API is exposed past Caddy.",
             unexpected,
         )
     return check("ports", title, "ok", "Only SSH and the hub are listening on the network.")
@@ -287,7 +286,7 @@ def check_images(now: datetime) -> dict:
     ages = [
         (n, d)
         for n, d in image_ages(out.stdout, now)
-        if n.startswith(("hub-", "ollama/", "caddy")) and not n.endswith(":<none>")
+        if n.startswith(("hub-", "caddy")) and not n.endswith(":<none>")
     ]
     old = [f"{n}: built {d} days ago" for n, d in ages if d > IMAGE_MAX_AGE_DAYS]
     if old:

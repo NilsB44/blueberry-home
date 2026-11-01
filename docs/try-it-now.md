@@ -18,7 +18,7 @@ cp .env.example .env          # Windows PowerShell: copy .env.example .env
 ```
 
 > **Before the open pull requests are merged**, the newest features live on their branches.
-> Each branch builds on the one before (French → poker → Mandarin → files), so checking out
+> Each branch builds on the one before (poker → files), so checking out
 > the last one gets you everything: `git checkout file-sharing`. Once they're merged into
 > `main`, skip this step.
 
@@ -51,10 +51,6 @@ laptop just gets a name you can change under your name in the top bar.
    (macOS asks the first time; on Windows allow "Docker Desktop Backend" on private networks).
 5. In the phone browser's menu, choose **Add to Home Screen** to get an app icon.
 
-Audio in the lessons uses the phone's built-in voices, so turn the ringer on. On iPhone you
-can pick nicer voices under Settings → Accessibility → Spoken Content → Voices → French and
-→ Chinese.
-
 ## 4. Take a tour
 
 Everything below works from the phone; the laptop is just the server.
@@ -73,15 +69,10 @@ Everything below works from the phone; the laptop is just the server.
   move, tap to rotate and flick down to drop). For multiplayer, press Create a room on the
   laptop, open Tetris on the phone and tap the room under Open rooms (or type its code), then
   press Start on the laptop. Clear two or more lines at once to send the other player garbage.
-- **French** and **Mandarin:** do the first lesson of each. In Mandarin you can type `ni3 hao3`
-  or `nǐ hǎo` (or the characters), and you'll draw 你 and 好 with your finger. Finished
-  lessons feed the Review queue, which comes back over the following days.
 - **Files:** upload a photo from the phone under Shared, then open it on the laptop. My files
   is private to you.
 - **People:** the first device to open the hub is the admin. Open it on another phone and it
   becomes a second person with its own progress and private files; both show up under **People**.
-- **Assistant** needs the local model: `docker compose --profile llm up -d` then
-  `docker compose exec ollama ollama pull qwen3:4b` (a few GB; slower on a laptop without a GPU).
 
 ## 5. Updating and stopping
 

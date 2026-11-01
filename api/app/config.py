@@ -34,12 +34,9 @@ class Settings(BaseSettings):
     allowed_hosts: list[str] = []
     # Name new devices after what the router calls them (reverse DNS), when it says.
     device_names_from_dns: bool = True
-    ollama_url: str = "http://ollama:11434"
-    assistant_model: str = "qwen3:4b"
     content_dir: Path = Path(__file__).resolve().parent.parent / "content"
-    # Streaks and "today" are counted in this timezone.
+    # Scheduled jobs are timed in this timezone.
     timezone: str = "Europe/Stockholm"
-    daily_xp_goal: int = 30
     # The Rust equity engine. In Docker it's on PATH; in development, build it with
     # `cargo build --release` in engines/poker and it's found there.
     poker_engine: str = "poker-engine"

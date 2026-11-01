@@ -138,7 +138,7 @@ scripts/update-hub.sh
 ```
 
 Pulls the latest code, rebuilds with fresh base images (picking up their security fixes) and
-restarts, and pulls the newest Ollama image if the local model is running. Raspberry Pi OS
+restarts. Raspberry Pi OS
 updates itself through unattended-upgrades.
 
 On GitHub, the code is kept clean before it ever reaches the Pi:

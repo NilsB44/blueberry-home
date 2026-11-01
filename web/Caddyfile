@@ -22,10 +22,7 @@
 	}
 
 	handle /api/* {
-		reverse_proxy api:8000 {
-			# Stream assistant replies token by token instead of buffering.
-			flush_interval -1
-		}
+		reverse_proxy api:8000
 	}
 
 	handle {
