@@ -59,6 +59,17 @@ MODULES: list[ModuleInfo] = [
         owner_only=True,
     ),
     ModuleInfo(
+        id="claude",
+        name="Claude",
+        description="Tokens used per day, averages, models and what it would cost on the API.",
+        icon="✳️",
+        path="/claude",
+        status="ready",
+        phase=3,
+        folder="nerd",
+        owner_only=True,
+    ),
+    ModuleInfo(
         id="network",
         name="Network",
         description="Who's on the Wi-Fi, internet speed and uptime, and how the Pi is doing.",
