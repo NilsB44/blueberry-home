@@ -6,28 +6,33 @@ export type LayoutFolder = { type: 'folder'; id: string; name: string; apps: str
 export type LayoutItem = LayoutApp | LayoutFolder;
 export type Layout = { items: LayoutItem[] };
 
-/** The folders every module starts in (the API gives each module one of these ids). */
-export const DEFAULT_FOLDERS: { id: ModuleInfo['folder']; name: string }[] = [
-	{ id: 'games', name: 'Games' },
-	{ id: 'nerd', name: 'Nerd stuff' },
-	{ id: 'life', name: 'Home & life' }
+/** The folders a module can start in (the API gives a module one of these ids, or none). */
+export const DEFAULT_FOLDERS: { id: NonNullable<ModuleInfo['folder']>; name: string }[] = [
+	{ id: 'games', name: 'Games' }
 ];
+// Folders the hub used to start people with. A home screen saved with them is out of date: start over.
+const RETIRED_FOLDERS = new Set(['learning', 'nerd', 'life']);
 
+/** Apps on the home screen in the API's (priority) order, then the folders. */
 export function defaultLayout(modules: ModuleInfo[]): Layout {
-	return {
-		items: DEFAULT_FOLDERS.map((f) => ({
-			type: 'folder',
-			id: f.id,
-			name: f.name,
-			apps: modules.filter((m) => m.folder === f.id).map((m) => m.id)
-		}))
-	};
+	const apps: LayoutItem[] = modules
+		.filter((m) => !m.folder)
+		.map((m) => ({ type: 'app', id: m.id }));
+	const folders: LayoutItem[] = DEFAULT_FOLDERS.map((f) => ({
+		type: 'folder',
+		id: f.id,
+		name: f.name,
+		apps: modules.filter((m) => m.folder === f.id).map((m) => m.id)
+	}));
+	return { items: [...apps, ...folders] };
 }
 
 /** Fit a saved layout to the apps this person can see today: forget apps that are gone, and put new
  * ones in their usual folder (or on the home screen if that folder was removed). */
 export function reconcile(saved: Layout | null, modules: ModuleInfo[]): Layout {
-	if (!saved) return defaultLayout(modules);
+	if (!saved || saved.items.some((i) => i.type === 'folder' && RETIRED_FOLDERS.has(i.id))) {
+		return defaultLayout(modules);
+	}
 	const known = new Set(modules.map((m) => m.id));
 	const seen = new Set<string>();
 	const keep = (id: string) => known.has(id) && !seen.has(id) && (seen.add(id), true);

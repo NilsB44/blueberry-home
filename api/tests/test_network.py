@@ -54,7 +54,7 @@ def guest_client(admin_client):
 
 def test_network_tile_is_listed(admin_client):
     tiles = {m["id"]: m for m in admin_client.get("/api/modules").json()}
-    assert tiles["network"]["folder"] == "nerd"
+    assert tiles["network"]["folder"] is None
 
 
 def test_first_scan_is_the_baseline_and_later_newcomers_are_flagged(admin_client):

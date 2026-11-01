@@ -23,7 +23,7 @@ connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.
 - Devices are remembered by a long-lived cookie (HttpOnly, SameSite=Lax, Secure over HTTPS),
   stored hashed. A browser can't see its MAC address, and phones randomise theirs per network,
   so the cookie is the device's identity: clearing the browser's data makes a new person.
-- Dashboard with a tile per module, grouped in folders you can rearrange.
+- Dashboard with a tile per module in priority order, games in a folder; drag to rearrange.
 - **Poker:** a 13×13 pre-flop chart with raise/fold ranges per seat for heads-up, 6-max and
   full ring (plus raw equity of all 169 hands against 1–9 opponents), an equity calculator for
   any hands and board (exact when possible, Monte Carlo otherwise, from a small Rust engine in
