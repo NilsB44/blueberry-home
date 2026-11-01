@@ -10,7 +10,7 @@ LAYOUT = {
 
 def test_every_module_starts_in_a_folder(admin_client):
     modules = admin_client.get("/api/modules").json()
-    assert {m["folder"] for m in modules} <= {"games", "learning", "nerd", "life"}
+    assert {m["folder"] for m in modules} <= {"games", "nerd", "life"}
     folder = {m["id"]: m["folder"] for m in modules}
     assert folder["tetris"] == folder["poker"] == "games"
     assert folder["files"] == "life"

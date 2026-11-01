@@ -20,13 +20,10 @@ connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.
   devices you can sign out, a security log, login lockout, and a weekly check of the hub and the Pi: refused visitors, wrong
   passwords, new devices, vulnerable packages, open ports, SSH, firewall and updates. See
   [docs/security.md](docs/security.md).
-- **Claude:** an owner-only page with Claude Code's tokens per day, averages, models and
-  projects, what that would cost at API prices, optional API key spend, and a link to your
-  plan's limits on claude.ai. See [docs/claude-usage.md](docs/claude-usage.md).
 - Devices are remembered by a long-lived cookie (HttpOnly, SameSite=Lax, Secure over HTTPS),
   stored hashed. A browser can't see its MAC address, and phones randomise theirs per network,
   so the cookie is the device's identity: clearing the browser's data makes a new person.
-- Dashboard with a tile per module; planned modules show which phase they land in.
+- Dashboard with a tile per module, grouped in folders you can rearrange.
 - **Poker:** a 13×13 pre-flop chart with raise/fold ranges per seat for heads-up, 6-max and
   full ring (plus raw equity of all 169 hands against 1–9 opponents), an equity calculator for
   any hands and board (exact when possible, Monte Carlo otherwise, from a small Rust engine in
@@ -116,5 +113,5 @@ scripts/update-hub.sh                     # later: pull the latest version and r
 
 1. Create `api/app/modules/<name>/router.py` with an `APIRouter(prefix="/api/<name>")`.
 2. Include it in `api/app/main.py` and import its models in `app/db.py:init_db`.
-3. Flip its entry in `api/app/modules/__init__.py` to `status="ready"`.
+3. Add its entry to `MODULES` in `api/app/modules/__init__.py`.
 4. Add `web/src/routes/<path>/+page.svelte`.

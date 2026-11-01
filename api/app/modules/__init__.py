@@ -1,16 +1,15 @@
 """Module registry: every feature in the hub is listed here so the dashboard can render tiles.
 
-A module with status "planned" shows on the dashboard as coming soon. When a module is built,
-give it a package under app/modules/, include its router in app/main.py and set it "ready".
+To add a module, give it a package under app/modules/, include its router in app/main.py and
+list it here.
 """
 
 from typing import Literal
 
 from pydantic import BaseModel
 
-Status = Literal["ready", "planned"]
 # The home-screen folder a module starts in; people can move it from there.
-Folder = Literal["games", "learning", "nerd", "life"]
+Folder = Literal["games", "nerd", "life"]
 
 
 class ModuleInfo(BaseModel):
@@ -19,8 +18,6 @@ class ModuleInfo(BaseModel):
     description: str
     icon: str
     path: str
-    status: Status
-    phase: int
     folder: Folder
     # Only shown to the hub's owner.
     owner_only: bool = False
@@ -33,8 +30,6 @@ MODULES: list[ModuleInfo] = [
         description="Pre-flop equity, hand calculator and home-game settle-up.",
         icon="♠️",
         path="/poker",
-        status="ready",
-        phase=2,
         folder="games",
     ),
     ModuleInfo(
@@ -43,8 +38,6 @@ MODULES: list[ModuleInfo] = [
         description="Shared and private folders: send from the phone, grab it on the laptop.",
         icon="📁",
         path="/files",
-        status="ready",
-        phase=3,
         folder="life",
     ),
     ModuleInfo(
@@ -53,19 +46,6 @@ MODULES: list[ModuleInfo] = [
         description="Away access, signed-in devices and the weekly check of the hub and Pi.",
         icon="🔒",
         path="/security",
-        status="ready",
-        phase=3,
-        folder="nerd",
-        owner_only=True,
-    ),
-    ModuleInfo(
-        id="claude",
-        name="Claude",
-        description="Tokens used per day, averages, models and what it would cost on the API.",
-        icon="✳️",
-        path="/claude",
-        status="ready",
-        phase=3,
         folder="nerd",
         owner_only=True,
     ),
@@ -75,8 +55,6 @@ MODULES: list[ModuleInfo] = [
         description="Who's on the Wi-Fi, internet speed and uptime, and how the Pi is doing.",
         icon="📶",
         path="/network",
-        status="ready",
-        phase=3,
         folder="nerd",
     ),
     ModuleInfo(
@@ -85,8 +63,6 @@ MODULES: list[ModuleInfo] = [
         description="Solo or against everyone on the Wi-Fi, with a few power-ups.",
         icon="🧱",
         path="/tetris",
-        status="ready",
-        phase=4,
         folder="games",
     ),
     ModuleInfo(
@@ -95,49 +71,7 @@ MODULES: list[ModuleInfo] = [
         description="Index levels from your analyses, live IG prices and alerts near a level.",
         icon="📉",
         path="/trading",
-        status="ready",
-        phase=6,
         folder="life",
         owner_only=True,
-    ),
-    ModuleInfo(
-        id="finance",
-        name="Finance",
-        description="Budgets, portfolio and net worth, kept on the Pi.",
-        icon="📈",
-        path="/finance",
-        status="planned",
-        phase=6,
-        folder="life",
-    ),
-    ModuleInfo(
-        id="plants",
-        name="Plants",
-        description="Watering schedules, care log and moisture sensors.",
-        icon="🪴",
-        path="/plants",
-        status="planned",
-        phase=6,
-        folder="life",
-    ),
-    ModuleInfo(
-        id="reading",
-        name="Reading",
-        description="Books, notes and highlights that become review cards.",
-        icon="📚",
-        path="/reading",
-        status="planned",
-        phase=6,
-        folder="learning",
-    ),
-    ModuleInfo(
-        id="wow",
-        name="WoW",
-        description="Characters, weekly vault, Mythic+ and auction prices.",
-        icon="⚔️",
-        path="/wow",
-        status="planned",
-        phase=6,
-        folder="games",
     ),
 ]

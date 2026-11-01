@@ -134,9 +134,8 @@ def trader(admin_client, world):
     return admin_client
 
 
-def test_tile_is_ready_and_only_for_the_owner(admin_client):
+def test_tile_is_only_for_the_owner(admin_client):
     tiles = {m["id"]: m for m in admin_client.get("/api/modules").json()}
-    assert tiles["trading"]["status"] == "ready"
     assert tiles["trading"]["owner_only"] is True
     admin_client.cookies.clear()
     admin_client.post("/api/auth/device")
