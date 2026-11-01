@@ -6,18 +6,21 @@ from app.auth.models import utcnow
 
 
 class TradingLevel(SQLModel, table=True):
-    """A price level typed in by hand from an analysis: where to look for a trade, and its stop."""
+    """A price level typed in by hand from an analysis. The trade is contrarian and decided when
+    the price gets there: coming up from below is a short, coming down from above is a long."""
+
+    # A new table name: the first version's table had bias and stop-price columns.
+    __tablename__ = "trading_level"
 
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=utcnow)
     # One of the instrument names on the settings page, e.g. "DAX".
     instrument: str = Field(max_length=20, index=True)
-    # "long" or "short".
-    bias: str = Field(max_length=5)
     # The entry zone; a single level has entry_low == entry_high.
     entry_low: float
     entry_high: float
-    stop: float
+    # How far beyond the zone the stop goes: above it for a short, below it for a long.
+    stop_points: float
     # Free text, e.g. "25400, 25200".
     targets: str = Field(default="", max_length=100)
     note: str = Field(default="", max_length=300)

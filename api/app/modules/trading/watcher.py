@@ -162,12 +162,22 @@ def distance(level: TradingLevel, price: float) -> float:
     return round(min(abs(price - low), abs(price - high)), 2)
 
 
-def entry_for(level: TradingLevel, price: float | None) -> float:
-    """Where you'd get in: the point of the zone nearest the price, or its middle."""
+def entry_for(level: TradingLevel, price: float) -> float:
+    """Where you'd get in: the point of the zone nearest the price."""
     low, high = zone(level)
-    if price is None:
-        return (low + high) / 2
     return min(max(price, low), high)
+
+
+def bias(level: TradingLevel, price: float) -> str:
+    """Contrarian: coming up from below is a short, coming down from above a long. Inside the
+    zone, the edge the price is nearer is the side it came from."""
+    low, high = zone(level)
+    return "short" if price - low <= high - price else "long"
+
+
+def stop_for(level: TradingLevel, side: str) -> float:
+    low, high = zone(level)
+    return high + level.stop_points if side == "short" else low - level.stop_points
 
 
 def point_value(settings: TradingSettings, instrument: str) -> float:
@@ -193,11 +203,13 @@ def level_message(settings: TradingSettings, level: TradingLevel, price: float) 
     low, high = zone(level)
     where = _fmt(low) if low == high else f"{_fmt(low)}–{_fmt(high)}"
     risk = settings.equity * settings.risk_pct / 100
-    size = contracts(settings, level.instrument, entry, level.stop)
-    points = _fmt(abs(entry - level.stop))
+    side = bias(level, price)
+    stop = stop_for(level, side)
+    size = contracts(settings, level.instrument, entry, stop)
+    came = "from below" if side == "short" else "from above"
     lines = [
-        f"{level.instrument} {_fmt(price)}, entry {where}.",
-        f"{level.bias.capitalize()}, stop {_fmt(level.stop)} ({points} pts).",
+        f"{level.instrument} {_fmt(price)}, entry {where}, {came}.",
+        f"{side.capitalize()}, stop {_fmt(stop)} ({_fmt(abs(entry - stop))} pts).",
     ]
     if size is not None:
         lines.append(
@@ -320,7 +332,8 @@ def fetch_prices(client: httpx.Client, instruments: list[Instrument]) -> dict[st
             status=str(snap.get("marketStatus", "")),
             at=now,
         )
-    return prices
+    # In the settings' order, whatever order IG answers in.
+    return {i.name: prices[i.name] for i in instruments if i.name in prices}
 
 
 def search_markets(client: httpx.Client, term: str) -> list[dict]:
@@ -399,7 +412,7 @@ def check_levels(
             level_id=level.id,
             instrument=level.instrument,
             price=price.mid,
-            title=f"{level.instrument} {level.bias} level near",
+            title=f"{level.instrument} {bias(level, price.mid)} level near",
             message=level_message(settings, level, price.mid),
         )
         sent.append(send_alert(client, session, settings, alert))
