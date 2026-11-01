@@ -81,6 +81,16 @@ def test_websocket_refuses_other_sites(client):
             ws.receive_json()
 
 
+def test_websocket_refuses_rebound_names(client):
+    # A website that pointed its own name at the Pi: same origin as far as the browser knows.
+    client.post("/api/auth/device")
+    code = client.post(f"{BASE}/rooms").json()["code"]
+    headers = {"origin": "http://evil.example", "host": "evil.example"}
+    with pytest.raises(WebSocketDisconnect):
+        with client.websocket_connect(f"{BASE}/rooms/{code}/ws", headers=headers) as ws:
+            ws.receive_json()
+
+
 def test_websocket_refuses_outside_addresses(client):
     client.post("/api/auth/device")
     code = client.post(f"{BASE}/rooms").json()["code"]

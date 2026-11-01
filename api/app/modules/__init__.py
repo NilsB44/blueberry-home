@@ -9,6 +9,8 @@ from typing import Literal
 from pydantic import BaseModel
 
 Status = Literal["ready", "planned"]
+# The home-screen folder a module starts in; people can move it from there.
+Folder = Literal["games", "learning", "nerd", "life"]
 
 
 class ModuleInfo(BaseModel):
@@ -19,38 +21,12 @@ class ModuleInfo(BaseModel):
     path: str
     status: Status
     phase: int
+    folder: Folder
     # Only shown to the hub's owner.
     owner_only: bool = False
 
 
 MODULES: list[ModuleInfo] = [
-    ModuleInfo(
-        id="french",
-        name="French",
-        description="Lessons, spaced-repetition review and listening practice.",
-        icon="🇫🇷",
-        path="/learn/french",
-        status="ready",
-        phase=1,
-    ),
-    ModuleInfo(
-        id="mandarin",
-        name="Mandarin",
-        description="Pinyin, tones and characters, with Singapore everyday phrases.",
-        icon="🇸🇬",
-        path="/learn/mandarin",
-        status="ready",
-        phase=1,
-    ),
-    ModuleInfo(
-        id="assistant",
-        name="Assistant",
-        description="Chat with a small language model running on the Pi.",
-        icon="🤖",
-        path="/assistant",
-        status="ready",
-        phase=0,
-    ),
     ModuleInfo(
         id="poker",
         name="Poker",
@@ -59,6 +35,7 @@ MODULES: list[ModuleInfo] = [
         path="/poker",
         status="ready",
         phase=2,
+        folder="games",
     ),
     ModuleInfo(
         id="files",
@@ -68,6 +45,7 @@ MODULES: list[ModuleInfo] = [
         path="/files",
         status="ready",
         phase=3,
+        folder="life",
     ),
     ModuleInfo(
         id="security",
@@ -77,6 +55,7 @@ MODULES: list[ModuleInfo] = [
         path="/security",
         status="ready",
         phase=3,
+        folder="nerd",
         owner_only=True,
     ),
     ModuleInfo(
@@ -87,16 +66,18 @@ MODULES: list[ModuleInfo] = [
         path="/claude",
         status="ready",
         phase=3,
+        folder="nerd",
         owner_only=True,
     ),
     ModuleInfo(
         id="network",
         name="Network",
-        description="Devices on the Wi-Fi, ad blocking stats and VPN status.",
-        icon="🛡️",
+        description="Who's on the Wi-Fi, internet speed and uptime, and how the Pi is doing.",
+        icon="📶",
         path="/network",
-        status="planned",
+        status="ready",
         phase=3,
+        folder="nerd",
     ),
     ModuleInfo(
         id="tetris",
@@ -106,6 +87,7 @@ MODULES: list[ModuleInfo] = [
         path="/tetris",
         status="ready",
         phase=4,
+        folder="games",
     ),
     ModuleInfo(
         id="finance",
@@ -115,6 +97,7 @@ MODULES: list[ModuleInfo] = [
         path="/finance",
         status="planned",
         phase=6,
+        folder="life",
     ),
     ModuleInfo(
         id="plants",
@@ -124,6 +107,7 @@ MODULES: list[ModuleInfo] = [
         path="/plants",
         status="planned",
         phase=6,
+        folder="life",
     ),
     ModuleInfo(
         id="reading",
@@ -133,6 +117,7 @@ MODULES: list[ModuleInfo] = [
         path="/reading",
         status="planned",
         phase=6,
+        folder="learning",
     ),
     ModuleInfo(
         id="wow",
@@ -142,5 +127,6 @@ MODULES: list[ModuleInfo] = [
         path="/wow",
         status="planned",
         phase=6,
+        folder="games",
     ),
 ]

@@ -203,10 +203,11 @@ async def upload(request: Request, root: Root, name: str, path: str = "") -> Ent
         raise HTTPException(status.HTTP_404_NOT_FOUND, "No such folder")
     name = check_name(name)
     limit = get_settings().max_upload_mb << 20
-    declared = request.headers.get("content-length")
-    if declared and int(declared) > limit:
+    header = request.headers.get("content-length", "")
+    declared = int(header) if header.isdigit() else 0
+    if declared > limit:
         raise HTTPException(status.HTTP_413_CONTENT_TOO_LARGE, "File is too large")
-    if declared and int(declared) > shutil.disk_usage(folder).free - (256 << 20):
+    if declared > shutil.disk_usage(folder).free - (256 << 20):
         raise HTTPException(status.HTTP_507_INSUFFICIENT_STORAGE, "Not enough free space")
 
     # Write to a hidden temp file in the same folder, then rename: a dropped connection

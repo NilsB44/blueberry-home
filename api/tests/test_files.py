@@ -132,3 +132,11 @@ def test_upload_size_limit(files, monkeypatch):
 def test_usage(files):
     body = files.get("/api/files/usage").json()
     assert body["free"] > 0 and body["max_upload"] == 8192 << 20
+
+
+def test_upload_with_a_garbled_length_is_not_a_server_error(client):
+    client.post("/api/auth/device")
+    resp = client.put(
+        "/api/files/home/upload?name=a.txt", content=b"hi", headers={"content-length": "abc"}
+    )
+    assert resp.status_code < 500

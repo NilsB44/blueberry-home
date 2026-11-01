@@ -10,10 +10,11 @@ from app.auth.router import users_router
 from app.config import get_settings
 from app.db import init_db
 from app.modules import MODULES, ModuleInfo
-from app.modules.assistant.router import router as assistant_router
 from app.modules.claude.router import router as claude_router
 from app.modules.files.router import router as files_router
-from app.modules.learn.router import router as learn_router
+from app.modules.home.router import router as home_router
+from app.modules.network import monitor as network_monitor
+from app.modules.network.router import router as network_router
 from app.modules.poker.router import router as poker_router
 from app.modules.security import scheduler
 from app.modules.security.router import router as security_router
@@ -23,9 +24,14 @@ from app.modules.tetris.router import router as tetris_router
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
-    task = asyncio.create_task(scheduler.loop()) if get_settings().security_schedule else None
+    settings = get_settings()
+    tasks = []
+    if settings.security_schedule:
+        tasks.append(asyncio.create_task(scheduler.loop()))
+    if settings.network_monitor:
+        tasks.append(asyncio.create_task(network_monitor.loop()))
     yield
-    if task:
+    for task in tasks:
         task.cancel()
         with suppress(asyncio.CancelledError):
             await task
@@ -43,10 +49,10 @@ app.add_middleware(LocalNetworkOnly)
 
 app.include_router(auth_router)
 app.include_router(users_router)
-app.include_router(assistant_router)
 app.include_router(claude_router)
 app.include_router(files_router)
-app.include_router(learn_router)
+app.include_router(home_router)
+app.include_router(network_router)
 app.include_router(poker_router)
 app.include_router(security_router)
 app.include_router(tetris_router)

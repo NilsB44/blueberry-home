@@ -28,14 +28,15 @@ class Settings(BaseSettings):
     # Your VPN's addresses (Tailscale's by default). Devices here are only let in while an admin
     # has turned away access on in Security, and only devices that already joined at home.
     away_networks: list[str] = ["100.64.0.0/10", "fd7a:115c:a1e0::/48"]
+    # Extra names the hub answers to besides local ones (*.home, *.local, *.ts.net, IP
+    # addresses...), e.g. a real domain you point at the Pi. Any other name is refused, so a
+    # website can't reach the hub by pointing its own name at the Pi (DNS rebinding).
+    allowed_hosts: list[str] = []
     # Name new devices after what the router calls them (reverse DNS), when it says.
     device_names_from_dns: bool = True
-    ollama_url: str = "http://ollama:11434"
-    assistant_model: str = "qwen3:4b"
     content_dir: Path = Path(__file__).resolve().parent.parent / "content"
-    # Streaks and "today" are counted in this timezone.
+    # Scheduled jobs are timed in this timezone.
     timezone: str = "Europe/Stockholm"
-    daily_xp_goal: int = 30
     # The Rust equity engine. In Docker it's on PATH; in development, build it with
     # `cargo build --release` in engines/poker and it's found there.
     poker_engine: str = "poker-engine"
@@ -51,6 +52,15 @@ class Settings(BaseSettings):
     host_report_path: Path = Path("./data/host-security.json")
     # Known vulnerabilities in the API's Python packages are looked up here (outbound only).
     osv_url: str = "https://api.osv.dev/v1/querybatch"
+    # Network page: watch the internet connection once a minute and measure its speed every
+    # few hours (0 = only when asked). Off in tests.
+    network_monitor: bool = True
+    network_speedtest_hours: int = 6
+    # Addresses the internet check connects to (TCP 443); the connection is up if any answers.
+    network_probe_hosts: list[str] = ["1.1.1.1", "8.8.8.8", "9.9.9.9"]
+    network_speedtest_url: str = "https://speed.cloudflare.com"
+    # Written every 5 minutes by scripts/pi-network-scan.py on the Pi.
+    network_scan_path: Path = Path("./data/network-scan.json")
     # Claude Code's session logs (~/.claude/projects), mounted read-only, for the Claude page.
     claude_logs_dir: Path = Path("./data/claude-logs")
     # Optional Admin API key (sk-ant-admin...) to also show spend on Anthropic API keys.

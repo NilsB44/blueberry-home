@@ -1,0 +1,64 @@
+# Dependabot keeps everything the hub is built from up to date.
+#
+# - Security updates: as soon as a published vulnerability (CVE/GHSA) affects a package here,
+#   Dependabot opens a pull request with the fixed version. These skip the cooldown below.
+# - Version updates: a weekly pull request per ecosystem with whatever else is new. New releases
+#   wait a few days first, so a hijacked package that gets pulled within hours never lands here.
+#
+# Patch and minor updates merge themselves once CI passes (see the dependabot job in ci.yml);
+# major ones wait for you.
+version: 2
+
+updates:
+  - package-ecosystem: pip
+    directory: /api
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 5
+    groups:
+      python:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /web
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 5
+    groups:
+      web:
+        update-types: [minor, patch]
+
+  - package-ecosystem: cargo
+    directory: /engines/poker
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 5
+    groups:
+      rust:
+        update-types: [minor, patch]
+
+  # Base images in api/Dockerfile and web/Dockerfile.
+  - package-ecosystem: docker
+    directories: [/api, /web]
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 5
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 5
+    groups:
+      actions:
+        update-types: [minor, patch]
