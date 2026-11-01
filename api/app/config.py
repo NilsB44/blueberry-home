@@ -61,11 +61,6 @@ class Settings(BaseSettings):
     network_speedtest_url: str = "https://speed.cloudflare.com"
     # Written every 5 minutes by scripts/pi-network-scan.py on the Pi.
     network_scan_path: Path = Path("./data/network-scan.json")
-    # Claude Code's session logs (~/.claude/projects), mounted read-only, for the Claude page.
-    claude_logs_dir: Path = Path("./data/claude-logs")
-    # Optional Admin API key (sk-ant-admin...) to also show spend on Anthropic API keys.
-    # Only ever sent to api.anthropic.com; never shown in the hub.
-    anthropic_admin_key: str = ""
     # Trading: the watcher reads prices from IG's API (keys from My Account on IG). Everything
     # else (how often, risk, alerts) is on the trading settings page. Off in tests.
     trading_watcher: bool = True

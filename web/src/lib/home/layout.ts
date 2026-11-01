@@ -9,7 +9,6 @@ export type Layout = { items: LayoutItem[] };
 /** The folders every module starts in (the API gives each module one of these ids). */
 export const DEFAULT_FOLDERS: { id: ModuleInfo['folder']; name: string }[] = [
 	{ id: 'games', name: 'Games' },
-	{ id: 'learning', name: 'Learning' },
 	{ id: 'nerd', name: 'Nerd stuff' },
 	{ id: 'life', name: 'Home & life' }
 ];
@@ -40,7 +39,9 @@ export function reconcile(saved: Layout | null, modules: ModuleInfo[]): Layout {
 			if (keep(item.id)) items.push({ type: 'app', id: item.id });
 		} else if (!folderIds.has(item.id)) {
 			folderIds.add(item.id);
-			items.push({ ...item, apps: item.apps.filter(keep) });
+			const apps = item.apps.filter(keep);
+			// A folder whose apps have all been removed from the hub goes too; one left empty on purpose stays.
+			if (apps.length || !item.apps.length) items.push({ ...item, apps });
 		}
 	}
 	for (const m of modules) {

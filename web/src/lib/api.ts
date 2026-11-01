@@ -48,8 +48,6 @@ export type ModuleInfo = {
 	description: string;
 	icon: string;
 	path: string;
-	status: 'ready' | 'planned';
-	phase: number;
-	folder: 'games' | 'learning' | 'nerd' | 'life';
+	folder: 'games' | 'nerd' | 'life';
 	owner_only: boolean;
 };

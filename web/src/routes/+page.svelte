@@ -380,33 +380,19 @@
 				{:else}
 					{@const m = byId.get(item.id)}
 					{#if m}
-						{#if m.status === 'ready'}
-							<a
-								class="tile"
-								href={m.path}
-								title={m.description}
-								draggable="false"
-								onpointerdown={(e) => onPointerDown(e, { kind: 'app', id: m.id })}
-								oncontextmenu={preventMenu}
-								onclick={(e) => editing && e.preventDefault()}
-								onkeydown={(e) => nudge(e, 'home', i)}
-							>
-								<Icon app={m} />
-								<span class="label">{m.name}</span>
-							</a>
-						{:else}
-							<button
-								class="tile planned"
-								title="{m.description} Coming soon."
-								onpointerdown={(e) => onPointerDown(e, { kind: 'app', id: m.id })}
-								oncontextmenu={preventMenu}
-								onkeydown={(e) => nudge(e, 'home', i)}
-							>
-								<Icon app={m} />
-								<span class="label">{m.name}</span>
-								<span class="soon">Soon</span>
-							</button>
-						{/if}
+						<a
+							class="tile"
+							href={m.path}
+							title={m.description}
+							draggable="false"
+							onpointerdown={(e) => onPointerDown(e, { kind: 'app', id: m.id })}
+							oncontextmenu={preventMenu}
+							onclick={(e) => editing && e.preventDefault()}
+							onkeydown={(e) => nudge(e, 'home', i)}
+						>
+							<Icon app={m} />
+							<span class="label">{m.name}</span>
+						</a>
 					{/if}
 				{/if}
 			</div>
@@ -479,13 +465,9 @@
 					data-index={i}
 					animate:flip={{ duration: 200 }}
 				>
-					<svelte:element
-						this={m.status === 'ready' ? 'a' : 'div'}
+					<a
 						class="row"
-						class:planned={m.status !== 'ready'}
-						href={m.status === 'ready' ? m.path : undefined}
-						role={m.status === 'ready' ? undefined : 'button'}
-						tabindex="0"
+						href={m.path}
 						draggable="false"
 						onpointerdown={(e: PointerEvent) => onPointerDown(e, { kind: 'app', id: m.id })}
 						oncontextmenu={preventMenu}
@@ -497,8 +479,7 @@
 							<strong>{m.name}</strong>
 							<span class="muted">{m.description}</span>
 						</span>
-						{#if m.status !== 'ready'}<span class="soon inline">Soon</span>{/if}
-					</svelte:element>
+					</a>
 				</li>
 			{/each}
 		</ul>
@@ -609,26 +590,6 @@
 		.label {
 			font-size: 0.9rem;
 		}
-	}
-	.planned {
-		opacity: 0.5;
-		cursor: default;
-	}
-	.soon {
-		position: absolute;
-		top: -0.2rem;
-		right: -0.2rem;
-		font-size: 0.65rem;
-		font-weight: 700;
-		padding: 0.05rem 0.4rem;
-		border-radius: 999px;
-		background: var(--surface);
-		border: 1px solid var(--border);
-		color: var(--muted);
-	}
-	.soon.inline {
-		position: static;
-		flex: none;
 	}
 	.ghosted {
 		opacity: 0.25;
@@ -784,9 +745,6 @@
 	.row:focus-visible {
 		background: var(--surface-2);
 		outline: none;
-	}
-	.row.planned {
-		cursor: default;
 	}
 	.sheet.editing .row {
 		touch-action: none;
