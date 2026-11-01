@@ -1,9 +1,14 @@
-export type Instrument = { name: string; epic: string; point_value: number };
+export type Instrument = {
+  name: string;
+  epic: string;
+  point_value: number;
+  near_points: number;
+};
 
 export type TradingSettings = {
   enabled: boolean;
   price_check_seconds: number;
-  near_points: number;
+  near_pct: number;
   cooldown_minutes: number;
   equity: number;
   risk_pct: number;
