@@ -45,6 +45,9 @@ class Instrument(BaseModel):
     name: str = Field(min_length=1, max_length=20, pattern=r"^[A-Za-z0-9 ._&-]+$")
     # IG's id for the market, e.g. "IX.D.DAX.IFD.IP". Found with the search on the settings page.
     epic: str = Field(default="", max_length=40, pattern=r"^[A-Za-z0-9._-]*$")
+    # What one point is worth per contract, in the equity's currency. IG shows it on the market's
+    # info page, e.g. Tyskland 40 Micro: "En punkt är värd EUR 1 (SEK 10.96)" means 10.96.
+    point_value: float = Field(default=1, gt=0, le=1e6)
 
 
 class TradingSettings(BaseModel):
@@ -167,12 +170,18 @@ def entry_for(level: TradingLevel, price: float | None) -> float:
     return min(max(price, low), high)
 
 
-def size_per_point(settings: TradingSettings, entry: float, stop: float) -> float | None:
-    """Stake per point so that being stopped out loses risk_pct of equity."""
-    points = abs(entry - stop)
-    if points == 0:
+def point_value(settings: TradingSettings, instrument: str) -> float:
+    return next((i.point_value for i in settings.instruments if i.name == instrument), 1)
+
+
+def contracts(
+    settings: TradingSettings, instrument: str, entry: float, stop: float
+) -> float | None:
+    """Contracts to trade so that being stopped out loses risk_pct of equity."""
+    loss_per_contract = abs(entry - stop) * point_value(settings, instrument)
+    if loss_per_contract == 0:
         return None
-    return round(settings.equity * settings.risk_pct / 100 / points, 2)
+    return round(settings.equity * settings.risk_pct / 100 / loss_per_contract, 2)
 
 
 def _fmt(x: float) -> str:
@@ -184,7 +193,7 @@ def level_message(settings: TradingSettings, level: TradingLevel, price: float) 
     low, high = zone(level)
     where = _fmt(low) if low == high else f"{_fmt(low)}–{_fmt(high)}"
     risk = settings.equity * settings.risk_pct / 100
-    size = size_per_point(settings, entry, level.stop)
+    size = contracts(settings, level.instrument, entry, level.stop)
     points = _fmt(abs(entry - level.stop))
     lines = [
         f"{level.instrument} {_fmt(price)}, entry {where}.",
@@ -192,7 +201,7 @@ def level_message(settings: TradingSettings, level: TradingLevel, price: float) 
     ]
     if size is not None:
         lines.append(
-            f"Size {_fmt(size)} per point risks {_fmt(risk)} ({_fmt(settings.risk_pct)}% of "
+            f"Size {_fmt(size)} contracts risks {_fmt(risk)} ({_fmt(settings.risk_pct)}% of "
             f"{_fmt(settings.equity)})."
         )
     if level.targets:

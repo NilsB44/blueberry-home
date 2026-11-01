@@ -1,4 +1,4 @@
-export type Instrument = { name: string; epic: string };
+export type Instrument = { name: string; epic: string; point_value: number };
 
 export type TradingSettings = {
   enabled: boolean;
@@ -50,7 +50,7 @@ export type Level = {
   last_alert_at: string | null;
   price: number | null;
   distance: number | null;
-  size_per_point: number | null;
+  contracts: number | null;
 };
 
 export type Alert = {

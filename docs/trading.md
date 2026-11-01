@@ -18,8 +18,10 @@ when a price comes near one. It never places trades.
 Everything above (on/off, how often, how close, the cooldown, equity and risk %, the ntfy topic,
 the feed and the markets) is on **Trading → Settings**. Only IG's credentials live in `.env`.
 
-**Position size** is per point: `equity × risk % ÷ |entry − stop|`, entering at the nearest edge of
-the zone. IG sizes index CFDs per point in your account's currency, so the number is the stake
+**Position size** is in contracts: `equity × risk % ÷ (|entry − stop| × point value)`, entering at
+the nearest edge of the zone. The point value is what one point is worth per contract in your
+equity's currency, set per market in Settings. IG shows it on the market's info page: Tyskland 40
+Micro says "En punkt är värd EUR 1 (SEK 10.96)", so enter 10.96. The number is the contracts
 to enter.
 
 ## Setting up IG

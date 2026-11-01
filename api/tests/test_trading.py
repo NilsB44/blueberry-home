@@ -177,7 +177,7 @@ def test_levels_need_a_known_instrument_and_a_stop_on_the_right_side(trader):
     # The zone is stored low to high.
     assert (level["entry_low"], level["entry_high"]) == (25_650, 25_700)
     # Before there's a price: 2,500 risked over the 105 points from the zone's middle to the stop.
-    assert level["size_per_point"] == pytest.approx(2500 / 105, abs=0.01)
+    assert level["contracts"] == pytest.approx(2500 / 105, abs=0.01)
 
     single = trader.post(
         "/api/trading/levels", json={**SHORT, "entry_low": 25_700, "entry_high": None}
@@ -185,10 +185,14 @@ def test_levels_need_a_known_instrument_and_a_stop_on_the_right_side(trader):
     assert single["entry_high"] == 25_700
 
 
-def test_size_per_point():
+def test_contracts_use_what_a_point_is_worth():
     s = TradingSettings(equity=250_000, risk_pct=1)
-    assert watcher.size_per_point(s, 25_700, 25_780) == 31.25
-    assert watcher.size_per_point(s, 25_700, 25_700) is None
+    # The default: one point is worth 1 of the equity's currency.
+    assert watcher.contracts(s, "DAX", 25_700, 25_780) == 31.25
+    assert watcher.contracts(s, "DAX", 25_700, 25_700) is None
+    # Tyskland 40 Micro: EUR 1 a point, SEK 10.96.
+    s.instruments[0].point_value = 10.96
+    assert watcher.contracts(s, "DAX", 25_700, 25_780) == 2.85
 
 
 def test_price_near_a_level_alerts_once_with_the_stop_and_size(trader, world):
@@ -208,7 +212,7 @@ def test_price_near_a_level_alerts_once_with_the_stop_and_size(trader, world):
     assert a["kind"] == "level" and a["delivered"] is True and a["price"] == 25_641
     # Entering at the bottom of the zone, 130 points from the stop: 2,500 / 130.
     assert "stop 25,780 (130 pts)" in a["message"]
-    assert "Size 19.23 per point risks 2,500 (1% of 250,000)" in a["message"]
+    assert "Size 19.23 contracts risks 2,500 (1% of 250,000)" in a["message"]
     push = world.pushes[-1]
     assert push.headers["Priority"] == "high"
     assert push.content.decode() == a["message"]
