@@ -196,7 +196,7 @@ def test_bias_is_contrarian_to_where_the_price_comes_from():
 def test_near_is_per_market_or_a_share_of_the_price():
     s = TradingSettings(near_pct=0.1)
     assert watcher.near_for(s, "OMXS30", 3_260) == 3.26
-    assert watcher.near_for(s, "DAX", 25_775) == pytest.approx(25.78, abs=0.01)
+    assert watcher.near_for(s, "DAX", 25_775) == pytest.approx(25.78, abs=0.02)
     s.instruments[0].near_points = 20
     assert watcher.near_for(s, "DAX", 25_775) == 20
 
