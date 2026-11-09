@@ -153,6 +153,8 @@ Ranked roughly by value for effort. Each is a module in the same app.
 10. **Self-hosted e-book library:** Calibre-Web or Kavita for your ebooks, readable from any device.
 
 ### Plants
+The step-by-step plan (hardware, phases, watering safety) is in [plants.md](plants.md).
+
 11. **Plant care tracker:** each plant has a photo, species, watering/fertilising schedule, and a log. Reminders on the dashboard.
 12. **Sensors (hardware fun):** cheap soil-moisture sensors with an ESP32 over Wi-Fi (MQTT to the Pi), or temperature/humidity sensors. Graph it, alert when dry. Singapore humidity makes this interesting for indoor plants.
 13. Growth timeline: monthly photo per plant, auto-made timelapse.
