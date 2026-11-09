@@ -13,7 +13,7 @@ def test_only_games_start_in_a_folder(admin_client):
     folder = {m["id"]: m["folder"] for m in modules}
     assert folder["tetris"] == folder["poker"] == "games"
     on_home = {i for i, f in folder.items() if f is None}
-    assert on_home == {"trading", "economy", "files", "network", "security"}
+    assert on_home == {"trading", "economy", "files", "network", "security", "plants"}
     assert [m["id"] for m in modules][0] == "trading"
 
 

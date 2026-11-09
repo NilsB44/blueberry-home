@@ -19,7 +19,7 @@ A self-hosted, ad-free, LAN-only app suite running on a **Raspberry Pi 5 (8 GB)*
 | Item | Recommendation | Why |
 |---|---|---|
 | Board | Pi 5, 8 GB | Already chosen. Plenty for this stack. |
-| Storage | **NVMe SSD via M.2 HAT** (256–512 GB) | SD cards wear out under database writes; NVMe is far faster and more reliable. Boot from it. |
+| Storage | **NVMe SSD via M.2 HAT** (1–2 TB) | SD cards wear out under database writes; NVMe is far faster and more reliable. Boot from it. Sized to also hold movies (see [media.md](media.md)). |
 | Cooling | Official Active Cooler | Pi 5 throttles without it under sustained load (e.g. poker sims). |
 | Power | Official 27 W USB-C PSU | Under-powered Pi 5s throttle and can't power NVMe reliably. |
 | Backup disk | Any USB drive, or a cloud bucket | For nightly encrypted backups. |
@@ -153,6 +153,9 @@ Ranked roughly by value for effort. Each is a module in the same app.
 10. **Self-hosted e-book library:** Calibre-Web or Kavita for your ebooks, readable from any device.
 
 ### Plants
+The step-by-step plan (hardware, phases, watering safety) is the hub's **Plants** page:
+[web/src/routes/plants/+page.svelte](../web/src/routes/plants/+page.svelte).
+
 11. **Plant care tracker:** each plant has a photo, species, watering/fertilising schedule, and a log. Reminders on the dashboard.
 12. **Sensors (hardware fun):** cheap soil-moisture sensors with an ESP32 over Wi-Fi (MQTT to the Pi), or temperature/humidity sensors. Graph it, alert when dry. Singapore humidity makes this interesting for indoor plants.
 13. Growth timeline: monthly photo per plant, auto-made timelapse.
@@ -163,7 +166,7 @@ Ranked roughly by value for effort. Each is a module in the same app.
 16. **LAN game nights:** besides Tetris, simple party games (quiz, Codenames-style word game) reusing the WebSocket lobby.
 
 ### Home and utilities
-17. **Media server:** Jellyfin for your own videos/music (direct play only; the Pi 5 has no hardware video encoder so avoid heavy transcoding).
+17. **Media server:** Jellyfin for your own videos/music (direct play only; the Pi 5 has no hardware video encoder so avoid heavy transcoding). Plan: [media.md](media.md).
 18. **Password manager:** Vaultwarden (self-hosted Bitwarden), behind the VPN. Very popular, very light.
 19. **Notes / wiki:** a simple markdown notes module, or self-host something like Memos or Trilium.
 20. **Local AI assistant (optional):** **Ollama** with a small model (e.g. a 1–3B parameter model) runs on the Pi 5 8 GB at a slow but usable speed. Uses: explain a French grammar error, generate example sentences, summarise notes. Treat it as a nice-to-have; keep core features working without it.

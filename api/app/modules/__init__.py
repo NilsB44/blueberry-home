@@ -64,6 +64,13 @@ MODULES: list[ModuleInfo] = [
         owner_only=True,
     ),
     ModuleInfo(
+        id="plants",
+        name="Plants",
+        description="The plan for sensors and self-watering, one microcontroller per plant.",
+        icon="🌱",
+        path="/plants",
+    ),
+    ModuleInfo(
         id="poker",
         name="Poker",
         description="Pre-flop equity, hand calculator and home-game settle-up.",

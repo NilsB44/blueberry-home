@@ -52,6 +52,8 @@ connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.
   property, mortgage), subscriptions with their monthly and yearly total, and a wishlist where each
   purchase is checked against rules before you buy: a 7-day wait (30 for big ones), a share of net
   worth, an emergency buffer, hours of work, cost per use, and a few yes/no questions. Amounts in SEK.
+- **Plants:** the plan for plant sensors and self-watering (an ESP32 per plant, the Pi as hub),
+  with phases, pros and cons, and a shopping list. Nothing reads sensors yet.
 - Caddy serves everything over HTTPS on the LAN at `https://hub.home` with its own local CA.
 - Installable on phones as a web app (PWA manifest), dark mode follows the system.
 
@@ -104,10 +106,11 @@ cd web && npm run check
 
 ## Run on the Pi
 
-See [docs/pi-setup.md](docs/pi-setup.md). In short:
+First time? Follow [docs/pi-setup.md](docs/pi-setup.md) from flashing the SD card to SSH,
+Docker, certificates and Claude Code on the Pi. In short:
 
 ```bash
-git clone <this repo> hub && cd hub
+git clone https://github.com/NilsB44/blueberry-home.git ~/hub && cd ~/hub
 cp .env.example .env
 docker compose up -d
 sudo scripts/install-security-check.sh     # the Pi's weekly security check

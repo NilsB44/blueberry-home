@@ -29,6 +29,11 @@ LISTEN 0 128 [::]:22 [::]:*"""
     ]
 
 
+def test_pihole_ports_expected_only_when_installed():
+    assert {53, 8080}.isdisjoint(pi.expected_ports(pihole_installed=False))
+    assert {22, 53, 80, 443, 8080} <= pi.expected_ports(pihole_installed=True)
+
+
 def test_sshd_settings():
     s = pi.sshd_settings("port 22\npasswordauthentication no\nPermitRootLogin prohibit-password\n")
     assert s["passwordauthentication"] == "no"
