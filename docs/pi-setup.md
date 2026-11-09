@@ -46,7 +46,7 @@ docker compose up -d
 
 Pick one:
 - In your router's admin page, add a DNS entry / static lease `hub.home → <Pi's IP>`.
-- Or (Phase 3) run Pi-hole / AdGuard Home on the Pi and add a local DNS record there.
+- Or run Pi-hole on the Pi and add a local DNS record there: see [pi-hole.md](pi-hole.md).
 - For a quick test, add `<Pi's IP> hub.home` to your laptop's hosts file.
 
 Give the Pi a fixed IP (DHCP reservation in the router) either way.

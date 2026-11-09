@@ -21,9 +21,11 @@ from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
 
-# TCP ports the Pi is expected to listen on beyond loopback: SSH and the web (Caddy). Pi-hole
-# would add 53 later. Addresses only your own VPN devices can reach (Tailscale's) don't count.
+# TCP ports the Pi is expected to listen on beyond loopback: SSH and the web (Caddy). Addresses
+# only your own VPN devices can reach (Tailscale's) don't count.
 EXPECTED_TCP_PORTS = {22, 80, 443}
+# Pi-hole's DNS and admin page (docs/pi-hole.md), expected only when Pi-hole is installed.
+PIHOLE_TCP_PORTS = {53, 8080}
 VPN_NETWORKS = [ipaddress.ip_network("100.64.0.0/10"), ipaddress.ip_network("fd7a:115c:a1e0::/48")]
 IMAGE_MAX_AGE_DAYS = 30
 
@@ -71,15 +73,20 @@ def listening_ports(ss_output: str) -> list[tuple[int, str]]:
     return sorted(found)
 
 
+def expected_ports(pihole_installed: bool) -> set[int]:
+    return EXPECTED_TCP_PORTS | PIHOLE_TCP_PORTS if pihole_installed else EXPECTED_TCP_PORTS
+
+
 def check_ports() -> dict:
     title = "Open ports"
     out = run("ss", "-Htln")
     if out is None or out.returncode != 0:
         return check("ports", title, "unknown", "Couldn't list listening ports (ss missing).")
+    expected = expected_ports(shutil.which("pihole-FTL") is not None)
     unexpected = [
         f"port {port} on {addr}"
         for port, addr in listening_ports(out.stdout)
-        if port not in EXPECTED_TCP_PORTS
+        if port not in expected
     ]
     if unexpected:
         return check(
