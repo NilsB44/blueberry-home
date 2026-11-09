@@ -100,10 +100,11 @@ cd web && npm run check
 
 ## Run on the Pi
 
-See [docs/pi-setup.md](docs/pi-setup.md). In short:
+First time? Follow [docs/pi-setup.md](docs/pi-setup.md) from flashing the SD card to SSH,
+Docker, certificates and Claude Code on the Pi. In short:
 
 ```bash
-git clone <this repo> hub && cd hub
+git clone https://github.com/NilsB44/blueberry-home.git ~/hub && cd ~/hub
 cp .env.example .env
 docker compose up -d
 sudo scripts/install-security-check.sh     # the Pi's weekly security check
