@@ -48,6 +48,8 @@ connects over Wi-Fi. Step-by-step, plus a tour of what to try: [docs/try-it-now.
   coming up from below, long coming down from above), the stop and a position size in contracts
   from your equity and risk %. It also pings you when a new analysis is posted. How often it
   checks, the risk and the alerts are set on its settings page. See [docs/trading.md](docs/trading.md).
+- **Plants:** the plan for plant sensors and self-watering (an ESP32 per plant, the Pi as hub),
+  with phases, pros and cons, and a shopping list. Nothing reads sensors yet.
 - Caddy serves everything over HTTPS on the LAN at `https://hub.home` with its own local CA.
 - Installable on phones as a web app (PWA manifest), dark mode follows the system.
 
