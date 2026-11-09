@@ -19,7 +19,7 @@ A self-hosted, ad-free, LAN-only app suite running on a **Raspberry Pi 5 (8 GB)*
 | Item | Recommendation | Why |
 |---|---|---|
 | Board | Pi 5, 8 GB | Already chosen. Plenty for this stack. |
-| Storage | **NVMe SSD via M.2 HAT** (256–512 GB) | SD cards wear out under database writes; NVMe is far faster and more reliable. Boot from it. |
+| Storage | **NVMe SSD via M.2 HAT** (1–2 TB) | SD cards wear out under database writes; NVMe is far faster and more reliable. Boot from it. Sized to also hold movies (see [media.md](media.md)). |
 | Cooling | Official Active Cooler | Pi 5 throttles without it under sustained load (e.g. poker sims). |
 | Power | Official 27 W USB-C PSU | Under-powered Pi 5s throttle and can't power NVMe reliably. |
 | Backup disk | Any USB drive, or a cloud bucket | For nightly encrypted backups. |

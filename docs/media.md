@@ -1,77 +1,89 @@
 # Movies on the Pi
 
-A plan for keeping movies on a disk attached to the Pi and watching them on the TV, phone or
-laptop. Nothing here is built yet. It reuses what the hub already has (the Files page and the
-optional Samba share) and adds one container, Jellyfin. The hub itself does not change, apart
-from an optional dashboard tile that links to Jellyfin.
+A plan for keeping movies on the Pi and watching them on the laptop or a projector. It uses
+one disk, an NVMe SSD that also holds the OS and the hub. It reuses what the hub already has
+(the Files page and the optional Samba share) and adds one optional container, Jellyfin, for
+the projector. The hub itself does not change.
 
 ## What to buy
 
-The Pi already gets an NVMe SSD for the OS and the hub (see [plan.md](plan.md)). The movies go
-on a second disk on a USB 3 port (the blue ones), so a full movie disk can never fill the disk
-the hub runs on.
+One **1–2 TB NVMe SSD** on an M.2 board under the Pi. The Pi boots from it, and the hub and the
+movies live on it too. 1 TB holds roughly 200 movies at 1080p (about 5 GB each) or 50 4K
+remuxes. Rough prices, so check Prisjakt before buying:
 
-| Library size | Disk | Rough price | Notes |
-|---|---|---|---|
-| Under 400 GB | None: buy a 1 TB NVMe instead of 256–512 GB | +500 kr | Simplest, but movies and the hub share a disk. |
-| **1–4 TB (recommended)** | 2.5" USB HDD (2–4 TB) or USB SSD (1–2 TB) | 900–1 500 kr | Powered by the Pi, one cable. An HDD is cheaper per TB and plenty fast for video. |
-| Over 4 TB | 3.5" HDD in an enclosure with its own power supply | 2 500 kr and up | The only option that needs another plug. |
+| Part | Rough price | Notes |
+|---|---|---|
+| M.2 board: official **M.2 HAT+** | 150 kr | Fits only short SSDs (2230 or 2242), which cost more per TB. |
+| M.2 board: **Pimoroni NVMe Base** (or similar) | 200 kr | Also fits normal 2280 SSDs, so a wider choice of cheap 1–2 TB drives. **Recommended.** |
+| 1 TB NVMe SSD (2280) | 600–900 kr | Any mainstream drive. The Pi uses only PCIe 2/3 x1, so a fast one is wasted money. |
+| 2 TB NVMe SSD (2280) | 1 100–1 500 kr | Only if you expect more than ~200 movies. |
 
-The prices are rough guesses, so check Prisjakt before buying. Things to get right:
+- **Power.** Use the official 27 W supply. The SSD is powered by the Pi, and a weaker supply
+  makes it drop out under load.
+- **Speed is not the limit.** A 4K Blu-ray remux peaks around 100 Mbit/s. The SSD does many
+  times that; Wi-Fi is the slower link. Put the Pi on Ethernet.
+- **Cooling.** The Active Cooler sits on top and the SSD board underneath, so they don't clash.
 
-- **Power.** Use the official 27 W supply. With it the Pi gives its USB ports up to 1.6 A in
-  total, which runs one 2.5" HDD or USB SSD. A weaker supply caps USB at 0.6 A and the disk
-  drops out when it spins up. Two bus-powered HDDs at once is asking for trouble; a 3.5" disk
-  always needs its own supply.
-- **Speed is not the limit.** A 4K Blu-ray remux peaks around 100 Mbit/s. An HDD does over
-  1 000 Mbit/s and Wi-Fi is the slower link anyway. Put the TV on Ethernet if it can.
-- **No RAID.** One disk is fine for movies (see Backups).
+If the disk ever fills up, a USB disk can be added later without changing anything below except
+the path.
 
 ## Set up the disk
 
-Once, after plugging it in (this wipes the disk):
+Follow [pi-setup.md](pi-setup.md) and flash Raspberry Pi OS straight onto the NVMe (Imager can
+write to it through a USB M.2 adapter, or flash a microSD first and copy it over with the
+built-in SD Card Copier). Then make a folder for the hub's files and point the hub at it:
 
 ```sh
-lsblk                                   # find it, e.g. /dev/sda
-sudo parted /dev/sda --script mklabel gpt mkpart media ext4 0% 100%
-sudo mkfs.ext4 -L media /dev/sda1
-sudo mkdir -p /mnt/media
-echo 'LABEL=media /mnt/media ext4 defaults,noatime,nofail 0 2' | sudo tee -a /etc/fstab
-sudo mount -a && sudo chown -R 1000:1000 /mnt/media
+sudo mkdir -p /srv/hub-files/shared/Movies
+sudo chown -R 1000:1000 /srv/hub-files
 ```
-
-`nofail` means the Pi still boots, and the hub still runs, if the disk is unplugged.
-
-Then move the hub's files onto it, so that anything uploaded on the Files page lands on the big
-disk and the Shared folder's `Movies` becomes the movie library:
 
 ```sh
 # .env
-HUB_FILES_PATH=/mnt/media/files
+HUB_FILES_PATH=/srv/hub-files
 ```
 
 ```sh
-mkdir -p /mnt/media/files/shared/Movies
 docker compose up -d
 ```
+
+The Shared folder's `Movies` is now the movie library.
+
+**One disk means a full disk stops everything,** including the hub's database. The Files page
+already refuses uploads when the disk is nearly full, but Samba and rsync don't check. Keep at
+least 50 GB free; the Network page shows how full the disk is.
 
 ## Getting movies onto it
 
 All three already work with no new code:
 
-- **Files page:** upload to Shared → Movies from the phone or laptop (up to 8 GB per file by
+- **Files page:** upload to Shared → Movies from the laptop or phone (up to 8 GB per file by
   default; raise `HUB_MAX_UPLOAD_MB` for bigger ones).
 - **Samba:** the share in [files.md](files.md) shows Shared as a network drive, so you can drag
-  whole folders in from Finder or Explorer. This is the easiest way for a large library.
-- **scp/rsync** from a laptop: `rsync -avP Movies/ pi@hub.home:/mnt/media/files/shared/Movies/`
+  whole folders in from Finder or Explorer. The easiest way for a large library.
+- **rsync** from a laptop: `rsync -avP Movies/ pi@hub.home:/srv/hub-files/shared/Movies/`
 
 Name them `Movies/Title (Year)/Title (Year).mkv` so Jellyfin finds the right poster and info.
 
-## Watching: Jellyfin
+## Watching
 
-Jellyfin is a free media server with apps for Android TV, Google TV, Fire TV, LG, Samsung (via
-sideloading), iOS, Android and the browser. Add it to `compose.yml` the same way as Samba (off by
-default, not covered by CI, so treat it as a starting point):
+**On the laptop** nothing new is needed: open the Samba share and play the file in VLC. The
+Files page can also play videos in the browser, though only formats the browser supports
+(usually MP4 with H.264).
+
+**On the projector** it depends on what the projector can run:
+
+| Projector | How |
+|---|---|
+| Has Android TV / Google TV / Fire TV built in | Install the Jellyfin app on it. |
+| HDMI only | Plug in a streaming stick (Chromecast with Google TV, Fire TV Stick, ~400–600 kr) and install the Jellyfin app on it. |
+| HDMI only, no stick | Plug the laptop in with HDMI and play from Samba in VLC. No Jellyfin needed. |
+
+### Jellyfin (only for the projector)
+
+Jellyfin is a free media server with apps for TVs, sticks, phones and the browser. Add it to
+`compose.yml` the same way as Samba (off by default, not covered by CI, so treat it as a
+starting point):
 
 ```yaml
   jellyfin:
@@ -79,7 +91,7 @@ default, not covered by CI, so treat it as a starting point):
     profiles: ["media"]
     restart: unless-stopped
     user: "1000:1000"
-    network_mode: host          # so TVs can discover it on the Wi-Fi
+    network_mode: host          # so the projector or stick can find it on the Wi-Fi
     volumes:
       - ./data/jellyfin/config:/config
       - ./data/jellyfin/cache:/cache
@@ -88,31 +100,34 @@ default, not covered by CI, so treat it as a starting point):
 
 Then `docker compose --profile media up -d`, open `http://hub.home:8096`, create the admin
 user and add `/media/movies` as a Movies library. The library is mounted read-only, so
-Jellyfin can never delete or change your files.
+Jellyfin can never delete or change your files. Once it runs, a dashboard tile that links to it
+is a small follow-up.
 
 **The one real limit: the Pi 5 can't convert video on the fly.** It has no hardware video
 encoder, and its CPU manages at most one 1080p stream in software (4K not at all). So every
 file has to play as it is ("direct play"). In practice:
 
-- Use H.264 or H.265 (HEVC) video in MKV or MP4. Nearly all TVs and phones play both.
-- Prefer AAC, AC3 or EAC3 audio. DTS and TrueHD make some TVs ask for conversion.
+- Use H.264 or H.265 (HEVC) video in MKV or MP4. Streaming sticks play both.
+- Prefer AAC, AC3 or EAC3 audio. DTS and TrueHD make some devices ask for conversion.
 - Use text subtitles (SRT) rather than image ones (PGS from Blu-rays), which have to be burned
   into the picture.
-- In each Jellyfin app, set the quality to Maximum so it never asks the Pi to shrink a stream.
+- In the Jellyfin app, set the quality to Maximum so it never asks the Pi to shrink a stream.
 - If something stutters, Jellyfin's dashboard shows whether it is transcoding and why.
 
-Jellyfin has its own logins, separate from the hub. It is reachable on the home network only,
-like the hub. Away from home, it works over Tailscale like the rest of the hub; don't open a
-port for it on the router.
+Jellyfin has its own logins, separate from the hub, and is reachable on the home network only.
+Away from home it works over Tailscale like the rest of the hub; don't open a port for it on
+the router.
 
 ## Backups
 
-The movie disk is not backed up: movies can be found again, and a second disk of the same size
-doubles the cost. The nightly backup in [plan.md](plan.md) keeps covering the hub's database
-and the files you'd miss. If the Shared folder ends up holding things that can't be replaced
-(photos, documents), keep those outside `Shared/Movies` and include them in the backup.
+The movies are not backed up: they can be found again, and backing them up would need a second
+disk. The nightly backup in [plan.md](plan.md) keeps covering the hub's database and the files
+you'd miss. Keep anything that can't be replaced (photos, documents) outside `Shared/Movies` so
+the backup can include it and skip the movies.
 
 ## Shopping list
 
-1. A 2–4 TB 2.5" USB 3 HDD (or a 1–2 TB USB SSD if you want it silent).
-2. Nothing else, as long as the Pi uses the official 27 W supply.
+1. A Pimoroni NVMe Base (or the official M.2 HAT+ with a 2230/2242 SSD).
+2. A 1 TB NVMe SSD, or 2 TB if you expect more than ~200 movies.
+3. The official 27 W power supply, if it didn't come with the Pi.
+4. For the projector, only if it has no smart-TV system: a streaming stick.
