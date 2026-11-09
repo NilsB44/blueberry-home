@@ -124,7 +124,7 @@ The defaults in `.env` are right for the Pi. If you have an SSD, point shared fi
 Pick one:
 - In your router's admin page, add a local DNS entry `hub.home → <Pi IP>` (not every router
   can; look under LAN, DHCP or DNS settings).
-- Or run Pi-hole / AdGuard Home on the Pi later and add a local DNS record there.
+- Or run Pi-hole on the Pi and add a local DNS record there: see [pi-hole.md](pi-hole.md).
 - For now, add `<Pi IP> hub.home` to the hosts file on each device that has one: `/etc/hosts`
   on macOS and Linux, `C:\Windows\System32\drivers\etc\hosts` on Windows (open Notepad as
   administrator). Phones have no hosts file, so they need one of the first two options.
