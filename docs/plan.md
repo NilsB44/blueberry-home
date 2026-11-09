@@ -163,7 +163,7 @@ Ranked roughly by value for effort. Each is a module in the same app.
 16. **LAN game nights:** besides Tetris, simple party games (quiz, Codenames-style word game) reusing the WebSocket lobby.
 
 ### Home and utilities
-17. **Media server:** Jellyfin for your own videos/music (direct play only; the Pi 5 has no hardware video encoder so avoid heavy transcoding).
+17. **Media server:** Jellyfin for your own videos/music (direct play only; the Pi 5 has no hardware video encoder so avoid heavy transcoding). Plan: [media.md](media.md).
 18. **Password manager:** Vaultwarden (self-hosted Bitwarden), behind the VPN. Very popular, very light.
 19. **Notes / wiki:** a simple markdown notes module, or self-host something like Memos or Trilium.
 20. **Local AI assistant (optional):** **Ollama** with a small model (e.g. a 1–3B parameter model) runs on the Pi 5 8 GB at a slow but usable speed. Uses: explain a French grammar error, generate example sentences, summarise notes. Treat it as a nice-to-have; keep core features working without it.
