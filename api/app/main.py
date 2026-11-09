@@ -10,6 +10,7 @@ from app.auth.router import users_router
 from app.config import get_settings
 from app.db import init_db
 from app.modules import MODULES, ModuleInfo
+from app.modules.economy.router import router as economy_router
 from app.modules.files.router import router as files_router
 from app.modules.home.router import router as home_router
 from app.modules.network import monitor as network_monitor
@@ -52,6 +53,7 @@ app.add_middleware(LocalNetworkOnly)
 
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(economy_router)
 app.include_router(files_router)
 app.include_router(home_router)
 app.include_router(network_router)

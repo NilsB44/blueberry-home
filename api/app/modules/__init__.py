@@ -34,6 +34,14 @@ MODULES: list[ModuleInfo] = [
         owner_only=True,
     ),
     ModuleInfo(
+        id="economy",
+        name="Economy",
+        description="Net worth, subscriptions and purchase rules before you buy.",
+        icon="💰",
+        path="/economy",
+        owner_only=True,
+    ),
+    ModuleInfo(
         id="files",
         name="Files",
         description="Shared and private folders: send from the phone, grab it on the laptop.",
