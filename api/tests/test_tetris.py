@@ -44,6 +44,8 @@ def _second_device(client):
     return token, them
 
 
+# Close a second socket and read what the others get *inside* its `with` block: leaving the
+# block cancels the server's handler, which can happen before it has told the others.
 def _recv_until(ws, kind):
     while True:
         msg = ws.receive_json()
@@ -159,8 +161,9 @@ def test_two_player_round(client):
             assert not lobby["started"]
             assert {p["id"]: p["wins"] for p in lobby["players"]} == {me["id"]: 1, them["id"]: 0}
 
-        # B left: A is alone again.
-        assert len(_recv_until(a, "lobby")["players"]) == 1
+            # B leaves: A is alone again.
+            b.close()
+            assert len(_recv_until(a, "lobby")["players"]) == 1
     assert client.get(f"{BASE}/rooms").json() == []
 
 
@@ -175,7 +178,8 @@ def test_leaving_mid_game_hands_the_win_over(client):
             _recv_until(b, "lobby")
             a.send_json({"t": "start"})
             _recv_until(b, "start")
-        assert _recv_until(a, "end")["winner"] == me["display_name"]
+            b.close()
+            assert _recv_until(a, "end")["winner"] == me["display_name"]
 
 
 def test_unknown_room(client):
