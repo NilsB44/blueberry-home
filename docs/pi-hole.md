@@ -4,7 +4,7 @@ Pi-hole blocks ads and trackers for every device on the Wi-Fi by being the home 
 server. It also gives `hub.home` a name without touching the router's hosts settings. It runs
 next to the hub on the same Pi; the hub doesn't know or care that it's there.
 
-Do this after the hub is running ([pi-setup.md](pi-setup.md), steps 1–6).
+Do this after the hub is running and opens on your phone ([pi-setup.md](pi-setup.md), steps 0–8).
 
 ## How it fits
 
@@ -27,8 +27,7 @@ warns about them on a Pi without Pi-hole.
 
 ## 1. Install
 
-The Pi needs a fixed IP first (DHCP reservation in the router), which you already set up for
-`hub.home`. Read the installer before running it:
+The Pi needs its fixed address from pi-setup.md step 3. Read the installer before running it:
 
 ```bash
 curl -sSL https://install.pi-hole.net -o pihole-install.sh
@@ -52,12 +51,12 @@ sudo ufw allow from 192.168.1.0/24 to any port 53
 sudo ufw allow from 192.168.1.0/24 to any port 8080 proto tcp
 ```
 
-The admin page is now at `http://<Pi's IP>:8080/admin`.
+The admin page is now at `http://<Pi IP>:8080/admin`.
 
 ## 2. Local names
 
-In the admin page, **Settings → Local DNS Records**: add `hub.home → <Pi's IP>`. You can then
-drop the router entry or hosts-file line from pi-setup.md step 5.
+In the admin page, **Settings → Local DNS Records**: add `hub.home → <Pi IP>`. You can then
+drop the router entry or hosts-file lines from pi-setup.md step 6.
 
 Then **Settings → DNS → Conditional forwarding**: turn it on with your subnet, the router's IP
 and its domain (often `lan`). Without it, Pi-hole can't ask the router for device names, so the
