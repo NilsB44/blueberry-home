@@ -45,6 +45,12 @@ from the laptop exactly as above, fit it on the HAT and leave the SD card out. T
 from NVMe when no card is in (on an old bootloader, boot once from SD and run
 `sudo rpi-eeprom-update -a` first). No enclosure? Start on the SD card; you can move later.
 
+No SD card yet? A USB stick works to get started: flash it exactly as above (pick the stick
+as the storage), plug it into a **blue** USB 3 port and power on with no card in. The Pi 5
+tries SD, then NVMe, then USB, so it boots from the stick on its own. Treat it as temporary:
+sticks are slow (the first build takes much longer) and wear out under the database and
+Docker's writes, so keep `data/` backed up and move to an SD card or SSD when you can.
+
 ## 2. First login and hardening
 
 **Laptop:**
