@@ -5,7 +5,7 @@ WORKDIR /src
 COPY engines/poker ./
 RUN cargo build --release
 
-FROM python:3.14-slim
+FROM python:3.15-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /srv
