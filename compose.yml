@@ -3,7 +3,10 @@ name: hub
 
 services:
   web:
-    build: ./web
+    build:
+      # From the repository root so the home page can include MILESTONES.md.
+      context: .
+      dockerfile: web/Dockerfile
     restart: unless-stopped
     # IPv4 only, on purpose. On IPv6, Docker relays connections through its own proxy and the
     # hub would see them as coming from the Docker network, which it trusts as "home". Pinning

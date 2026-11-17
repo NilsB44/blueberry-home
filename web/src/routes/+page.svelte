@@ -20,6 +20,13 @@
 	import type { Overview } from '#lib/network.ts';
 	import { STATUS_LABEL, type Schedule } from '#lib/security.ts';
 	import { session } from '#lib/session.svelte.ts';
+	import milestonesText from '../../../MILESTONES.md?raw';
+
+	// "- 2026-10-12 Text" lines from MILESTONES.md, baked in at build time.
+	const milestones = [...milestonesText.matchAll(/^- (\d{4}-\d{2}-\d{2}) (.+)$/gm)].map((m) => ({
+		date: m[1],
+		text: m[2]
+	}));
 
 	let modules = $state<ModuleInfo[]>([]);
 	let layout = $state<Layout>({ items: [] });
@@ -400,6 +407,15 @@
 	</div>
 
 	{#if saveError}<p class="error small">{saveError}</p>{/if}
+
+	<details class="milestones muted small">
+		<summary>Milestones</summary>
+		<ul>
+			{#each milestones as m (m.date)}
+				<li><strong>{m.date}</strong> {m.text}</li>
+			{/each}
+		</ul>
+	</details>
 </section>
 
 {#if editing}
@@ -510,6 +526,16 @@
 		margin: 0 0 1.5rem;
 		font-size: 0.9rem;
 		min-height: 1.5em;
+	}
+	.milestones {
+		margin-top: 3rem;
+	}
+	.milestones summary {
+		cursor: pointer;
+	}
+	.milestones ul {
+		padding-left: 1.1rem;
+		line-height: 1.5;
 	}
 	.small {
 		font-size: 0.85rem;
