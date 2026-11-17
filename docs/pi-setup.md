@@ -12,8 +12,8 @@ Terminal on macOS), the rest run on the Pi over SSH.
 - A good microSD card (A2 rated, 32 GB or more) that stays in the Pi, or an NVMe SSD on an M.2
   HAT
 - Ethernet cable to the router (needed for step 1, and steadier than Wi-Fi for a server)
-- For step 1 only: a screen with a micro-HDMI cable and a USB keyboard (a mouse helps). No
-  screen? A USB stick works instead, see the end of step 1.
+- For step 1, either a screen with a micro-HDMI cable and a USB keyboard, or a USB stick
+  (8 GB or more) to start from: see the end of step 1.
 
 ## 0. Make SSH keys for the devices you'll log in from
 
@@ -59,15 +59,32 @@ needed. It needs Ethernet: Wi-Fi doesn't work for this.
 Booting from an NVMe SSD instead? Pick the SSD as the storage in Imager and leave the card out
 afterwards. On an old bootloader run `sudo rpi-eeprom-update -a` once a system is up.
 
-**No screen or keyboard?** Run the Pi from a USB stick instead of the card. On your computer,
-install [Raspberry Pi Imager](https://www.raspberrypi.com/software/), write the same OS to the
-stick with the same settings, but under Remote access choose **public-key authentication** and
-paste the laptop's `.pub` line. Take the card out, plug the stick into a **blue** USB 3 port
-and power on: the Pi boots from it on its own. The rest of this guide works the same. Treat it
-as temporary: sticks are slow (the first build takes much longer) and wear out under the
-database and Docker's writes, so keep `data/` backed up and move to the card later (Network
-Install with a borrowed screen, or a cheap USB card reader). The Pi can't write its own card
-without either a screen for Network Install or an OS booted from somewhere else.
+### No screen and no card reader: go through a USB stick
+
+The Pi boots from the stick first, then copies that system onto the card. No extra hardware.
+
+1. On your computer, install [Raspberry Pi Imager](https://www.raspberrypi.com/software/) and
+   write the same OS to the **USB stick** with the same settings, except under Remote access
+   choose **public-key authentication** and paste the laptop's `.pub` line.
+2. Leave the empty microSD card in the Pi. Plug the stick into a **blue** USB 3 port, plug in
+   Ethernet, then power. The Pi 5 tries the SD card first, finds nothing to boot and moves on
+   to USB, so it starts from the stick.
+3. Log in (`ssh nils@hub.local`, see step 2) and copy the running system onto the card with
+   [rpi-clone](https://github.com/geerlingguy/rpi-clone):
+
+   ```bash
+   lsblk                                  # the card is mmcblk0 (~64 GB), the stick is sda
+   curl -fsSL https://raw.githubusercontent.com/geerlingguy/rpi-clone/master/install -o rpi-clone-install
+   sudo bash rpi-clone-install && rm rpi-clone-install
+   sudo rpi-clone mmcblk0                 # answer yes; the label question can be left empty
+   sudo poweroff
+   ```
+
+   It sets up the card's partitions, copies everything and points the card's boot settings at
+   the card.
+4. Unplug the power, take the stick out, power on. The Pi now boots from the card with the same
+   settings and key. Carry on with step 2. The `ssh` warning that the host key changed won't
+   appear: it's the same system.
 
 ## 2. First login and hardening
 
