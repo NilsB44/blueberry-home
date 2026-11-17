@@ -1,7 +1,8 @@
 /** The owner's economy page. The API only stores this; every sum and rule is worked out here. */
 
 export type AccountKind = 'cash' | 'investment' | 'pension' | 'property' | 'loan' | 'other';
-export type Account = { name: string; kind: AccountKind; balance: number };
+// monthly: saved into it on the 25th. since: the day balance was entered (YYYY-MM-DD).
+export type Account = { name: string; kind: AccountKind; balance: number; monthly?: number; since?: string | null };
 export type Subscription = { name: string; price: number; period: 'month' | 'year' };
 export type Rules = {
 	wait_days: number;
@@ -26,12 +27,38 @@ export const KINDS: { id: AccountKind; label: string }[] = [
 	{ id: 'loan', label: 'Loans' }
 ];
 
-const signed = (a: Account) => (a.kind === 'loan' ? -a.balance : a.balance);
+/** Today, or another day, as YYYY-MM-DD in local time. */
+export const isoDate = (d = new Date()) =>
+	`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+// The month of the latest 25th on or before a day, counted from year 0.
+const lastPayday = (day: string) => {
+	const [y, m, d] = day.split('-').map(Number);
+	return y * 12 + m - (d >= 25 ? 0 : 1);
+};
+
+/** How many 25ths fell after since, up to and including today. A balance entered on the 25th
+ * already holds that day's saving. */
+export const paydays = (since: string, today: string) => Math.max(0, lastPayday(today) - lastPayday(since));
+
+/** The part of a balance that is monthly savings added since it was last entered. Not for loans. */
+export const projected = (a: Account, today = isoDate()) =>
+	a.kind === 'loan' || !a.monthly || !a.since ? 0 : a.monthly * paydays(a.since, today);
+
+export const current = (a: Account, today = isoDate()) => a.balance + projected(a, today);
+
+/** Fold the savings so far into the balance, as of today: for a new balance or a new monthly amount. */
+export function rebase(a: Account, today = isoDate()) {
+	a.balance = current(a, today);
+	a.since = today;
+}
+
+const signed = (a: Account) => (a.kind === 'loan' ? -a.balance : current(a));
 
 export const netWorth = (accounts: Account[]) => accounts.reduce((s, a) => s + signed(a), 0);
 
 export const totalOf = (accounts: Account[], kind: AccountKind) =>
-	accounts.filter((a) => a.kind === kind).reduce((s, a) => s + a.balance, 0);
+	accounts.filter((a) => a.kind === kind).reduce((s, a) => s + current(a), 0);
 
 export const monthly = (s: Subscription) => (s.period === 'month' ? s.price : s.price / 12);
 

@@ -21,11 +21,23 @@ def test_starts_empty_with_default_rules(admin_client):
 def test_round_trips(admin_client):
     assert admin_client.put("/api/economy", json=ECONOMY).status_code == 200
     e = admin_client.get("/api/economy").json()
-    assert e["accounts"] == ECONOMY["accounts"]
+    assert [a["balance"] for a in e["accounts"]] == [50000, 1200000]
     assert e["wishlist"][0]["checks"] == {"need": True}
     assert e["rules"]["max_net_worth_pct"] == 2
     # Rules left out keep their defaults.
     assert e["rules"]["big_price"] == 5000
+
+
+def test_monthly_savings_round_trip(admin_client):
+    fund = {"name": "Index", "kind": "investment", "balance": 100000, "monthly": 2000}
+    admin_client.put("/api/economy", json={"accounts": [fund | {"since": "2026-11-17"}]})
+    assert admin_client.get("/api/economy").json()["accounts"][0] == fund | {"since": "2026-11-17"}
+    # Accounts saved before monthly savings existed still load.
+    admin_client.put("/api/economy", json=ECONOMY)
+    saved = admin_client.get("/api/economy").json()["accounts"][0]
+    assert saved["monthly"] == 0 and saved["since"] is None
+    negative = {"accounts": [fund | {"monthly": -1}]}
+    assert admin_client.put("/api/economy", json=negative).status_code == 422
 
 
 def test_shape_is_checked(admin_client):

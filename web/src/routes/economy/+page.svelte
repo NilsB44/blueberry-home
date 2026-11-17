@@ -1,10 +1,14 @@
 <script lang="ts">
 	import { api } from '#lib/api.ts';
 	import {
+		current,
+		isoDate,
 		judge,
 		KINDS,
 		monthly,
 		netWorth,
+		projected,
+		rebase,
 		sek,
 		subscriptionsPerMonth,
 		totalOf,
@@ -51,6 +55,12 @@
 	});
 
 	const today = () => new Date().toISOString().slice(0, 10);
+
+	// A number typed into a field, or null while it is empty or half-typed.
+	const typed = (ev: Event) => {
+		const n = (ev.currentTarget as HTMLInputElement).valueAsNumber;
+		return Number.isNaN(n) ? null : n;
+	};
 </script>
 
 <section>
@@ -83,16 +93,51 @@
 			</div>
 			<div class="card stack">
 				<h2>Accounts and loans</h2>
-				<p class="muted small">Today's balance for each. Enter a loan, like the mortgage, as what you owe.</p>
+				<p class="muted small">
+					Today's balance for each. Enter a loan, like the mortgage, as what you owe. A monthly saving is added
+					to the balance every 25th until you type a new one.
+				</p>
 				{#each e.accounts as a, i (i)}
 					<div class="line">
 						<input bind:value={a.name} maxlength="60" placeholder="Name" aria-label="Name" />
 						<select bind:value={a.kind} aria-label="Kind">
 							{#each KINDS as k}<option value={k.id}>{k.label}</option>{/each}
 						</select>
-						<input type="number" step="any" bind:value={a.balance} aria-label="Balance" />
+						<input
+							type="number"
+							step="any"
+							value={current(a)}
+							oninput={(ev) => {
+								const n = typed(ev);
+								if (n !== null) (a.balance = n), (a.since = isoDate());
+							}}
+							aria-label="Balance"
+						/>
 						<button type="button" class="ghost" onclick={() => e!.accounts.splice(i, 1)} aria-label="Remove">✕</button>
 					</div>
+					{#if a.kind !== 'loan'}
+						<label class="inline small muted">
+							Saved on the 25th each month
+							<input
+								class="short"
+								type="number"
+								min="0"
+								step="any"
+								value={a.monthly ?? 0}
+								oninput={(ev) => {
+									const n = typed(ev);
+									if (n !== null && n >= 0) rebase(a), (a.monthly = n);
+								}}
+								aria-label="Monthly savings"
+							/>
+						</label>
+						{#if projected(a)}
+							<p class="muted small">
+								Includes {sek(projected(a))} of monthly savings added since you entered {sek(a.balance)} on {a.since}.
+								Type the real balance to correct it.
+							</p>
+						{/if}
+					{/if}
 				{/each}
 				<button type="button" class="ghost" onclick={() => e!.accounts.push({ name: 'Account', kind: 'cash', balance: 0 })}>
 					Add an account or loan
