@@ -56,6 +56,9 @@ behind carrier-grade NAT: sharing can still work but usually earns less.
   docker compose -f ~/hub/bandwidth-sharing/compose.yml run --rm pawns
   ```
 
+  `authenticate user failed` means Pawns refused the email and password. Stop the container
+  while you sort it out (`docker compose -f ~/hub/bandwidth-sharing/compose.yml stop`) so it
+  doesn't keep retrying, and check you can log in to the Pawns dashboard with exactly those.
   An account made with Google sign-in has no password: set one in the Pawns dashboard first.
   If the password has a `$` in it, wrap it in single quotes in `.env`. Also stop Pawns on any
   other computer at home: a second device on the same IP earns nothing extra.
