@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "prepare": "svelte-kit sync || echo \"\""
+    "prepare": "svelte-kit sync || echo \"\"",
+    "test": "node --test 'tests/*.test.ts'"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^4.0.1",

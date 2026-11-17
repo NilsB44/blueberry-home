@@ -28,6 +28,10 @@ class Account(BaseModel):
     # A loan's balance is what is owed, as a positive number; it counts against net worth.
     kind: Literal["cash", "investment", "pension", "property", "loan", "other"]
     balance: Amount
+    # Saved into it on the 25th of each month; the web app adds it for each 25th after since.
+    monthly: Positive = 0
+    # The day balance was last entered. None: before monthly savings existed.
+    since: date | None = None
 
 
 class Subscription(BaseModel):

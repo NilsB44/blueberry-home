@@ -8,3 +8,4 @@ Key moments in the project, oldest first. Add a line when something significant 
 - 2026-11-01 Removed the language courses and chatbot. Added the index trading helper.
 - 2026-11-09 Economy page. Plans for Pi-hole, movies and plants (Plants page).
 - 2026-11-17 Pi 5 set up and live at hub.home, updating itself every night. Bandwidth sharing: EarnApp running, Pawns on hold. Earn apps page.
+- 2026-11-17 Economy page: monthly savings per account, added automatically every 25th.
