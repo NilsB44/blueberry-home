@@ -61,6 +61,8 @@ class Settings(BaseSettings):
     network_speedtest_url: str = "https://speed.cloudflare.com"
     # Written every 5 minutes by scripts/pi-network-scan.py on the Pi.
     network_scan_path: Path = Path("./data/network-scan.json")
+    # Written every 5 minutes by scripts/pi-earn-status.py on the Pi (bandwidth-sharing/).
+    earn_status_path: Path = Path("./data/earn-status.json")
     # Trading: the watcher reads prices from IG's API (keys from My Account on IG). Everything
     # else (how often, risk, alerts) is on the trading settings page. Off in tests.
     trading_watcher: bool = True

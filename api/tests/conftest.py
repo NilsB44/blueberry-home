@@ -36,6 +36,7 @@ def client(monkeypatch, tmp_path):
     monkeypatch.setenv("HUB_DEVICE_NAMES_FROM_DNS", "false")
     monkeypatch.setenv("HUB_HOST_REPORT_PATH", str(tmp_path / "host-security.json"))
     monkeypatch.setenv("HUB_NETWORK_SCAN_PATH", str(tmp_path / "network-scan.json"))
+    monkeypatch.setenv("HUB_EARN_STATUS_PATH", str(tmp_path / "earn-status.json"))
     get_settings.cache_clear()
     engine = create_engine(
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
