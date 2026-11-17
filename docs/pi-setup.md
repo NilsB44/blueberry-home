@@ -9,8 +9,9 @@ Terminal on macOS), the rest run on the Pi over SSH.
 - Raspberry Pi 5, 8 GB
 - Official 27 W USB-C power supply (a weaker supply throttles the Pi and can't power an SSD)
 - Active Cooler (or a case with a fan)
-- NVMe SSD on an M.2 HAT (recommended) or a good A2 microSD card to start
-- A microSD card reader for your laptop
+- A good microSD card (A2 rated, 32 GB or more) that stays in the Pi, or an NVMe SSD on an M.2
+  HAT
+- A USB microSD card reader (the stick-shaped kind is fine) so the laptop can write the card
 - Ethernet cable to the router if possible (faster and steadier than Wi-Fi for a server)
 
 ## 0. Make an SSH key on your laptop
@@ -27,26 +28,34 @@ Imager next.
 
 ## 1. Flash the OS
 
-1. Install [Raspberry Pi Imager](https://www.raspberrypi.com/software/) on the laptop and put
-   the microSD card in.
-2. Choose device **Raspberry Pi 5**, OS **Raspberry Pi OS (other) → Raspberry Pi OS Lite
-   (64-bit)** (no desktop: the hub doesn't need one), and the SD card.
-3. When it asks about OS customisation, choose **Edit settings**:
-   - **General:** hostname `hub`; a username (e.g. `nils`) and a password (only used for
-     `sudo`); Wi-Fi name and password if you're not using Ethernet; your time zone and
-     keyboard layout.
-   - **Services:** enable SSH, **Allow public-key authentication only**, and paste the `.pub`
-     line from step 0.
-4. Write the card, put it in the Pi, plug in Ethernet, then power. The first boot takes a
-   couple of minutes.
+1. Install [Raspberry Pi Imager](https://www.raspberrypi.com/software/) (version 2 or newer)
+   on the laptop. Put the microSD card in the USB card reader and plug it into the laptop.
+2. Imager walks you through a few screens in order:
+   - **Device:** Raspberry Pi 5.
+   - **OS:** Raspberry Pi OS (other) → **Raspberry Pi OS Lite (64-bit)**. No desktop: the hub
+     doesn't need one.
+   - **Storage:** the microSD card in the reader. Double-check the size so you don't pick
+     another drive: everything on it is erased.
+   - **Customisation:**
+     - Hostname: `hub`.
+     - Localisation: your capital city, time zone and keyboard layout.
+     - User: a username (e.g. `nils`) and a password (only used for `sudo`).
+     - Wi-Fi: name and password, only if you're not using Ethernet.
+     - Remote access: enable SSH with **public-key authentication** (not password), and paste
+       the `.pub` line from step 0.
+     - Raspberry Pi Connect: leave it off. SSH is all you need.
+3. Write the card and wait for Imager to verify it, then eject it.
+4. Put the microSD card in the slot on the underside of the Pi, plug in Ethernet, then power.
+   The first boot takes a couple of minutes (it resizes the card and applies your settings).
 
 Using an NVMe SSD to boot from? The simplest route is an SSD-to-USB enclosure: flash the SSD
 from the laptop exactly as above, fit it on the HAT and leave the SD card out. The Pi 5 boots
 from NVMe when no card is in (on an old bootloader, boot once from SD and run
 `sudo rpi-eeprom-update -a` first). No enclosure? Start on the SD card; you can move later.
 
-No SD card yet? A USB stick works to get started: flash it exactly as above (pick the stick
-as the storage), plug it into a **blue** USB 3 port and power on with no card in. The Pi 5
+No microSD card? A USB stick can be the Pi's disk instead (this is booting from the stick,
+not the card reader used above): flash it exactly as above (pick the stick as the storage),
+plug it into a **blue** USB 3 port and power on with no card in. The Pi 5
 tries SD, then NVMe, then USB, so it boots from the stick on its own. Treat it as temporary:
 sticks are slow (the first build takes much longer) and wear out under the database and
 Docker's writes, so keep `data/` backed up and move to an SD card or SSD when you can.
@@ -75,9 +84,17 @@ Host hub
 
 ```bash
 sudo apt update && sudo apt full-upgrade -y
-sudo apt install -y ufw unattended-upgrades fail2ban git
+sudo apt install -y ufw unattended-upgrades fail2ban python3-systemd git
 sudo ufw allow OpenSSH && sudo ufw allow 80,443/tcp && sudo ufw enable
 sudo dpkg-reconfigure -plow unattended-upgrades     # answer Yes
+```
+
+Raspberry Pi OS keeps logs in the systemd journal, not `/var/log/auth.log`, so tell fail2ban
+to read SSH logins from there, then check it's watching:
+
+```bash
+printf '[sshd]\nenabled = true\nbackend = systemd\n' | sudo tee /etc/fail2ban/jail.d/hub.conf
+sudo systemctl restart fail2ban && sudo fail2ban-client status sshd
 ```
 
 Make sure SSH can never fall back to passwords (the weekly check looks for this):
@@ -202,6 +219,8 @@ Two habits keep this safe:
   it a minute after boot.
 - **`Permission denied (publickey)`:** the key in the Imager doesn't match the one on this
   laptop. Re-flash with the right `.pub` line, or log in from the laptop that made it.
+- **The Pi doesn't boot (no `hub.local`, green light not blinking):** re-seat the microSD card,
+  and re-flash it if needed. Make sure the card is pushed fully into the slot under the board.
 - **`permission denied ... docker.sock`:** you didn't log out and back in after step 4.
 - **Browser says the connection isn't private:** the certificate from step 7 isn't installed
   and trusted on that device yet.
