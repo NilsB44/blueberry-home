@@ -116,15 +116,19 @@ sudo apt update && sudo apt full-upgrade -y
 sudo apt install -y ufw unattended-upgrades fail2ban python3-systemd git
 sudo ufw allow OpenSSH && sudo ufw allow 80,443/tcp && sudo ufw enable
 sudo dpkg-reconfigure -plow unattended-upgrades     # answer Yes
+sudo reboot                                         # load the new kernel; ssh back in after a minute
 ```
 
 Raspberry Pi OS keeps logs in the systemd journal, not `/var/log/auth.log`, so tell fail2ban
-to read SSH logins from there, then check it's watching:
+to read SSH logins from there and to ban through ufw, then check it's watching (the pause gives
+the server time to start; without it the check says "Failed to access socket path"):
 
 ```bash
-printf '[sshd]\nenabled = true\nbackend = systemd\n' | sudo tee /etc/fail2ban/jail.d/hub.conf
-sudo systemctl restart fail2ban && sudo fail2ban-client status sshd
+printf '[sshd]\nenabled = true\nbackend = systemd\nbanaction = ufw\n' | sudo tee /etc/fail2ban/jail.d/hub.conf
+sudo systemctl restart fail2ban; sleep 3; sudo fail2ban-client status sshd
 ```
+
+It should list `Journal matches: _SYSTEMD_UNIT=ssh.service + _COMM=sshd` and 0 banned.
 
 Add the `.pub` line of every device from step 0, one per line:
 
