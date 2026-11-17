@@ -92,7 +92,7 @@ setup. While away, open `https://hub.tail1234.ts.net`.
   use Tailscale SSH instead of forwarding port 22: `sudo tailscale set --ssh` on the Pi, then
   `ssh you@hub` from any of your devices on the tailnet.
 - **For Claude improving the code:** it doesn't need SSH. Changes arrive as pull requests on
-  GitHub, and the Pi picks them up with `scripts/update-hub.sh`. If you want Claude to work
+  GitHub, and the Pi picks them up every night (or now, with `scripts/update-hub.sh`). If you want Claude to work
   on the Pi itself, Claude Code's Remote Control runs there over an outgoing connection, so no
   port has to be opened for that either.
 
@@ -138,8 +138,10 @@ scripts/update-hub.sh
 ```
 
 Pulls the latest code, rebuilds with fresh base images (picking up their security fixes) and
-restarts. Raspberry Pi OS
-updates itself through unattended-upgrades.
+restarts. `sudo scripts/install-auto-update.sh` runs it every night around 05:00 (see
+[pi-setup.md](pi-setup.md), step 10), so whatever is merged into `main` reaches the Pi within a
+day: that's why nothing lands on `main` without passing CI first. Raspberry Pi OS updates
+itself through unattended-upgrades.
 
 On GitHub, the code is kept clean before it ever reaches the Pi:
 
