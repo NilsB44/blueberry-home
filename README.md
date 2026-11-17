@@ -64,6 +64,7 @@ api/        FastAPI + SQLModel + SQLite. Each feature lives in app/modules/<name
 engines/    Rust: the poker hand evaluator and equity engine (no dependencies).
 web/        SvelteKit (static SPA) + the Caddy config that serves it.
 compose.yml Caddy (web) and the API.
+bandwidth-sharing/  Optional, separate: EarnApp and Pawns.app (see its README).
 docs/       Plan, architecture, Pi setup.
 ```
 
@@ -106,7 +107,7 @@ cd web && npm run check
 
 ## Run on the Pi
 
-First time? Follow [docs/pi-setup.md](docs/pi-setup.md) from flashing the SD card to SSH,
+First time? Follow [docs/pi-setup.md](docs/pi-setup.md) from installing the OS to SSH,
 Docker, certificates and Claude Code on the Pi. In short:
 
 ```bash
