@@ -29,7 +29,7 @@ Skip the first line if you already have a key. **Phone:** an SSH app such as Ter
 a key and show its public half. Each `.pub` line goes onto the Pi in step 2.
 
 Claude doesn't need a key. Code changes are made as pull requests on GitHub (from the Claude
-app, wherever you are), and the Pi pulls them with one command: see step 10.
+app, wherever you are), and the Pi pulls them every night: see step 10.
 
 ## 1. Install the OS onto the microSD card
 
@@ -233,15 +233,28 @@ use the away access switch on the Security page: see [security.md](security.md).
 Optional: to share some bandwidth for small payouts (EarnApp and Pawns.app), see
 [bandwidth-sharing/README.md](../bandwidth-sharing/README.md).
 
-## 10. Working on the Pi with Claude
+## 10. Updates: automatic every night
 
 Code changes don't happen on the Pi. Ask Claude in the Claude app (from anywhere): it makes
-them as pull requests on GitHub, and once they're merged the Pi picks them up with one command,
-from the laptop or from the SSH app on your phone:
+them as pull requests on GitHub. Once one is merged, the Pi picks it up by itself overnight:
 
 ```bash
-ssh hub ~/hub/scripts/update-hub.sh      # pull the latest main and rebuild
+cd ~/hub
+sudo scripts/install-auto-update.sh      # pull main and rebuild every night around 05:00
 ```
+
+It runs `scripts/update-hub.sh` as your user, not root: fast-forward only, then a rebuild with
+fresh base images, which is quick when nothing changed. Check what it did with
+`journalctl -u hub-update`. Don't want to wait for the night? Update by hand any time, from the
+laptop or the SSH app on your phone:
+
+```bash
+ssh hub ~/hub/scripts/update-hub.sh      # pull the latest main and rebuild now
+```
+
+To switch the nightly run off: `sudo systemctl disable --now hub-update.timer`.
+
+## 11. Working on the Pi with Claude
 
 To have Claude look at the Pi itself (logs, a container that won't start, a new script),
 install Claude Code there and use it over your SSH session:

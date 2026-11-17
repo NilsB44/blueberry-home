@@ -115,7 +115,8 @@ git clone https://github.com/NilsB44/blueberry-home.git ~/hub && cd ~/hub
 cp .env.example .env
 docker compose up -d
 sudo scripts/install-security-check.sh     # the Pi's weekly security check
-scripts/update-hub.sh                     # later: pull the latest version and rebuild
+sudo scripts/install-auto-update.sh       # pull main and rebuild every night
+scripts/update-hub.sh                     # update now instead of waiting for the night
 ```
 
 ## Adding a module
