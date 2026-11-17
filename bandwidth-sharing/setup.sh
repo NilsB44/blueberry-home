@@ -23,16 +23,20 @@ if ! command -v earnapp >/dev/null; then
 	sudo bash "$installer"
 fi
 
-# Keep EarnApp from starving the hub, like the Pawns container's limits.
+# Keep EarnApp from starving the hub, like the Pawns container's limits, and count its traffic
+# for the hub's Earn apps page.
 if systemctl list-unit-files earnapp.service >/dev/null 2>&1; then
 	sudo mkdir -p /etc/systemd/system/earnapp.service.d
-	printf '[Service]\nCPUQuota=50%%\nMemoryMax=256M\n' |
+	printf '[Service]\nCPUQuota=50%%\nMemoryMax=256M\nIPAccounting=yes\n' |
 		sudo tee /etc/systemd/system/earnapp.service.d/limits.conf >/dev/null
 	sudo systemctl daemon-reload
 	sudo systemctl restart earnapp
 fi
 
 docker compose up -d --remove-orphans
+
+# Status for the hub's Earn apps page, every 5 minutes.
+sudo ../scripts/install-earn-status.sh >/dev/null
 
 echo
 echo "Link this Pi to your EarnApp account by opening the URL below:"

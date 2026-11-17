@@ -29,6 +29,11 @@ safe: it skips EarnApp once installed and only recreates the container if someth
 
 ## Check it
 
+The hub's **Earn apps** page shows whether each app runs, its traffic today and in total, and its
+latest log lines. `setup.sh` installs a small timer (`hub-earn-status`) that writes this every
+5 minutes into `data/api/earn-status.json`; the hub only reads that file and gets no access to
+Docker. Earnings and requests are only on each app's own dashboard. From the command line:
+
 ```bash
 earnapp status                                              # EarnApp: enabled and running
 docker compose -f ~/hub/bandwidth-sharing/compose.yml ps    # Pawns: running

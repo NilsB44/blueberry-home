@@ -64,6 +64,14 @@ MODULES: list[ModuleInfo] = [
         owner_only=True,
     ),
     ModuleInfo(
+        id="earn",
+        name="Earn apps",
+        description="Whether EarnApp and Pawns.app are running, their traffic and latest logs.",
+        icon="💸",
+        path="/earn",
+        owner_only=True,
+    ),
+    ModuleInfo(
         id="plants",
         name="Plants",
         description="The plan for sensors and self-watering, one microcontroller per plant.",
