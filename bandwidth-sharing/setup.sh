@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Installs EarnApp natively and starts Pawns.app in Docker. Safe to re-run.
+# Run from anywhere on the Pi:  bandwidth-sharing/setup.sh
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+if ! command -v docker >/dev/null; then
+	echo "Docker isn't installed: follow docs/pi-setup.md step 4 first." >&2
+	exit 1
+fi
+
+if [[ ! -f .env ]]; then
+	cp .env.example .env
+	echo "Created bandwidth-sharing/.env: fill in your Pawns.app login, then run this again."
+	exit 1
+fi
+
+# EarnApp: the official installer (it asks you to accept EarnApp's terms).
+if ! command -v earnapp >/dev/null; then
+	installer="$(mktemp)"
+	trap 'rm -f "$installer"' EXIT
+	curl -fsSL https://brightdata.com/static/earnapp/install.sh -o "$installer"
+	sudo bash "$installer"
+fi
+
+# Keep EarnApp from starving the hub, like the Pawns container's limits.
+if systemctl list-unit-files earnapp.service >/dev/null 2>&1; then
+	sudo mkdir -p /etc/systemd/system/earnapp.service.d
+	printf '[Service]\nCPUQuota=50%%\nMemoryMax=256M\n' |
+		sudo tee /etc/systemd/system/earnapp.service.d/limits.conf >/dev/null
+	sudo systemctl daemon-reload
+	sudo systemctl restart earnapp
+fi
+
+docker compose up -d --remove-orphans
+
+echo
+echo "Link this Pi to your EarnApp account by opening the URL below:"
+earnapp showid
