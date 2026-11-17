@@ -46,8 +46,10 @@ needed. It needs Ethernet: Wi-Fi doesn't work for this.
      doesn't need one.
    - **Storage:** the microSD card (check the size, e.g. 64 GB). Everything on it is erased.
    - **Customisation:**
-     - Hostname: `hub`.
-     - Localisation: your capital city, time zone and keyboard layout.
+     - Hostname: `pils` (the Pi's own name; the hub's web address stays `hub.home`).
+     - Localisation: the capital of the country the Pi is in (it sets the Wi-Fi country), your
+       time zone (change it later with `sudo timedatectl set-timezone Asia/Singapore`) and
+       keyboard layout (it only matters with a keyboard plugged into the Pi).
      - User: a username (e.g. `nils`) and a password.
      - Wi-Fi: skip it, you're on Ethernet.
      - Remote access: enable SSH with **password authentication** for now. Typing a key by hand
@@ -69,7 +71,7 @@ The Pi boots from the stick first, then copies that system onto the card. No ext
 2. Leave the empty microSD card in the Pi. Plug the stick into a **blue** USB 3 port, plug in
    Ethernet, then power. The Pi 5 tries the SD card first, finds nothing to boot and moves on
    to USB, so it starts from the stick.
-3. Log in (`ssh nils@hub.local`, see step 2) and copy the running system onto the card with
+3. Log in (`ssh nils@pils.local`, see step 2) and copy the running system onto the card with
    [rpi-clone](https://github.com/geerlingguy/rpi-clone):
 
    ```bash
@@ -91,11 +93,11 @@ The Pi boots from the stick first, then copies that system onto the card. No ext
 **Laptop:**
 
 ```bash
-ssh nils@hub.local
+ssh nils@pils.local
 ```
 
 Answer `yes` to the fingerprint question and type the password from step 1 (USB stick route:
-no password, your key is already there). If `hub.local` isn't found, look up the Pi's IP in
+no password, your key is already there). If `pils.local` isn't found, look up the Pi's IP in
 your router's admin page (connected devices) and use `ssh nils@<ip>`.
 
 Optional, so `ssh hub` is enough from now on. Add this to `~/.ssh/config` on the laptop
@@ -103,7 +105,7 @@ Optional, so `ssh hub` is enough from now on. Add this to `~/.ssh/config` on the
 
 ```
 Host hub
-    HostName hub.local
+    HostName pils.local
     User nils
 ```
 
@@ -258,14 +260,14 @@ Two habits keep this safe:
 
 ## When something's off
 
-- **`ssh: Could not resolve hostname hub.local`:** use the IP from the router instead, or give
+- **`ssh: Could not resolve hostname pils.local`:** use the IP from the router instead, or give
   it a minute after boot.
 - **No "hold Shift" screen in step 1:** check the screen is on the micro-HDMI port next to the
   power socket and Ethernet is plugged in. A card that already has an OS on it boots that
   instead; let it, or wipe the card first.
 - **`Permission denied (publickey)`:** this device's `.pub` line isn't in
   `~/.ssh/authorized_keys` on the Pi. Add it from a device that can log in.
-- **The Pi doesn't boot (no `hub.local`, green light not blinking):** re-seat the microSD card,
+- **The Pi doesn't boot (no `pils.local`, green light not blinking):** re-seat the microSD card,
   and re-flash it if needed. Make sure the card is pushed fully into the slot under the board.
 - **`permission denied ... docker.sock`:** you didn't log out and back in after step 4.
 - **Browser says the connection isn't private:** the certificate from step 7 isn't installed
