@@ -88,7 +88,7 @@ setup. While away, open `https://hub.tail1234.ts.net`.
 
 ## SSH
 
-- **For you:** SSH stays key-only (set up in [pi-setup.md](pi-setup.md), step 1). From outside,
+- **For you:** SSH stays key-only (set up in [pi-setup.md](pi-setup.md), step 2). From outside,
   use Tailscale SSH instead of forwarding port 22: `sudo tailscale set --ssh` on the Pi, then
   `ssh you@hub` from any of your devices on the tailnet.
 - **For Claude improving the code:** it doesn't need SSH. Changes arrive as pull requests on
@@ -126,7 +126,7 @@ by hand: `sudo systemctl start hub-security-check`.
 |---|---|---|
 | Refused visitors (red) | An internet address reached the Pi | Router: remove port forwards, turn off UPnP. Check Tailscale Funnel is off |
 | Failed SSH logins (red) | SSH is reachable from the internet | Remove the port 22 forward on the router |
-| SSH settings | Passwords are allowed | `PasswordAuthentication no` in `/etc/ssh/sshd_config.d/hub.conf`, `sudo systemctl restart ssh` |
+| SSH settings | Passwords are allowed | `PasswordAuthentication no` in `/etc/ssh/sshd_config.d/00-hub.conf`, `sudo systemctl restart ssh` |
 | Known vulnerabilities | A package the hub uses has a published flaw | `scripts/update-hub.sh`; if it stays red, the fix isn't released yet |
 | Container images | Images over a month old | `scripts/update-hub.sh` |
 | Tailscale | Funnel is on | `sudo tailscale funnel reset` |

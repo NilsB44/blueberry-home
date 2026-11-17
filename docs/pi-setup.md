@@ -11,54 +11,63 @@ Terminal on macOS), the rest run on the Pi over SSH.
 - Active Cooler (or a case with a fan)
 - A good microSD card (A2 rated, 32 GB or more) that stays in the Pi, or an NVMe SSD on an M.2
   HAT
-- A USB microSD card reader (the stick-shaped kind is fine) so the laptop can write the card
-- Ethernet cable to the router if possible (faster and steadier than Wi-Fi for a server)
+- Ethernet cable to the router (needed for step 1, and steadier than Wi-Fi for a server)
+- For step 1 only: a screen with a micro-HDMI cable and a USB keyboard (a mouse helps). No
+  screen? A USB stick works instead, see the end of step 1.
 
-## 0. Make an SSH key on your laptop
+## 0. Make SSH keys for the devices you'll log in from
 
-The Pi will only accept logins from this key, never a password. **Laptop:**
+The Pi will only accept logins from keys, never a password. Make one key on **each** device
+you want to reach the Pi from, so you're not tied to one computer. **Laptop:**
 
 ```bash
 ssh-keygen -t ed25519 -C "laptop"      # press Enter for the default path, set a passphrase
 cat ~/.ssh/id_ed25519.pub              # Windows: type $HOME\.ssh\id_ed25519.pub
 ```
 
-Skip the first line if you already have a key. The `.pub` line is what you paste into the
-Imager next.
+Skip the first line if you already have a key. **Phone:** an SSH app such as Termius can make
+a key and show its public half. Each `.pub` line goes onto the Pi in step 2.
 
-## 1. Flash the OS
+Claude doesn't need a key. Code changes are made as pull requests on GitHub (from the Claude
+app, wherever you are), and the Pi pulls them with one command: see step 10.
 
-1. Install [Raspberry Pi Imager](https://www.raspberrypi.com/software/) (version 2 or newer)
-   on the laptop. Put the microSD card in the USB card reader and plug it into the laptop.
-2. Imager walks you through a few screens in order:
+## 1. Install the OS onto the microSD card
+
+The Pi 5 can install its own OS over the internet (Network Install), so no card reader is
+needed. It needs Ethernet: Wi-Fi doesn't work for this.
+
+1. Put the microSD card in the slot on the underside of the Pi. Plug in Ethernet, the screen
+   (the micro-HDMI port next to the power socket) and the keyboard, then the power.
+2. With a new, empty card the Pi shows a boot screen. **Hold Shift** until it starts
+   downloading. After a few minutes Raspberry Pi Imager opens on the screen.
+3. Imager walks you through a few screens in order:
    - **Device:** Raspberry Pi 5.
    - **OS:** Raspberry Pi OS (other) → **Raspberry Pi OS Lite (64-bit)**. No desktop: the hub
      doesn't need one.
-   - **Storage:** the microSD card in the reader. Double-check the size so you don't pick
-     another drive: everything on it is erased.
+   - **Storage:** the microSD card (check the size, e.g. 64 GB). Everything on it is erased.
    - **Customisation:**
      - Hostname: `hub`.
      - Localisation: your capital city, time zone and keyboard layout.
-     - User: a username (e.g. `nils`) and a password (only used for `sudo`).
-     - Wi-Fi: name and password, only if you're not using Ethernet.
-     - Remote access: enable SSH with **public-key authentication** (not password), and paste
-       the `.pub` line from step 0.
+     - User: a username (e.g. `nils`) and a password.
+     - Wi-Fi: skip it, you're on Ethernet.
+     - Remote access: enable SSH with **password authentication** for now. Typing a key by hand
+       here is impractical; step 2 adds your keys and switches passwords off.
      - Raspberry Pi Connect: leave it off. SSH is all you need.
-3. Write the card and wait for Imager to verify it, then eject it.
-4. Put the microSD card in the slot on the underside of the Pi, plug in Ethernet, then power.
-   The first boot takes a couple of minutes (it resizes the card and applies your settings).
+4. Write the card. When it's done the Pi restarts from the card; the first boot takes a couple
+   of minutes. Then unplug the screen and keyboard: from here on it's all over SSH.
 
-Using an NVMe SSD to boot from? The simplest route is an SSD-to-USB enclosure: flash the SSD
-from the laptop exactly as above, fit it on the HAT and leave the SD card out. The Pi 5 boots
-from NVMe when no card is in (on an old bootloader, boot once from SD and run
-`sudo rpi-eeprom-update -a` first). No enclosure? Start on the SD card; you can move later.
+Booting from an NVMe SSD instead? Pick the SSD as the storage in Imager and leave the card out
+afterwards. On an old bootloader run `sudo rpi-eeprom-update -a` once a system is up.
 
-No microSD card? A USB stick can be the Pi's disk instead (this is booting from the stick,
-not the card reader used above): flash it exactly as above (pick the stick as the storage),
-plug it into a **blue** USB 3 port and power on with no card in. The Pi 5
-tries SD, then NVMe, then USB, so it boots from the stick on its own. Treat it as temporary:
-sticks are slow (the first build takes much longer) and wear out under the database and
-Docker's writes, so keep `data/` backed up and move to an SD card or SSD when you can.
+**No screen or keyboard?** Run the Pi from a USB stick instead of the card. On your computer,
+install [Raspberry Pi Imager](https://www.raspberrypi.com/software/), write the same OS to the
+stick with the same settings, but under Remote access choose **public-key authentication** and
+paste the laptop's `.pub` line. Take the card out, plug the stick into a **blue** USB 3 port
+and power on: the Pi boots from it on its own. The rest of this guide works the same. Treat it
+as temporary: sticks are slow (the first build takes much longer) and wear out under the
+database and Docker's writes, so keep `data/` backed up and move to the card later (Network
+Install with a borrowed screen, or a cheap USB card reader). The Pi can't write its own card
+without either a screen for Network Install or an OS booted from somewhere else.
 
 ## 2. First login and hardening
 
@@ -68,7 +77,8 @@ Docker's writes, so keep `data/` backed up and move to an SD card or SSD when yo
 ssh nils@hub.local
 ```
 
-Answer `yes` to the fingerprint question. If `hub.local` isn't found, look up the Pi's IP in
+Answer `yes` to the fingerprint question and type the password from step 1 (USB stick route:
+no password, your key is already there). If `hub.local` isn't found, look up the Pi's IP in
 your router's admin page (connected devices) and use `ssh nils@<ip>`.
 
 Optional, so `ssh hub` is enough from now on. Add this to `~/.ssh/config` on the laptop
@@ -97,16 +107,28 @@ printf '[sshd]\nenabled = true\nbackend = systemd\n' | sudo tee /etc/fail2ban/ja
 sudo systemctl restart fail2ban && sudo fail2ban-client status sshd
 ```
 
-Make sure SSH can never fall back to passwords (the weekly check looks for this):
+Add the `.pub` line of every device from step 0, one per line:
+
+```bash
+mkdir -p ~/.ssh && nano ~/.ssh/authorized_keys     # paste, then Ctrl+O, Enter, Ctrl+X
+chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys
+```
+
+From a **new** terminal on the laptop, check `ssh hub` gets in without asking for the Pi's
+password (it may ask for your key's passphrase). Only then make sure SSH can never fall back
+to passwords (the weekly check looks for this). The file name starts with `00-` so it wins over
+a `50-cloud-init.conf` that Imager's password setting can leave behind:
 
 ```bash
 printf 'PasswordAuthentication no\nKbdInteractiveAuthentication no\nPermitRootLogin no\n' \
-  | sudo tee /etc/ssh/sshd_config.d/hub.conf
+  | sudo tee /etc/ssh/sshd_config.d/00-hub.conf
 sudo systemctl restart ssh
+sudo sshd -T | grep -i -E '^(passwordauthentication|kbdinteractiveauthentication) '   # both "no"
 ```
 
 Keep your current SSH window open and check that a **new** `ssh hub` still gets in before you
-close it.
+close it. Adding a device later: append its `.pub` line to `~/.ssh/authorized_keys` from one
+that already works.
 
 Note: Docker publishes ports by editing iptables directly, bypassing ufw rules for published
 ports. Only `web` publishes ports in `compose.yml`, on purpose.
@@ -190,11 +212,12 @@ Optional: to share some bandwidth for small payouts (EarnApp and Pawns.app), see
 
 ## 10. Working on the Pi with Claude
 
-Code changes don't happen on the Pi. Claude makes them as pull requests on GitHub, and once
-they're merged the Pi picks them up:
+Code changes don't happen on the Pi. Ask Claude in the Claude app (from anywhere): it makes
+them as pull requests on GitHub, and once they're merged the Pi picks them up with one command,
+from the laptop or from the SSH app on your phone:
 
 ```bash
-~/hub/scripts/update-hub.sh      # pull the latest main and rebuild
+ssh hub ~/hub/scripts/update-hub.sh      # pull the latest main and rebuild
 ```
 
 To have Claude look at the Pi itself (logs, a container that won't start, a new script),
@@ -220,8 +243,11 @@ Two habits keep this safe:
 
 - **`ssh: Could not resolve hostname hub.local`:** use the IP from the router instead, or give
   it a minute after boot.
-- **`Permission denied (publickey)`:** the key in the Imager doesn't match the one on this
-  laptop. Re-flash with the right `.pub` line, or log in from the laptop that made it.
+- **No "hold Shift" screen in step 1:** check the screen is on the micro-HDMI port next to the
+  power socket and Ethernet is plugged in. A card that already has an OS on it boots that
+  instead; let it, or wipe the card first.
+- **`Permission denied (publickey)`:** this device's `.pub` line isn't in
+  `~/.ssh/authorized_keys` on the Pi. Add it from a device that can log in.
 - **The Pi doesn't boot (no `hub.local`, green light not blinking):** re-seat the microSD card,
   and re-flash it if needed. Make sure the card is pushed fully into the slot under the board.
 - **`permission denied ... docker.sock`:** you didn't log out and back in after step 4.

@@ -130,7 +130,7 @@ def check_ssh() -> dict:
             title,
             "fail",
             "SSH accepts passwords. Use keys only: set PasswordAuthentication no in "
-            "/etc/ssh/sshd_config.d/hub.conf and restart ssh.",
+            "/etc/ssh/sshd_config.d/00-hub.conf and restart ssh.",
             problems,
         )
     return check("ssh", title, "ok", "Keys only; no passwords and no root password login.")
