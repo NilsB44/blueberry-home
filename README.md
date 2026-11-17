@@ -66,6 +66,7 @@ web/        SvelteKit (static SPA) + the Caddy config that serves it.
 compose.yml Caddy (web) and the API.
 bandwidth-sharing/  Optional, separate: EarnApp and Pawns.app (see its README).
 docs/       Plan, architecture, Pi setup.
+MILESTONES.md  Dated key moments, also shown at the bottom of the home page.
 ```
 
 ## Develop on your laptop
@@ -125,3 +126,4 @@ scripts/update-hub.sh                     # update now instead of waiting for th
 2. Include it in `api/app/main.py` and import its models in `app/db.py:init_db`.
 3. Add its entry to `MODULES` in `api/app/modules/__init__.py`.
 4. Add `web/src/routes/<path>/+page.svelte`.
+5. If it's a significant feature, add a dated line to `MILESTONES.md`.
