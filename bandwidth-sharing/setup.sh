@@ -33,11 +33,15 @@ if systemctl list-unit-files earnapp.service >/dev/null 2>&1; then
 	sudo systemctl restart earnapp
 fi
 
+if ! grep -qw memory /sys/fs/cgroup/cgroup.controllers; then
+	echo "Warning: memory limits are off until you enable them: docs/pi-setup.md step 4." >&2
+fi
+
 docker compose up -d --remove-orphans
 
 # Status for the hub's Earn apps page, every 5 minutes.
 sudo ../scripts/install-earn-status.sh >/dev/null
 
 echo
-echo "Link this Pi to your EarnApp account by opening the URL below:"
-earnapp showid
+echo "Link this Pi to your EarnApp account by opening this link (once is enough):"
+echo "https://earnapp.com/r/$(earnapp showid)"
