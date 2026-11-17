@@ -22,6 +22,8 @@ class App(BaseModel):
     installed: bool
     running: bool
     state: str
+    # Why it isn't working although it may say "running", e.g. a refused login. Empty if fine.
+    problem: str = ""
     today_bytes: int | None = None
     total_bytes: int | None = None
     counted_since: str | None = None
