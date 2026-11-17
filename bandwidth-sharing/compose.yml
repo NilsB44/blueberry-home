@@ -1,0 +1,29 @@
+# Bandwidth sharing, kept apart from the hub (its own Compose project, so neither touches the
+# other's containers). Start with ./setup.sh. EarnApp runs natively, see README.md.
+name: bandwidth
+
+services:
+  pawns:
+    # Pinned on purpose: no Watchtower, update by hand (README.md). Multi-arch, arm64 native.
+    image: iproyal/pawns-cli:0.36.6
+    restart: unless-stopped
+    command:
+      - -email=${PAWNS_EMAIL:?set PAWNS_EMAIL in .env}
+      - -password=${PAWNS_PASSWORD:?set PAWNS_PASSWORD in .env}
+      - -device-name=${DEVICE_NAME:?set DEVICE_NAME in .env}
+      - -device-id=${DEVICE_NAME:?set DEVICE_NAME in .env}
+      - -accept-tos
+    # Outbound connections only: no ports, no volumes, no extra privileges.
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    # Capped well below the Pi 5's 4 cores / 8 GB so the hub always comes first.
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

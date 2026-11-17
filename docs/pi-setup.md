@@ -185,6 +185,9 @@ sudo scripts/install-network-scan.sh      # Network page: lists devices on the W
 Never forward ports on the router. To reach the hub while you're out, set up Tailscale and
 use the away access switch on the Security page: see [security.md](security.md).
 
+Optional: to share some bandwidth for small payouts (EarnApp and Pawns.app), see
+[bandwidth-sharing/README.md](../bandwidth-sharing/README.md).
+
 ## 10. Working on the Pi with Claude
 
 Code changes don't happen on the Pi. Claude makes them as pull requests on GitHub, and once
