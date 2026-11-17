@@ -106,3 +106,16 @@ def test_docker_log_lines_without_newlines_are_split():
         "2026-11-17T19:50:22.33Z failed (a)",
         "2026-11-17T19:50:26.97Z failed (b)",
     ]
+
+
+def test_log_tail_hides_account_details():
+    lines = pi.log_tail(
+        "login as nils.b+pi@example.com failed\n"
+        "args: -email=a@b.se -password=hunter2 -device-name=hub\n"
+        "Token: abc123 ok"
+    )
+    assert lines == [
+        "login as [email] failed",
+        "args: -email=[email] -password=[hidden] -device-name=hub",
+        "Token: [hidden] ok",
+    ]

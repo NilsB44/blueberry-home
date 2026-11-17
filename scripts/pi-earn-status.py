@@ -25,6 +25,10 @@ LOG_LINES = 20
 LOG_LINE_MAX = 300
 # Pawns writes its messages without a newline, so `docker logs --timestamps` runs them together.
 DOCKER_TIMESTAMP = re.compile(r"(?<=.)(?=\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d+Z )")
+# Never copy account details into the hub: hide email addresses and anything given as a
+# password, token or key (e.g. "-password=...", "token: ...").
+EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
+SECRET = re.compile(r"(?i)\b(password|passwd|token|secret|api[_-]?key)(\W{1,3})\S+")
 
 
 def run(*cmd: str) -> tuple[int, str]:
@@ -41,6 +45,7 @@ def run(*cmd: str) -> tuple[int, str]:
 
 
 def log_tail(text: str) -> list[str]:
+    text = SECRET.sub(r"\1\2[hidden]", EMAIL.sub("[email]", text))
     lines = [line[:LOG_LINE_MAX] for line in text.splitlines() if line.strip()]
     return lines[-LOG_LINES:]
 
