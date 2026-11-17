@@ -13,6 +13,7 @@ file across runs. Earnings aren't available on the Pi. Standard library only.
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -22,6 +23,8 @@ from pathlib import Path
 PAWNS_CONTAINER = "bandwidth-pawns-1"
 LOG_LINES = 20
 LOG_LINE_MAX = 300
+# Pawns writes its messages without a newline, so `docker logs --timestamps` runs them together.
+DOCKER_TIMESTAMP = re.compile(r"(?<=.)(?=\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d+Z )")
 
 
 def run(*cmd: str) -> tuple[int, str]:
@@ -103,7 +106,7 @@ def pawns() -> dict:
         "running": bool(state.get("Running")),
         "state": state.get("Status", "unknown"),
         "counter": counter,
-        "log": log_tail(logs),
+        "log": log_tail(DOCKER_TIMESTAMP.sub("\n", logs)),
     }
 
 

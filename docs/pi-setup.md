@@ -167,10 +167,14 @@ next steps call it `<Pi IP>`. Reboot the Pi (`sudo reboot`) so it picks it up.
 ```bash
 curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER
-exit                               # log out and back in so the group applies
+# Raspberry Pi OS turns the kernel's memory controller off, so Docker would ignore memory limits.
+grep -qw cgroup_enable=memory /boot/firmware/cmdline.txt ||
+  sudo sed -i '1 s/$/ cgroup_enable=memory/' /boot/firmware/cmdline.txt
+sudo reboot                        # applies both
 ```
 
-Back in with `ssh hub`, check it works: `docker run --rm hello-world`.
+Back in with `ssh hub`, check it works: `docker run --rm hello-world`, and
+`cat /sys/fs/cgroup/cgroup.controllers` lists `memory`.
 
 ## 5. Run the hub
 

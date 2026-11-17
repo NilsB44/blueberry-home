@@ -47,6 +47,24 @@ Compare that public IP with the WAN address on your router's status page. If the
 the WAN address is a private one (`10.`, `172.16`–`31.`, `192.168.` or `100.64`–`127.`), you're
 behind carrier-grade NAT: sharing can still work but usually earns less.
 
+## When something's off
+
+- **Pawns shows `Restarting (1)`:** the app quit, usually on a failed login. Run it in the
+  foreground to see why (Ctrl+C to stop), then fix `.env` and run `setup.sh` again:
+
+  ```bash
+  docker compose -f ~/hub/bandwidth-sharing/compose.yml run --rm pawns
+  ```
+
+  `authenticate user failed` means Pawns refused the email and password. Stop the container
+  while you sort it out (`docker compose -f ~/hub/bandwidth-sharing/compose.yml stop`) so it
+  doesn't keep retrying, and check you can log in to the Pawns dashboard with exactly those.
+  An account made with Google sign-in has no password: set one in the Pawns dashboard first.
+  If the password has a `$` in it, wrap it in single quotes in `.env`. Also stop Pawns on any
+  other computer at home: a second device on the same IP earns nothing extra.
+- **`Your kernel does not support memory limit capabilities`:** the memory limits aren't
+  applied. Do the `cmdline.txt` part of [pi-setup.md](../docs/pi-setup.md) step 4 and reboot.
+
 ## Update
 
 EarnApp updates itself (`earnapp_upgrader`). For Pawns, check the newest version on

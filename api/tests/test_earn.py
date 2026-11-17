@@ -98,3 +98,11 @@ def test_log_tail_keeps_the_last_lines_short():
     assert len(lines) == pi.LOG_LINES
     assert lines[-2] == "line 49"
     assert len(lines[-1]) == pi.LOG_LINE_MAX
+
+
+def test_docker_log_lines_without_newlines_are_split():
+    logs = "2026-11-17T19:50:22.33Z failed (a)2026-11-17T19:50:26.97Z failed (b)\n"
+    assert pi.log_tail(pi.DOCKER_TIMESTAMP.sub("\n", logs)) == [
+        "2026-11-17T19:50:22.33Z failed (a)",
+        "2026-11-17T19:50:26.97Z failed (b)",
+    ]
