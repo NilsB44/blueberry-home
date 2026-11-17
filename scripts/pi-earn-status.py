@@ -149,7 +149,12 @@ def write(data: dict, output: Path) -> None:
     fd, tmp = tempfile.mkstemp(dir=output.parent, prefix=".earn-status.")
     with os.fdopen(fd, "w") as f:
         json.dump(data, f, indent=1)
-    os.chmod(tmp, 0o644)
+    # Readable only by the owner of the hub's data folder (the hub's app user): the log lines
+    # may hold account details.
+    folder = output.parent.stat()
+    if os.geteuid() == 0:
+        os.chown(tmp, folder.st_uid, folder.st_gid)
+    os.chmod(tmp, 0o600)
     os.replace(tmp, output)
 
 
