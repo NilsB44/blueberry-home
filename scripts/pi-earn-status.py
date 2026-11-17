@@ -17,12 +17,15 @@ import re
 import shutil
 import subprocess
 import tempfile
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 PAWNS_CONTAINER = "bandwidth-pawns-1"
 LOG_LINES = 20
 LOG_LINE_MAX = 300
+# A container that restarted within this long is still crash-looping, as far as we can tell.
+RECENT_RESTART = timedelta(minutes=10)
+LOGIN_REFUSED = "Login refused: check the email and password in bandwidth-sharing/.env."
 # Pawns writes its messages without a newline, so `docker logs --timestamps` runs them together.
 DOCKER_TIMESTAMP = re.compile(r"(?<=.)(?=\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d+Z )")
 # Never copy account details into the hub: hide email addresses and anything given as a
@@ -85,20 +88,25 @@ def earnapp() -> dict:
     _, journal = run(
         "journalctl", "-u", "earnapp", "-n", str(LOG_LINES), "--no-pager", "-o", "short-iso"
     )
+    sub = props.get("SubState", "")
     return {
         "installed": True,
         "running": props.get("ActiveState") == "active",
-        "state": props.get("SubState") or props.get("ActiveState", "unknown"),
+        "state": sub or props.get("ActiveState", "unknown"),
+        "problem": "Keeps quitting and restarting." if sub == "auto-restart" else "",
         "counter": counter,
         "log": log_tail(journal),
     }
 
 
 def pawns() -> dict:
-    code, out = run("docker", "inspect", "--format", "{{json .State}}", PAWNS_CONTAINER)
+    code, out = run(
+        "docker", "inspect", "--format", "{{.RestartCount}} {{json .State}}", PAWNS_CONTAINER
+    )
     if code != 0:
         return {"installed": False, "running": False, "state": "not installed", "counter": None}
-    state = json.loads(out)
+    restarts, _, state_json = out.partition(" ")
+    state = json.loads(state_json)
     counter = None
     if state.get("Running") and state.get("Pid"):
         try:
@@ -106,13 +114,31 @@ def pawns() -> dict:
         except OSError:
             pass
     _, logs = run("docker", "logs", "--tail", str(LOG_LINES), "--timestamps", PAWNS_CONTAINER)
+    log = log_tail(DOCKER_TIMESTAMP.sub("\n", logs))
     return {
         "installed": True,
         "running": bool(state.get("Running")),
         "state": state.get("Status", "unknown"),
+        "problem": pawns_problem(state, int(restarts or 0), log, datetime.now(UTC)),
         "counter": counter,
-        "log": log_tail(DOCKER_TIMESTAMP.sub("\n", logs)),
+        "log": log,
     }
+
+
+def pawns_problem(state: dict, restarts: int, log: list[str], now: datetime) -> str:
+    """Why Pawns isn't working, or "": Docker says "running" even between failed attempts."""
+    if log and "authenticate user failed" in log[-1]:
+        return LOGIN_REFUSED
+    if state.get("Status") == "restarting":
+        return "Keeps quitting and restarting: see the log lines."
+    try:
+        # Docker gives nanoseconds, more than Python parses: keep the seconds.
+        started = datetime.fromisoformat(state.get("StartedAt", "")[:19]).replace(tzinfo=UTC)
+    except ValueError:
+        return ""
+    if restarts and now - started < RECENT_RESTART:
+        return f"Keeps quitting: restarted {restarts} times, see the log lines."
+    return ""
 
 
 def add_traffic(app: dict, previous: dict, today: date) -> dict:

@@ -8,6 +8,7 @@
 		installed: boolean;
 		running: boolean;
 		state: string;
+		problem: string;
 		today_bytes: number | null;
 		total_bytes: number | null;
 		counted_since: string | null;
@@ -42,6 +43,7 @@
 
 	function pill(app: App | undefined): [string, string] {
 		if (!app?.installed) return ['', 'Not installed'];
+		if (app.problem) return ['warn', 'Not working'];
 		return app.running ? ['ok', 'Running'] : ['fail', 'Stopped'];
 	}
 </script>
@@ -65,7 +67,8 @@
 			</div>
 		{:else if status}
 			<p class="muted small">
-				Checked {when(status.generated_at!)}.
+				Updated {when(status.generated_at!)}. The Pi checks every 5 minutes, so this can be a few
+				minutes behind.
 				{#if status.stale}
 					<span class="warn">That's over 20 minutes ago: is the Pi's status timer running?
 						(<code>systemctl status hub-earn-status.timer</code>)</span>
@@ -82,6 +85,12 @@
 						<h2>{a.name}</h2>
 						<span class="pill {cls}">{label}</span>
 					</div>
+					{#if app?.problem}
+						<p class="warn">
+							{app.problem}
+							<a href={`${README}#when-somethings-off`} target="_blank" rel="noopener noreferrer">What to do</a>
+						</p>
+					{/if}
 					{#if app?.installed}
 						{#if app.total_bytes !== null && app.counted_since}
 							<div class="stats">
@@ -171,6 +180,11 @@
 		border-radius: 999px;
 		background: var(--bg);
 		border: 1px solid var(--border);
+	}
+	.pill.warn {
+		color: var(--near);
+		background: var(--near-bg);
+		border-color: transparent;
 	}
 	.pill.ok {
 		color: var(--good);

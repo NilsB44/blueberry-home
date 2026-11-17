@@ -32,6 +32,7 @@ def test_reads_the_pis_report(admin_client):
         "installed": True,
         "running": True,
         "state": "running",
+        "problem": "",
         "counter": 5000,
         "today_bytes": 1000,
         "total_bytes": 5000,
@@ -119,3 +120,14 @@ def test_log_tail_hides_account_details():
         "args: -email=[email] -password=[hidden] -device-name=hub",
         "Token: [hidden] ok",
     ]
+
+
+def test_pawns_problem_when_docker_still_says_running():
+    now = datetime(2026, 11, 17, 20, 5, tzinfo=UTC)
+    running = {"Status": "running", "StartedAt": "2026-11-17T20:01:00.123456789Z"}
+    refused = ["2026-11-17T20:02:36Z authenticate user failed (please use SDK)"]
+    assert pi.pawns_problem(running, 0, refused, now) == pi.LOGIN_REFUSED
+    assert "restarted 4 times" in pi.pawns_problem(running, 4, [], now)
+    assert "restarting" in pi.pawns_problem({"Status": "restarting"}, 0, [], now)
+    # Restarted long ago and quiet since: fine.
+    assert pi.pawns_problem(running, 4, ["connected"], now + timedelta(hours=1)) == ""
