@@ -156,6 +156,24 @@ that already works.
 Note: Docker publishes ports by editing iptables directly, bypassing ufw rules for published
 ports. Only `web` publishes ports in `compose.yml`, on purpose.
 
+### Go easy on the microSD card
+
+A card wears out from many small writes, and logs are the steadiest writer. Keep the system log
+in RAM, capped at 64 MB (the hub's own containers already cap theirs at 3 × 10 MB):
+
+```bash
+sudo mkdir -p /etc/systemd/journald.conf.d
+printf '[Journal]\nStorage=volatile\nRuntimeMaxUse=64M\n' \
+  | sudo tee /etc/systemd/journald.conf.d/00-hub.conf
+sudo systemctl restart systemd-journald
+```
+
+The catch: logs start fresh after each reboot, so the weekly check only counts failed SSH
+logins since the last one, and after a crash the reason is gone. To keep logs on disk again,
+`sudo rm /etc/systemd/journald.conf.d/00-hub.conf` and restart `systemd-journald`. Raspberry Pi
+OS already mounts the card with `noatime`, so reading files doesn't cause writes. An NVMe SSD
+(or `HUB_FILES_PATH` on a USB SSD, step 5) takes the rest of the load off the card.
+
 ## 3. Give the Pi a fixed address
 
 In your router's admin page, find the Pi in the list of connected devices and add a **DHCP
