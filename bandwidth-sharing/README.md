@@ -27,6 +27,32 @@ EarnApp's installer asks you to accept its terms. At the end the script prints a
 URL: open it while logged in to your EarnApp account to link the Pi. Re-running the script is
 safe: it skips EarnApp once installed and only recreates the container if something changed.
 
+## Guest network?
+
+Keeping strangers' traffic off your home network is a fair worry, but don't move the Pi to the
+guest Wi-Fi. A guest network is walled off from the main one, so your phones and laptops could
+no longer reach `hub.home` (or Pi-hole), and the Network page would only see guests. Since the
+earn apps share the Pi with the hub, they can't be on a different network from it.
+
+Your options, best first:
+
+1. **Keep the Pi on the main network, on Ethernet** (what [pi-setup.md](../docs/pi-setup.md)
+   does). Both apps only connect out and publish no ports, are capped in CPU and RAM, and Pawns
+   runs with no privileges. Keep your router's admin password strong, and other devices' too.
+2. **Run the earn apps on another device on the guest Wi-Fi** for full separation: EarnApp and
+   Pawns both have Android apps, so an old phone left on a charger works. Turn them off on the
+   Pi first (see [Turn it off](#turn-it-off)): both pay per home IP, so a second device behind it
+   earns little or nothing extra.
+3. **A VLAN**, only if your router supports it: you'd still need a second device, so it's the
+   same as option 2 with more setup.
+
+To set up option 2: in the router's admin page (often `192.168.0.1` or `192.168.1.1`, or the
+router's own app) turn on the guest network and give it its own password. Make sure guests
+can't reach the main network: a setting like "allow guests to access the local network" should
+be off, or one called "isolation" on.
+Join the phone to it, install EarnApp and Pawns from the Play Store, and log in with the same
+accounts. The hub's Earn apps page then shows nothing, as it only watches the Pi.
+
 ## Check it
 
 The hub's **Earn apps** page shows whether each app runs, its traffic today and in total, and its

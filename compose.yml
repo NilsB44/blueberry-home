@@ -1,6 +1,13 @@
 # Blueberry Home. Start with:  docker compose up -d
 name: hub
 
+# Container logs rotate at 3 x 10 MB, so they can't fill or wear out the microSD card.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   web:
     build:
@@ -21,6 +28,7 @@ services:
       - caddy_config:/config
     depends_on:
       - api
+    logging: *logging
 
   api:
     build:
@@ -53,6 +61,7 @@ services:
     # Not published: only reachable through Caddy.
     expose:
       - "8000"
+    logging: *logging
 
 volumes:
   caddy_data:
