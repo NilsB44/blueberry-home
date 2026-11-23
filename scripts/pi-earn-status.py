@@ -4,8 +4,8 @@
 The hub runs in a container without access to systemd or Docker, on purpose, so this runs on the
 Pi from a systemd timer every 5 minutes (see scripts/install-earn-status.sh). For EarnApp (a
 systemd service), Pawns.app and Honeygain (containers) it records whether each runs, its traffic
-and its latest log lines. Traffic counters reset when an app restarts, so totals are kept in the output
-file across runs. Earnings aren't available on the Pi. Standard library only.
+and its latest log lines. Traffic counters reset when an app restarts, so totals are kept in the
+output file across runs. Earnings aren't available on the Pi. Standard library only.
 
     sudo python3 scripts/pi-earn-status.py --output data/api/earn-status.json
 """
@@ -125,7 +125,7 @@ def container(name: str) -> dict:
 
 
 def container_problem(state: dict, restarts: int, log: list[str], now: datetime) -> str:
-    """Why an app in Docker isn't working, or "": Docker says "running" even between failed attempts."""
+    """Why a container app isn't working, or "": Docker says "running" between failed tries."""
     if log and "authenticate user failed" in log[-1]:
         return LOGIN_REFUSED
     if state.get("Status") == "restarting":
