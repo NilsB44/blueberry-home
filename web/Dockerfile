@@ -1,6 +1,6 @@
 # Builds the web app and bakes it into a Caddy image that also proxies /api.
 # Built from the repository root (see compose.yml) so the home page can include MILESTONES.md.
-FROM node:25-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /src
 COPY web/package.json web/package-lock.json ./
 RUN npm ci
