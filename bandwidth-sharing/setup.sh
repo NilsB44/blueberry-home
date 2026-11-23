@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installs EarnApp natively and starts Pawns.app and Honeygain in Docker. Safe to re-run.
+# Installs EarnApp natively and starts Honeygain in Docker. Safe to re-run.
 # Run from anywhere on the Pi:  bandwidth-sharing/setup.sh
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
@@ -11,7 +11,7 @@ fi
 
 if [[ ! -f .env ]]; then
 	cp .env.example .env
-	echo "Created bandwidth-sharing/.env: fill in your Pawns.app and Honeygain logins, then run this again."
+	echo "Created bandwidth-sharing/.env: fill in your Honeygain login, then run this again."
 	exit 1
 fi
 
@@ -23,7 +23,7 @@ if ! command -v earnapp >/dev/null; then
 	sudo bash "$installer"
 fi
 
-# Keep EarnApp from starving the hub, like the Pawns container's limits, and count its traffic
+# Keep EarnApp from starving the hub, like the Honeygain container's limits, and count its traffic
 # for the hub's Earn apps page.
 if systemctl list-unit-files earnapp.service >/dev/null 2>&1; then
 	sudo mkdir -p /etc/systemd/system/earnapp.service.d

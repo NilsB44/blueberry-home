@@ -39,12 +39,12 @@ def test_reads_the_pis_report(admin_client):
         "counted_since": "2026-11-17",
         "log": ["started"],
     }
-    write_status({"earnapp": earnapp, "pawns": NOT_INSTALLED})
+    write_status({"earnapp": earnapp, "honeygain": NOT_INSTALLED})
     status = admin_client.get("/api/earn").json()
     assert status["stale"] is False
     assert status["apps"]["earnapp"]["total_bytes"] == 5000
     assert status["apps"]["earnapp"]["log"] == ["started"]
-    assert status["apps"]["pawns"]["installed"] is False
+    assert status["apps"]["honeygain"]["installed"] is False
 
 
 def test_old_report_is_stale_and_broken_one_is_reported(admin_client):
@@ -127,7 +127,7 @@ def test_log_tail_hides_account_details():
 def test_container_problem_when_docker_still_says_running():
     now = datetime(2026, 11, 17, 20, 5, tzinfo=UTC)
     running = {"Status": "running", "StartedAt": "2026-11-17T20:01:00.123456789Z"}
-    refused = ["2026-11-17T20:02:36Z authenticate user failed (please use SDK)"]
+    refused = ["2026-11-23T19:45:00Z Error processing authorisation (not_valid_login_credentials)"]
     assert pi.container_problem(running, 0, refused, now) == pi.LOGIN_REFUSED
     assert "restarted 4 times" in pi.container_problem(running, 4, [], now)
     assert "restarting" in pi.container_problem({"Status": "restarting"}, 0, [], now)
@@ -139,5 +139,5 @@ def test_report_covers_every_app(monkeypatch):
     # No systemctl or docker here: every app reads as not installed, but each one is reported.
     monkeypatch.setattr(pi, "run", lambda *cmd: (127, ""))
     apps = pi.report({}, date(2026, 11, 23))["apps"]
-    assert set(apps) == {"earnapp", "pawns", "honeygain"}
+    assert set(apps) == {"earnapp", "honeygain"}
     assert not any(app["installed"] for app in apps.values())

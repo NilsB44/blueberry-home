@@ -3,8 +3,8 @@
 
 The hub runs in a container without access to systemd or Docker, on purpose, so this runs on the
 Pi from a systemd timer every 5 minutes (see scripts/install-earn-status.sh). For EarnApp (a
-systemd service), Pawns.app and Honeygain (containers) it records whether each runs, its traffic
-and its latest log lines. Traffic counters reset when an app restarts, so totals are kept in the
+systemd service) and Honeygain (a container) it records whether each runs, its traffic and its
+latest log lines. Traffic counters reset when an app restarts, so totals are kept in the
 output file across runs. Earnings aren't available on the Pi. Standard library only.
 
     sudo python3 scripts/pi-earn-status.py --output data/api/earn-status.json
@@ -21,13 +21,13 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 # App id on the hub's Earn apps page -> container name from bandwidth-sharing/compose.yml.
-CONTAINERS = {"pawns": "bandwidth-pawns-1", "honeygain": "bandwidth-honeygain-1"}
+CONTAINERS = {"honeygain": "bandwidth-honeygain-1"}
 LOG_LINES = 20
 LOG_LINE_MAX = 300
 # A container that restarted within this long is still crash-looping, as far as we can tell.
 RECENT_RESTART = timedelta(minutes=10)
 LOGIN_REFUSED = "Login refused: check the email and password in bandwidth-sharing/.env."
-# Pawns writes its messages without a newline, so `docker logs --timestamps` runs them together.
+# Some apps write messages without a newline, so `docker logs --timestamps` runs them together.
 DOCKER_TIMESTAMP = re.compile(r"(?<=.)(?=\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d+Z )")
 # Never copy account details into the hub: hide email addresses and anything given as a
 # password, token or key (e.g. "-password=...", "token: ...").
@@ -126,7 +126,7 @@ def container(name: str) -> dict:
 
 def container_problem(state: dict, restarts: int, log: list[str], now: datetime) -> str:
     """Why a container app isn't working, or "": Docker says "running" between failed tries."""
-    if log and "authenticate user failed" in log[-1]:
+    if log and "not_valid_login_credentials" in log[-1]:
         return LOGIN_REFUSED
     if state.get("Status") == "restarting":
         return "Keeps quitting and restarting: see the log lines."

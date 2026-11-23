@@ -64,7 +64,7 @@ api/        FastAPI + SQLModel + SQLite. Each feature lives in app/modules/<name
 engines/    Rust: the poker hand evaluator and equity engine (no dependencies).
 web/        SvelteKit (static SPA) + the Caddy config that serves it.
 compose.yml Caddy (web) and the API.
-bandwidth-sharing/  Optional, separate: EarnApp, Pawns.app and Honeygain (see its README).
+bandwidth-sharing/  Optional, separate: EarnApp and Honeygain (see its README).
 docs/       Plan, architecture, Pi setup.
 MILESTONES.md  Dated key moments, also shown at the bottom of the home page.
 ```
