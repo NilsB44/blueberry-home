@@ -113,21 +113,31 @@ def test_log_tail_hides_account_details():
     lines = pi.log_tail(
         "login as nils.b+pi@example.com failed\n"
         "args: -email=a@b.se -password=hunter2 -device-name=hub\n"
-        "Token: abc123 ok"
+        "Token: abc123 ok\n"
+        "honeygain -email=a@b.se -pass=hunter2"
     )
     assert lines == [
         "login as [email] failed",
         "args: -email=[email] -password=[hidden] -device-name=hub",
         "Token: [hidden] ok",
+        "honeygain -email=[email] -pass=[hidden]",
     ]
 
 
-def test_pawns_problem_when_docker_still_says_running():
+def test_container_problem_when_docker_still_says_running():
     now = datetime(2026, 11, 17, 20, 5, tzinfo=UTC)
     running = {"Status": "running", "StartedAt": "2026-11-17T20:01:00.123456789Z"}
     refused = ["2026-11-17T20:02:36Z authenticate user failed (please use SDK)"]
-    assert pi.pawns_problem(running, 0, refused, now) == pi.LOGIN_REFUSED
-    assert "restarted 4 times" in pi.pawns_problem(running, 4, [], now)
-    assert "restarting" in pi.pawns_problem({"Status": "restarting"}, 0, [], now)
+    assert pi.container_problem(running, 0, refused, now) == pi.LOGIN_REFUSED
+    assert "restarted 4 times" in pi.container_problem(running, 4, [], now)
+    assert "restarting" in pi.container_problem({"Status": "restarting"}, 0, [], now)
     # Restarted long ago and quiet since: fine.
-    assert pi.pawns_problem(running, 4, ["connected"], now + timedelta(hours=1)) == ""
+    assert pi.container_problem(running, 4, ["connected"], now + timedelta(hours=1)) == ""
+
+
+def test_report_covers_every_app(monkeypatch):
+    # No systemctl or docker here: every app reads as not installed, but each one is reported.
+    monkeypatch.setattr(pi, "run", lambda *cmd: (127, ""))
+    apps = pi.report({}, date(2026, 11, 23))["apps"]
+    assert set(apps) == {"earnapp", "pawns", "honeygain"}
+    assert not any(app["installed"] for app in apps.values())
