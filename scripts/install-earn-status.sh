@@ -2,7 +2,7 @@
 # Installs the bandwidth-sharing status report as a systemd timer (every 5 minutes), for the
 # hub's Earn apps page. bandwidth-sharing/setup.sh runs this; to run it by hand, from the hub
 # folder:  sudo scripts/install-earn-status.sh
-# It runs as root because reading EarnApp's log and asking Docker about Pawns need it; the hub
+# It runs as root because reading EarnApp's log and asking Docker about Honeygain need it; the hub
 # itself only reads the small JSON file it writes, so the hub gets no access to Docker.
 set -euo pipefail
 

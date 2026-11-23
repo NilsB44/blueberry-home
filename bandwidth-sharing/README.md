@@ -4,15 +4,15 @@ Optional. Shares some of the home connection for small payouts, next to the hub 
 and separate from it:
 
 - **EarnApp** runs natively as a systemd service, installed by its official script.
-- **Pawns.app** and **Honeygain** run in Docker (`compose.yml`, project `bandwidth`), each
-  pinned to one version. Honeygain's official image has run natively on arm64 since 0.8.1.
+- **Honeygain** runs in Docker (`compose.yml`, project `bandwidth`), pinned to one version.
+  Its official image has run natively on arm64 since 0.8.1.
 
 No Watchtower (it needs the Docker socket; updates here are by hand). Each app is capped at half
 a CPU core and 256 MB of RAM so the hub always comes first, and container logs rotate at
-3 × 10 MB. The containers drop all Linux capabilities, and Honeygain's image runs as a non-root
-user, so they're more boxed in than EarnApp, which runs natively as root.
+3 × 10 MB. The Honeygain container drops all Linux capabilities and runs as a non-root user,
+so it's more boxed in than EarnApp, which runs natively as root.
 
-All three only make outbound connections and publish no ports. Your ISP and the sites traffic goes
+Both only make outbound connections and publish no ports. Your ISP and the sites traffic goes
 to see your home IP, so read each service's terms before you start.
 
 ## Set up
@@ -21,8 +21,8 @@ Do this after the hub runs ([docs/pi-setup.md](../docs/pi-setup.md), steps 0 to 
 
 ```bash
 ~/hub/bandwidth-sharing/setup.sh      # first run creates .env and stops
-nano ~/hub/bandwidth-sharing/.env     # Pawns.app and Honeygain logins, device name
-~/hub/bandwidth-sharing/setup.sh      # installs EarnApp, starts Pawns and Honeygain
+nano ~/hub/bandwidth-sharing/.env     # Honeygain login, device name
+~/hub/bandwidth-sharing/setup.sh      # installs EarnApp, starts Honeygain
 ```
 
 EarnApp's installer asks you to accept its terms. At the end the script prints an EarnApp
@@ -40,9 +40,9 @@ Your options, best first:
 
 1. **Keep the Pi on the main network, on Ethernet** (what [pi-setup.md](../docs/pi-setup.md)
    does). All the apps only connect out and publish no ports, are capped in CPU and RAM, and
-   Pawns and Honeygain run with no privileges. Keep your router's admin password strong, and other devices' too.
-2. **Run the earn apps on another device on the guest Wi-Fi** for full separation: EarnApp,
-   Pawns and Honeygain all have Android apps, so an old phone left on a charger works. Turn them
+   Honeygain runs with no privileges. Keep your router's admin password strong, and other devices' too.
+2. **Run the earn apps on another device on the guest Wi-Fi** for full separation: EarnApp
+   and Honeygain both have Android apps, so an old phone left on a charger works. Turn them
    off on the Pi first (see [Turn it off](#turn-it-off)): they pay per home IP, so a second device behind it
    earns little or nothing extra.
 3. **A VLAN**, only if your router supports it: you'd still need a second device, so it's the
@@ -52,7 +52,7 @@ To set up option 2: in the router's admin page (often `192.168.0.1` or `192.168.
 router's own app) turn on the guest network and give it its own password. Make sure guests
 can't reach the main network: a setting like "allow guests to access the local network" should
 be off, or one called "isolation" on.
-Join the phone to it, install EarnApp and Pawns from the Play Store, and log in with the same
+Join the phone to it, install EarnApp and Honeygain from the Play Store, and log in with the same
 accounts. The hub's Earn apps page then shows nothing, as it only watches the Pi.
 
 ## Check it
@@ -64,7 +64,7 @@ Docker. Earnings and requests are only on each app's own dashboard. From the com
 
 ```bash
 earnapp status                                              # EarnApp: enabled and running
-docker compose -f ~/hub/bandwidth-sharing/compose.yml ps    # Pawns, Honeygain: running
+docker compose -f ~/hub/bandwidth-sharing/compose.yml ps    # Honeygain: running
 docker compose -f ~/hub/bandwidth-sharing/compose.yml logs --tail 50
 docker stats --no-stream                                    # CPU/RAM against the limits
 systemctl status earnapp | grep -E 'Memory|CPU'              # EarnApp's CPU/RAM
@@ -77,36 +77,23 @@ behind carrier-grade NAT: sharing can still work but usually earns less.
 
 ## When something's off
 
-- **Pawns shows `Restarting (1)`:** the app quit, usually on a failed login. Run it in the
-  foreground to see why (Ctrl+C to stop), then fix `.env` and run `setup.sh` again:
+- **Honeygain shows `Restarting (1)`:** the app quit, usually on a failed login. See why with
+  `docker compose -f ~/hub/bandwidth-sharing/compose.yml logs --tail 20 honeygain`, then fix
+  `.env` and run `setup.sh` again (a plain `restart` doesn't pick up `.env` changes).
 
-  ```bash
-  docker compose -f ~/hub/bandwidth-sharing/compose.yml run --rm pawns
-  ```
-
-  `authenticate user failed` means Pawns refused the email and password. Stop the container
-  while you sort it out (`docker compose -f ~/hub/bandwidth-sharing/compose.yml stop`) so it
-  doesn't keep retrying, and check you can log in to the Pawns dashboard with exactly those.
-  An account made with Google sign-in has no password: set one in the Pawns dashboard first.
-  If the password has a `$` in it, wrap it in single quotes in `.env`. Also stop Pawns on any
-  other computer at home: a second device on the same IP earns nothing extra.
-- **Honeygain keeps restarting:** run it in the foreground the same way to see why:
-
-  ```bash
-  docker compose -f ~/hub/bandwidth-sharing/compose.yml run --rm honeygain
-  ```
-
-  Check you can log in at dashboard.honeygain.com with exactly the email and password in
-  `.env` (same tips as for Pawns above). Uninstall Honeygain on other computers at home: it
-  counts one device per IP.
+  `not_valid_login_credentials` means Honeygain refused the email and password. Stop the
+  container while you sort it out (`docker compose -f ~/hub/bandwidth-sharing/compose.yml stop`)
+  so it doesn't keep retrying, and check you can log in at dashboard.honeygain.com by typing
+  exactly those. An account made with Google sign-in has no password: set one with "Forgot
+  password" on the login page. If the password has a `$` in it, wrap it in single quotes in
+  `.env`. Also uninstall Honeygain on other computers at home: it counts one device per IP.
 - **`Your kernel does not support memory limit capabilities`:** the memory limits aren't
   applied. Do the `cmdline.txt` part of [pi-setup.md](../docs/pi-setup.md) step 4 and reboot.
 
 ## Update
 
-EarnApp updates itself (`earnapp_upgrader`). For Pawns and Honeygain, check the newest version
-on Docker Hub ([Pawns](https://hub.docker.com/r/iproyal/pawns-cli/tags),
-[Honeygain](https://hub.docker.com/r/honeygain/honeygain/tags)), change the tag in
+EarnApp updates itself (`earnapp_upgrader`). For Honeygain, check the newest version on
+[Docker Hub](https://hub.docker.com/r/honeygain/honeygain/tags), change the tag in
 `compose.yml`, then:
 
 ```bash

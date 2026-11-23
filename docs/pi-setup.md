@@ -252,7 +252,7 @@ sudo scripts/install-network-scan.sh      # Network page: lists devices on the W
 Never forward ports on the router. To reach the hub while you're out, set up Tailscale and
 use the away access switch on the Security page: see [security.md](security.md).
 
-Optional: to share some bandwidth for small payouts (EarnApp, Pawns.app and Honeygain), see
+Optional: to share some bandwidth for small payouts (EarnApp and Honeygain), see
 [bandwidth-sharing/README.md](../bandwidth-sharing/README.md).
 
 ## 10. Updates: automatic every night
