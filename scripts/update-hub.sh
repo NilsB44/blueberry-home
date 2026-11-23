@@ -5,6 +5,8 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 git pull --ff-only
+# Shown at the bottom of the hub's home page, so you can see which version is running.
+export HUB_VERSION="$(git log -1 --format='%h · %cs')"
 docker compose build --pull
 docker compose up -d
 docker image prune -f

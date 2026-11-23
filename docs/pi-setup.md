@@ -267,7 +267,8 @@ sudo scripts/install-auto-update.sh      # pull main and rebuild every night aro
 
 It runs `scripts/update-hub.sh` as your user, not root: fast-forward only, then a rebuild with
 fresh base images, which is quick when nothing changed. Check what it did with
-`journalctl -u hub-update`. Don't want to wait for the night? Update by hand any time, from the
+`journalctl -u hub-update`, or at the bottom of the hub's home page, which shows the running
+version and its date (compare it with the latest commit on GitHub). Don't want to wait for the night? Update by hand any time, from the
 laptop or the SSH app on your phone:
 
 ```bash

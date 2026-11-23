@@ -14,6 +14,9 @@ services:
       # From the repository root so the home page can include MILESTONES.md.
       context: .
       dockerfile: web/Dockerfile
+      args:
+        # Set by scripts/update-hub.sh: the commit and its date, shown on the home page.
+        HUB_VERSION: ${HUB_VERSION:-}
     restart: unless-stopped
     # IPv4 only, on purpose. On IPv6, Docker relays connections through its own proxy and the
     # hub would see them as coming from the Docker network, which it trusts as "home". Pinning
