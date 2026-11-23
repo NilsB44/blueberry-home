@@ -413,7 +413,7 @@
 	<details class="milestones muted small">
 		<summary>Milestones</summary>
 		<ul>
-			{#each milestones as m (m.date)}
+			{#each milestones as m}
 				<li><strong>{m.date}</strong> {m.text}</li>
 			{/each}
 		</ul>
