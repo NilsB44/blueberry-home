@@ -27,6 +27,8 @@
 		date: m[1],
 		text: m[2]
 	}));
+	// "abc1234 · 2026-11-23": the commit the hub was built from, set by scripts/update-hub.sh.
+	const version = import.meta.env.VITE_HUB_VERSION;
 
 	let modules = $state<ModuleInfo[]>([]);
 	let layout = $state<Layout>({ items: [] });
@@ -416,6 +418,7 @@
 			{/each}
 		</ul>
 	</details>
+	{#if version}<p class="muted small">Version {version}</p>{/if}
 </section>
 
 {#if editing}

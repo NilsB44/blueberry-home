@@ -6,7 +6,8 @@ COPY web/package.json web/package-lock.json ./
 RUN npm ci
 COPY web/ ./
 COPY MILESTONES.md /MILESTONES.md
-RUN npm run build
+ARG HUB_VERSION=""
+RUN VITE_HUB_VERSION="$HUB_VERSION" npm run build
 
 FROM caddy:2-alpine
 COPY --from=build /src/build /srv/web
