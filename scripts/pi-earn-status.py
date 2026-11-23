@@ -3,9 +3,9 @@
 
 The hub runs in a container without access to systemd or Docker, on purpose, so this runs on the
 Pi from a systemd timer every 5 minutes (see scripts/install-earn-status.sh). For EarnApp (a
-systemd service) and Pawns.app (a container) it records whether it runs, its traffic and its
-latest log lines. Traffic counters reset when an app restarts, so totals are kept in the output
-file across runs. Earnings aren't available on the Pi. Standard library only.
+systemd service), Pawns.app and Honeygain (containers) it records whether each runs, its traffic
+and its latest log lines. Traffic counters reset when an app restarts, so totals are kept in the
+output file across runs. Earnings aren't available on the Pi. Standard library only.
 
     sudo python3 scripts/pi-earn-status.py --output data/api/earn-status.json
 """
@@ -20,7 +20,8 @@ import tempfile
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
-PAWNS_CONTAINER = "bandwidth-pawns-1"
+# App id on the hub's Earn apps page -> container name from bandwidth-sharing/compose.yml.
+CONTAINERS = {"pawns": "bandwidth-pawns-1", "honeygain": "bandwidth-honeygain-1"}
 LOG_LINES = 20
 LOG_LINE_MAX = 300
 # A container that restarted within this long is still crash-looping, as far as we can tell.
@@ -31,7 +32,7 @@ DOCKER_TIMESTAMP = re.compile(r"(?<=.)(?=\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d+Z )"
 # Never copy account details into the hub: hide email addresses and anything given as a
 # password, token or key (e.g. "-password=...", "token: ...").
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
-SECRET = re.compile(r"(?i)\b(password|passwd|token|secret|api[_-]?key)(\W{1,3})\S+")
+SECRET = re.compile(r"(?i)\b(password|passwd|pass|token|secret|api[_-]?key)(\W{1,3})\S+")
 
 
 def run(*cmd: str) -> tuple[int, str]:
@@ -99,10 +100,8 @@ def earnapp() -> dict:
     }
 
 
-def pawns() -> dict:
-    code, out = run(
-        "docker", "inspect", "--format", "{{.RestartCount}} {{json .State}}", PAWNS_CONTAINER
-    )
+def container(name: str) -> dict:
+    code, out = run("docker", "inspect", "--format", "{{.RestartCount}} {{json .State}}", name)
     if code != 0:
         return {"installed": False, "running": False, "state": "not installed", "counter": None}
     restarts, _, state_json = out.partition(" ")
@@ -113,20 +112,20 @@ def pawns() -> dict:
             counter = net_dev_bytes(Path(f"/proc/{state['Pid']}/net/dev").read_text())
         except OSError:
             pass
-    _, logs = run("docker", "logs", "--tail", str(LOG_LINES), "--timestamps", PAWNS_CONTAINER)
+    _, logs = run("docker", "logs", "--tail", str(LOG_LINES), "--timestamps", name)
     log = log_tail(DOCKER_TIMESTAMP.sub("\n", logs))
     return {
         "installed": True,
         "running": bool(state.get("Running")),
         "state": state.get("Status", "unknown"),
-        "problem": pawns_problem(state, int(restarts or 0), log, datetime.now(UTC)),
+        "problem": container_problem(state, int(restarts or 0), log, datetime.now(UTC)),
         "counter": counter,
         "log": log,
     }
 
 
-def pawns_problem(state: dict, restarts: int, log: list[str], now: datetime) -> str:
-    """Why Pawns isn't working, or "": Docker says "running" even between failed attempts."""
+def container_problem(state: dict, restarts: int, log: list[str], now: datetime) -> str:
+    """Why a container app isn't working, or "": Docker says "running" between failed tries."""
     if log and "authenticate user failed" in log[-1]:
         return LOGIN_REFUSED
     if state.get("Status") == "restarting":
@@ -161,7 +160,7 @@ def add_traffic(app: dict, previous: dict, today: date) -> dict:
 
 
 def report(previous: dict, today: date) -> dict:
-    apps = {"earnapp": earnapp(), "pawns": pawns()}
+    apps = {"earnapp": earnapp()} | {k: container(v) for k, v in CONTAINERS.items()}
     old = previous.get("apps", {})
     return {
         "generated_at": datetime.now(UTC).isoformat(),

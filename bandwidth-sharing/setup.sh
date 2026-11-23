@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installs EarnApp natively and starts Pawns.app in Docker. Safe to re-run.
+# Installs EarnApp natively and starts Pawns.app and Honeygain in Docker. Safe to re-run.
 # Run from anywhere on the Pi:  bandwidth-sharing/setup.sh
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
@@ -11,7 +11,7 @@ fi
 
 if [[ ! -f .env ]]; then
 	cp .env.example .env
-	echo "Created bandwidth-sharing/.env: fill in your Pawns.app login, then run this again."
+	echo "Created bandwidth-sharing/.env: fill in your Pawns.app and Honeygain logins, then run this again."
 	exit 1
 fi
 

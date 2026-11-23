@@ -18,7 +18,8 @@
 
 	const APPS = [
 		{ id: 'earnapp', name: 'EarnApp', dashboard: 'https://earnapp.com/dashboard' },
-		{ id: 'pawns', name: 'Pawns.app', dashboard: 'https://dashboard.pawns.app' }
+		{ id: 'pawns', name: 'Pawns.app', dashboard: 'https://dashboard.pawns.app' },
+		{ id: 'honeygain', name: 'Honeygain', dashboard: 'https://dashboard.honeygain.com' }
 	];
 	const README = 'https://github.com/NilsB44/blueberry-home/blob/main/bandwidth-sharing/README.md';
 
@@ -59,8 +60,8 @@
 			<div class="card stack">
 				<h2>Not set up yet</h2>
 				<p>
-					Make the EarnApp and Pawns.app accounts first, then run the setup on the Pi. It installs both
-					apps and the 5-minute status report this page reads.
+					Make the EarnApp, Pawns.app and Honeygain accounts first, then run the setup on the Pi. It
+					installs the apps and the 5-minute status report this page reads.
 				</p>
 				<code>~/hub/bandwidth-sharing/setup.sh</code>
 				<a href={README} target="_blank" rel="noopener noreferrer">Setup guide</a>

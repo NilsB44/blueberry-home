@@ -66,7 +66,7 @@ MODULES: list[ModuleInfo] = [
     ModuleInfo(
         id="earn",
         name="Earn apps",
-        description="Whether EarnApp and Pawns.app are running, their traffic and latest logs.",
+        description="Whether the earn apps are running, their traffic and latest logs.",
         icon="💸",
         path="/earn",
         owner_only=True,
